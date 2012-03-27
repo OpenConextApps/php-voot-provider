@@ -2,7 +2,6 @@
 require_once 'ext/Slim/Slim/Slim.php';
 require_once 'lib/OAuth/AuthorizationServer.php';
 require_once 'lib/OAuth/Storage.php';
-require_once 'lib/OAuth/Random.php';
 require_once 'lib/Voot/Groups.php';
 
 $app = new Slim();
