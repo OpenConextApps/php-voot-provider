@@ -38,7 +38,7 @@ class Storage {
     }
 
     public function generateAccessToken($clientId, $resourceOwner, $scope) {
-        $accessToken = Random::hex(16);
+        $accessToken = $this->_randomHex(16);
         $stmt = $this->_pdo->prepare("INSERT INTO AccessToken (client_id, resource_owner_id, issue_time, expires_in, scope, access_token) VALUES(:client_id, :resource_owner_id, :issue_time, :expires_in, :scope, :access_token)");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
@@ -60,7 +60,7 @@ class Storage {
     }
 
     public function generateAuthorizeNonce($clientId, $resourceOwner) {
-        $authorizeNonce = Random::hex(16);
+        $authorizeNonce = $this->_randomHex(16);
         $stmt = $this->_pdo->prepare("INSERT INTO AuthorizeNonce (client_id, resource_owner_id, authorize_nonce) VALUES(:client_id, :resource_owner_id, :authorize_nonce)");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
@@ -79,6 +79,16 @@ class Storage {
             return FALSE;
         }
         return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
+    private function _randomHex($len = 16) {
+        $randomString = bin2hex(openssl_random_pseudo_bytes($len, $strong));
+        // @codeCoverageIgnoreStart
+        if ($strong === FALSE) {
+            throw new Exception("unable to securely generate random string");
+        }
+        // @codeCoverageIgnoreEnd
+        return $randomString;
     }
 
 }
