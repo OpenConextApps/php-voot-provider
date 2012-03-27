@@ -2,7 +2,7 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE `groups` (
   `id` varchar(64) NOT NULL,
-  `name` varchar(64) NOT NULL,
+  `title` varchar(64) NOT NULL,
   `description` text,
   PRIMARY KEY (`id`)
 );
