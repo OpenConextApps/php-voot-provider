@@ -6,7 +6,9 @@ require_once 'lib/OAuth/DummyResourceOwner.php';
 require_once 'lib/Voot/Groups.php';
 require_once 'lib/Voot/People.php';
 
-$app = new Slim();
+$app = new Slim(array(
+    'session.handler' => null
+));
 
 $dsn = 'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'oauth2.sqlite';
 $storage = new PdoStorage(new PDO($dsn));
