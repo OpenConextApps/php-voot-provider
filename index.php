@@ -23,6 +23,7 @@ $app->get('/oauth/authorize', function () use ($app, $storage, $config) {
     if($authMech === "SspResourceOwner") {
         $ro->setPath($config['oauthSsp']['sspPath']);
         $ro->setAuthSource($config['oauthSsp']['authSource']);
+        $ro->setResourceOwnerIdAttributeName($config['oauthSsp']['resourceOwnerIdAttributeName']);
     }    
     $resourceOwner = $ro->getResourceOwnerId();
 
@@ -74,6 +75,7 @@ $app->post('/oauth/authorize', function () use ($app, $storage, $config) {
     if($authMech === "SspResourceOwner") {
         $ro->setPath($config['oauthSsp']['sspPath']);
         $ro->setAuthSource($config['oauthSsp']['authSource']);
+        $ro->setResourceOwnerIdAttributeName($config['oauthSsp']['resourceOwnerIdAttributeName']);
     }    
     $resourceOwner = $ro->getResourceOwnerId();
 

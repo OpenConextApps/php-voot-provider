@@ -5,11 +5,13 @@ class SspResourceOwner implements ResourceOwner {
     private $_sspPath;
     private $_authSource;
     private $_resourceOwnerAttributes;
+    private $_resourceOwnerIdAttributeName;
 
     public function __construct() {
         $this->_sspPath = '/var/simplesamlphp/lib/_autoload.php';      // default simpleSAMLphp installation
         $this->_authSource = 'default-sp';
         $this->_resourceOwnerAttributes = array();
+        $this->_resourceOwnerIdAttributeName = 'uid';
     }
 
     public function setPath($sspPath) {
@@ -18,6 +20,10 @@ class SspResourceOwner implements ResourceOwner {
 
     public function setAuthSource($authSource) {
         $this->_authSource = $authSource;
+    }
+
+    public function setResourceOwnerIdAttributeName($attributeName) {
+        $this->_resourceOwnerIdAttributeName = $attributeName;
     }
 
     private function _performAuthentication() {
@@ -33,10 +39,10 @@ class SspResourceOwner implements ResourceOwner {
     public function getResourceOwnerId() {
         // FIXME: really better error checking, maybe user is authenticated but
         // the attribute 'uid' is not available!
-        if(!array_key_exists('uid', $this->_resourceOwnerAttributes)) {
+        if(!array_key_exists($this->_resourceOwnerIdAttributeName, $this->_resourceOwnerAttributes)) {
             $this->_performAuthentication();
         }
-        return $this->_resourceOwnerAttributes['uid'][0];
+        return $this->_resourceOwnerAttributes[$this->_resourceOwnerIdAttributeName][0];
     }
 
     public function getResourceOwnerDisplayName() {
