@@ -1,18 +1,29 @@
 <?php
 require_once 'ext/Slim/Slim/Slim.php';
 require_once 'lib/OAuth/AuthorizationServer.php';
-require_once 'lib/OAuth/Storage.php';
+require_once 'lib/OAuth/PdoStorage.php';
+require_once 'lib/OAuth/DummyResourceOwner.php';
 require_once 'lib/Voot/Groups.php';
 require_once 'lib/Voot/People.php';
 
 $app = new Slim();
 
 $dsn = 'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'oauth2.sqlite';
-$pdo = new PDO($dsn);
-$storage = new Storage($pdo);
+$storage = new PdoStorage(new PDO($dsn));
 
-$app->get('/oauth/authorize', function () use ($app, $storage) {
-    $resourceOwner = "urn:collab:person:surfnet.nl:francois";
+$config = parse_ini_file("config" . DIRECTORY_SEPARATOR . "voot.ini", TRUE);
+
+$app->get('/oauth/authorize', function () use ($app, $storage, $config) {
+
+    $authMech = $config['oauth']['authenticationMechanism'];
+    require_once "lib/OAuth/$authMech.php";
+    $ro = new $authMech();
+    if($authMech === "SspResourceOwner") {
+        $ro->setPath($config['oauthSsp']['sspPath']);
+        $ro->setAuthSource($config['oauthSsp']['authSource']);
+    }    
+    $resourceOwner = $ro->getResourceOwnerId();
+
     $o = new AuthorizationServer($storage, $resourceOwner);
     $o->setSupportedScopes(array("read","write"));
     $result = $o->authorize($app->request());
@@ -53,19 +64,29 @@ $app->get('/oauth/authorize', function () use ($app, $storage) {
 
 });
 
-$app->post('/oauth/authorize', function () use ($app, $storage) {
-    $resourceOwner = "urn:collab:person:surfnet.nl:francois";
+$app->post('/oauth/authorize', function () use ($app, $storage, $config) {
+
+    $authMech = $config['oauth']['authenticationMechanism'];
+    require_once "lib/OAuth/$authMech.php";
+    $ro = new $authMech();
+    if($authMech === "SspResourceOwner") {
+        $ro->setPath($config['oauthSsp']['sspPath']);
+        $ro->setAuthSource($config['oauthSsp']['authSource']);
+    }    
+    $resourceOwner = $ro->getResourceOwnerId();
+
     $o = new AuthorizationServer($storage, $resourceOwner);
     $o->setSupportedScopes(array("read","write"));
     $result = $o->approve($app->request());
     $app->redirect($result['url']);
 });
 
-$app->get('/groups/:name', function ($name) use ($app, $storage) {
+$app->get('/groups/:name', function ($name) use ($app, $storage, $config) {
     // enable CORS (http://enable-cors.org)
     $app->response()->header("Access-Control-Allow-Origin", "*");
 
-    $resourceOwner = 'EMPTY';
+    // FIXME: fix verify to not require instantiation of the AuthorizationServer
+    $resourceOwner = NULL;
     $o = new AuthorizationServer($storage, $resourceOwner);
     $o->setSupportedScopes(array("read","write"));
 
@@ -81,11 +102,12 @@ $app->get('/groups/:name', function ($name) use ($app, $storage) {
 
 });
 
-$app->get('/people/:name/:groupId', function ($name, $groupId) use ($app, $storage) {
+$app->get('/people/:name/:groupId', function ($name, $groupId) use ($app, $storage, $config) {
     // enable CORS (http://enable-cors.org)
     $app->response()->header("Access-Control-Allow-Origin", "*");
 
-    $resourceOwner = 'EMPTY';
+    // FIXME: fix verify to not require instantiation of the AuthorizationServer
+    $resourceOwner = NULL;
     $o = new AuthorizationServer($storage, $resourceOwner);
     $o->setSupportedScopes(array("read","write"));
 

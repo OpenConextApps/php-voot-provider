@@ -30,5 +30,5 @@ CREATE TABLE `membership` (
 -- INSERT INTO `membership` VALUES ('demo', 'demogrp', 5);
 -- INSERT INTO `membership` VALUES ('demo', 'testgrp', 1);
 -- INSERT INTO `membership` VALUES ('test', 'testgrp', 10);
--- INSERT INTO `membership` VALUES ('user@example.com', 'testgrp', 10);
+-- INSERT INTO `membership` VALUES ('john.doe@example.com', 'testgrp', 10);
 

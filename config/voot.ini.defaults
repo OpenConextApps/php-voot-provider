@@ -1,0 +1,18 @@
+; This is the default configuration for the PHP VOOT implementation
+
+; VOOT configuration
+[voot]
+
+
+
+; OAuth Authorization Server configuration
+[oauth]
+authenticationMechanism = "DummyResourceOwner"
+;authenticationMechanism = "SspResourceOwner"
+
+
+; simpleSAMLphp configuration
+[oauthSsp]
+sspPath = '/var/simplesamlphp/lib/_autoload.php'
+authSource = 'default-sp'
+

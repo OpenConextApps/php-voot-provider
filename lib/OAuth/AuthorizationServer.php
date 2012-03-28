@@ -1,5 +1,20 @@
 <?php 
 
+interface ResourceOwner {
+    public function getResourceOwnerId();
+    public function getResourceOwnerDisplayName();
+}
+
+interface Storage {
+    public function getClient($clientId);
+    public function storeApprovedScope($clientId, $resourceOwner, $scope);
+    public function getApprovedScope($clientId, $resourceOwner);
+    public function generateAccessToken($clientId, $resourceOwner, $scope);
+    public function getAccessToken($accessToken);
+    public function generateAuthorizeNonce($clientId, $resourceOwner);
+    public function getAuthorizeNonce($clientId, $resourceOwner, $authorizeNonce);
+}
+
 class AuthorizationServer {
 
     private $_supportedScopes;

@@ -1,6 +1,6 @@
 <?php
 
-class Storage {
+class PdoStorage implements Storage {
 
     private $_pdo;
 
