@@ -3,6 +3,7 @@ require_once 'ext/Slim/Slim/Slim.php';
 require_once 'lib/OAuth/AuthorizationServer.php';
 require_once 'lib/OAuth/Storage.php';
 require_once 'lib/Voot/Groups.php';
+require_once 'lib/Voot/People.php';
 
 $app = new Slim();
 
@@ -74,7 +75,27 @@ $app->get('/groups/:name', function ($name) use ($app, $storage) {
     $pdo = new PDO($dsn);
 
     $g = new Groups($pdo);
-    $grp_array = $g->getGroups($result->resource_owner_id);
+    $grp_array = $g->getGroups($result->resource_owner_id, $app->request()->get('startIndex'), $app->request()->get('count'));
+    $app->response()->header('Content-Type','application/json');
+    echo json_encode($grp_array);
+
+});
+
+$app->get('/people/:name/:groupId', function ($name, $groupId) use ($app, $storage) {
+    // enable CORS (http://enable-cors.org)
+    $app->response()->header("Access-Control-Allow-Origin", "*");
+
+    $resourceOwner = 'EMPTY';
+    $o = new AuthorizationServer($storage, $resourceOwner);
+    $o->setSupportedScopes(array("read","write"));
+
+    $result = $o->verify($app->request());
+
+    $dsn = 'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'voot.sqlite';
+    $pdo = new PDO($dsn);
+
+    $g = new People($pdo);
+    $grp_array = $g->getGroupMembers($result->resource_owner_id, $groupId, $app->request()->get('startIndex'), $app->request()->get('count'));
     $app->response()->header('Content-Type','application/json');
     echo json_encode($grp_array);
 

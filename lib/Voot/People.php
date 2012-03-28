@@ -1,6 +1,6 @@
 <?php
 
-class Groups {
+class People {
     
     private $_pdo;
 
@@ -8,12 +8,15 @@ class Groups {
         $this->_pdo = $pdo;
     }
 
-    public function getGroups($resourceOwnerId, $startIndex = 0, $count = null) {
+    public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = null) {
+        // FIXME: check whether or not $resourceOwnerId is a member of the group, if not don't 
+        // return anything (or error).
+
     	$x = $this->_pdo->exec("PRAGMA foreign_keys = ON");
 
         // count the total number of results        
-        $stmt = $this->_pdo->prepare("SELECT COUNT(*) AS count FROM membership m, groups g, roles r WHERE m.id=:id AND m.groupid = g.id AND m.role = r.id");
-        $stmt->bindValue(":id", $resourceOwnerId, PDO::PARAM_STR);
+        $stmt = $this->_pdo->prepare("SELECT COUNT(*) AS count FROM membership m, groups g, roles r WHERE g.id = m.groupid AND r.id=m.role AND g.id=:groupId");
+        $stmt->bindValue(":groupId", $groupId, PDO::PARAM_STR);
         $result = $stmt->execute();
         if (FALSE === $result) {
             return FALSE;
@@ -26,8 +29,8 @@ class Groups {
         }
 
         // FIXME: how to do LIMIT? 
-        $stmt = $this->_pdo->prepare("SELECT m.id, g.id, g.title, g.description, r.voot_membership_role FROM membership m, groups g, roles r WHERE m.id=:id AND m.groupid = g.id AND m.role = r.id LIMIT 0,3");
-        $stmt->bindValue(":id", $resourceOwnerId, PDO::PARAM_STR);
+        $stmt = $this->_pdo->prepare("SELECT m.id, r.voot_membership_role FROM membership m, groups g, roles r WHERE g.id = m.groupid AND r.id=m.role AND g.id=:groupId");
+        $stmt->bindValue(":groupId", $groupId, PDO::PARAM_STR);
         //$stmt->bindValue(":startIndex", $startIndex, PDO::PARAM_INT);
         //$stmt->bindValue(":count", $count, PDO::PARAM_INT);
         $result = $stmt->execute();
