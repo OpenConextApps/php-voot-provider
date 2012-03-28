@@ -75,7 +75,7 @@ $app->get('/groups/:name', function ($name) use ($app, $storage) {
     $pdo = new PDO($dsn);
 
     $g = new Groups($pdo);
-    $grp_array = $g->getGroups($result->resource_owner_id, $app->request()->get('startIndex'), $app->request()->get('count'));
+    $grp_array = $g->isMemberOf($result->resource_owner_id, $app->request()->get('startIndex'), $app->request()->get('count'));
     $app->response()->header('Content-Type','application/json');
     echo json_encode($grp_array);
 

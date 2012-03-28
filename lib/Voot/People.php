@@ -14,7 +14,6 @@ class People {
 
     	$x = $this->_pdo->exec("PRAGMA foreign_keys = ON");
 
-        // count the total number of results        
         $stmt = $this->_pdo->prepare("SELECT COUNT(*) AS count FROM membership m, groups g, roles r WHERE g.id = m.groupid AND r.id=m.role AND g.id=:groupId");
         $stmt->bindValue(":groupId", $groupId, PDO::PARAM_STR);
         $result = $stmt->execute();
@@ -24,15 +23,17 @@ class People {
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
         $totalResults = $data['count'];
 
-        if($count === null) {
+        if(!is_numeric($startIndex)) {
+            $startIndex = 0;
+        }
+        if(!is_numeric($count)) {
             $count = $totalResults;
         }
 
-        // FIXME: how to do LIMIT? 
-        $stmt = $this->_pdo->prepare("SELECT m.id, r.voot_membership_role FROM membership m, groups g, roles r WHERE g.id = m.groupid AND r.id=m.role AND g.id=:groupId");
+        $stmt = $this->_pdo->prepare("SELECT m.id, r.voot_membership_role FROM membership m, groups g, roles r WHERE g.id = m.groupid AND r.id=m.role AND g.id=:groupId LIMIT :startIndex, :count");
         $stmt->bindValue(":groupId", $groupId, PDO::PARAM_STR);
-        //$stmt->bindValue(":startIndex", $startIndex, PDO::PARAM_INT);
-        //$stmt->bindValue(":count", $count, PDO::PARAM_INT);
+        $stmt->bindValue(":startIndex", $startIndex, PDO::PARAM_INT);
+        $stmt->bindValue(":count", $count, PDO::PARAM_INT);
         $result = $stmt->execute();
         if (FALSE === $result) {
             return FALSE;
@@ -41,7 +42,9 @@ class People {
         if (FALSE === $data) {
             return FALSE;
         }
-	$returnData = array ( 'startIndex' => 0, 'totalResults' => $totalResults, 'itemsPerPage' => $count, 'entry' => $data);
+
+        // FIXME: should itemsPerPage return the count value or the actual number of results returned?
+	    $returnData = array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => sizeof($data), 'entry' => $data);
         return $returnData;
     }
 

@@ -60,7 +60,16 @@ class AuthorizationServer {
             $result = preg_match($scopeRegExp, $r->get('scope'));
     		if($result === 1) { 
                 // valid scope
-                // FIXME: see if it is also supported ($this->_supportedScopes)
+                $requestedScopeList = explode(" ", $r->get('scope'));
+                foreach($requestedScopeList as $c) {
+                    if(!in_array($c, $this->_supportedScopes)) {
+                        $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported");
+                        if(NULL !== $r->get('state')) {
+                            $error += array ( "state" => $r->get('state'));
+                        }
+                        return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+                    }
+                }
 
             } else {
                 $error = array ( "error" => "invalid_scope", "error_description" => "scope contains invalid characters");
@@ -74,16 +83,17 @@ class AuthorizationServer {
         $approvedScope = $this->_storage->getApprovedScope($r->get('client_id'), $this->_resourceOwner);
 
         if(FALSE !== $approvedScope) {
-            // approval for some scopes
-            // see if the currently requested scope is a subset of the already granted scopes
-		// if you gave permission for read, you are not granted read,write when you request it without
-		// reauthenticating
-            $ok = TRUE;
-
-            if ($ok) {
+            $requestedList = explode(" ", $r->get('scope'));
+            $approvedScopeList = explode(" ", $approvedScope->scope);
+            $alreadyApproved = TRUE;
+            foreach($requestedList as $c) {
+                if(!in_array($c, $approvedScopeList)) {
+                    $alreadyApproved = FALSE;
+                }
+            }  
+            if ($alreadyApproved) {
                 $accessToken = $this->_storage->generateAccessToken($r->get('client_id'), $this->_resourceOwner, $r->get('scope'));
                 $token = array("access_token" => $accessToken, "expires_in" => 3600, "token_type" => "bearer");
-                // FIXME: what is the user gives less scope to the client?
                 if(NULL !== $r->get('scope')) {
                     $token += array ("scope" => $r->get('scope'));
                 }
