@@ -13,6 +13,6 @@ authenticationMechanism = "DummyResourceOwner"
 
 ; simpleSAMLphp configuration
 [oauthSsp]
-sspPath = '/var/simplesamlphp/lib'
-authSource = 'default-sp'
-resourceOwnerIdAttributeName = 'uid'
+sspPath = "/var/simplesamlphp/lib"
+authSource = "default-sp"
+resourceOwnerIdAttributeName = "uid"
