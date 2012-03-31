@@ -1,11 +1,11 @@
 <?php 
 
-interface ResourceOwner {
+interface IResourceOwner {
     public function getResourceOwnerId();
     public function getResourceOwnerDisplayName();
 }
 
-interface Storage {
+interface IOAuthStorage {
     public function getClient($clientId);
     public function storeApprovedScope($clientId, $resourceOwner, $scope);
     public function getApprovedScope($clientId, $resourceOwner);
@@ -21,7 +21,7 @@ class AuthorizationServer {
     private $_storage;
     private $_authentication;
 
-    public function __construct(Storage $storage, $resourceOwner) {
+    public function __construct(IOAuthStorage $storage, $resourceOwner) {
         $this->_storage = $storage;
         $this->_resourceOwner = $resourceOwner;
 
@@ -135,6 +135,8 @@ class AuthorizationServer {
         $client = $this->_storage->getClient($r->get('client_id'));
 
         if("Approve" === $r->post('approval')) {
+            // r->get('scope') should really be the results of the POST form 
+            // submit, not of the (hopefully) initial authorize request...
             $this->_storage->storeApprovedScope($r->get('client_id'), $this->_resourceOwner, $r->get('scope'));
             return $this->authorize($r);
         } else {

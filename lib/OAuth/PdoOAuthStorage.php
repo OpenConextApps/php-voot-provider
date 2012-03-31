@@ -1,6 +1,6 @@
 <?php
 
-class PdoStorage implements Storage {
+class PdoOAuthStorage implements IOAuthStorage {
 
     private $_pdo;
 
@@ -69,6 +69,9 @@ class PdoStorage implements Storage {
     }
 
     public function getAuthorizeNonce($clientId, $resourceOwner, $authorizeNonce) {
+        // FIXME: this should probably be a DELETE query that returns TRUE if 
+        // the row was deleted and FALSE when not.
+
         $stmt = $this->_pdo->prepare("SELECT * FROM AuthorizeNonce WHERE client_id = :client_id AND authorize_nonce = :authorize_nonce AND resource_owner_id = :resource_owner_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);

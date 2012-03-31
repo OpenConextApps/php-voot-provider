@@ -1,6 +1,6 @@
 <?php
 
-class SspResourceOwner implements ResourceOwner {
+class SspResourceOwner implements IResourceOwner {
 
     private $_sspPath;
     private $_authSource;

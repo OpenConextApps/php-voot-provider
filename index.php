@@ -1,21 +1,24 @@
 <?php
 require_once 'ext/Slim/Slim/Slim.php';
 require_once 'lib/OAuth/AuthorizationServer.php';
-require_once 'lib/OAuth/PdoStorage.php';
+require_once 'lib/OAuth/PdoOAuthStorage.php';
 require_once 'lib/OAuth/DummyResourceOwner.php';
-require_once 'lib/Voot/Groups.php';
-require_once 'lib/Voot/People.php';
+require_once 'lib/Voot/Provider.php';
+require_once 'lib/Voot/PdoVootStorage.php';
 
 $app = new Slim(array(
     'session.handler' => null
 ));
 
-$dsn = 'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'oauth2.sqlite';
-$storage = new PdoStorage(new PDO($dsn));
-
 $config = parse_ini_file("config" . DIRECTORY_SEPARATOR . "voot.ini", TRUE);
 
-$app->get('/oauth/authorize', function () use ($app, $storage, $config) {
+$oauthDsn = 'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'oauth2.sqlite';
+$oauthStorage = new PdoOAuthStorage(new PDO($oauthDsn));
+
+$vootDsn = 'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'voot.sqlite';
+$vootStorage = new PdoVootStorage(new PDO($vootDsn));
+
+$app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
 
     $authMech = $config['oauth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
@@ -27,7 +30,7 @@ $app->get('/oauth/authorize', function () use ($app, $storage, $config) {
     }    
     $resourceOwner = $ro->getResourceOwnerId();
 
-    $o = new AuthorizationServer($storage, $resourceOwner);
+    $o = new AuthorizationServer($oauthStorage, $resourceOwner);
     $o->setSupportedScopes(array("read","write"));
     $result = $o->authorize($app->request());
     if($result['action'] === 'ask_approval') { 
@@ -67,7 +70,7 @@ $app->get('/oauth/authorize', function () use ($app, $storage, $config) {
 
 });
 
-$app->post('/oauth/authorize', function () use ($app, $storage, $config) {
+$app->post('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
 
     $authMech = $config['oauth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
@@ -79,48 +82,42 @@ $app->post('/oauth/authorize', function () use ($app, $storage, $config) {
     }    
     $resourceOwner = $ro->getResourceOwnerId();
 
-    $o = new AuthorizationServer($storage, $resourceOwner);
+    $o = new AuthorizationServer($oauthStorage, $resourceOwner);
     $o->setSupportedScopes(array("read","write"));
     $result = $o->approve($app->request());
     $app->redirect($result['url']);
 });
 
-$app->get('/groups/:name', function ($name) use ($app, $storage, $config) {
+$app->get('/groups/:name', function ($name) use ($app, $oauthStorage, $vootStorage) {
     // enable CORS (http://enable-cors.org)
     $app->response()->header("Access-Control-Allow-Origin", "*");
 
     // FIXME: fix verify to not require instantiation of the AuthorizationServer
     $resourceOwner = NULL;
-    $o = new AuthorizationServer($storage, $resourceOwner);
+    $o = new AuthorizationServer($oauthStorage, $resourceOwner);
     $o->setSupportedScopes(array("read","write"));
 
     $result = $o->verify($app->request());
 
-    $dsn = 'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'voot.sqlite';
-    $pdo = new PDO($dsn);
-
-    $g = new Groups($pdo);
+    $g = new Provider($vootStorage);
     $grp_array = $g->isMemberOf($result->resource_owner_id, $app->request()->get('startIndex'), $app->request()->get('count'));
     $app->response()->header('Content-Type','application/json');
     echo json_encode($grp_array);
 
 });
 
-$app->get('/people/:name/:groupId', function ($name, $groupId) use ($app, $storage, $config) {
+$app->get('/people/:name/:groupId', function ($name, $groupId) use ($app, $oauthStorage, $vootStorage) {
     // enable CORS (http://enable-cors.org)
     $app->response()->header("Access-Control-Allow-Origin", "*");
 
     // FIXME: fix verify to not require instantiation of the AuthorizationServer
     $resourceOwner = NULL;
-    $o = new AuthorizationServer($storage, $resourceOwner);
+    $o = new AuthorizationServer($oauthStorage, $resourceOwner);
     $o->setSupportedScopes(array("read","write"));
 
     $result = $o->verify($app->request());
 
-    $dsn = 'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'voot.sqlite';
-    $pdo = new PDO($dsn);
-
-    $g = new People($pdo);
+    $g = new Provider($vootStorage);
     $grp_array = $g->getGroupMembers($result->resource_owner_id, $groupId, $app->request()->get('startIndex'), $app->request()->get('count'));
     $app->response()->header('Content-Type','application/json');
     echo json_encode($grp_array);
