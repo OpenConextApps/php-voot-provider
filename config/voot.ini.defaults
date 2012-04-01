@@ -16,5 +16,6 @@ authenticationMechanism = "DummyResourceOwner"
 sspPath = "/var/simplesamlphp/lib"
 authSource = "default-sp"
 resourceOwnerIdAttributeName = "uid"
-;resourceOwnerIdAttributeName = "urn:mace:dir:attribute-def:eduPersonTargetedID"
+;resourceOwnerIdAttributeName = "urn:mace:dir:attribute-def:uid"
+
 

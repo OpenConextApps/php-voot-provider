@@ -14,6 +14,7 @@ CREATE TABLE `Approval` (
 CREATE TABLE `AuthorizeNonce` (
   `client_id` text,
   `resource_owner_id` text,
+  `scope` text,
   `authorize_nonce` text
 );
 CREATE TABLE `Client` (

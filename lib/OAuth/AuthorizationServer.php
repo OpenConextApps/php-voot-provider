@@ -1,18 +1,18 @@
 <?php 
 
 interface IResourceOwner {
-    public function getResourceOwnerId();
+    public function getResourceOwnerId         ();
     public function getResourceOwnerDisplayName();
 }
 
 interface IOAuthStorage {
-    public function getClient($clientId);
-    public function storeApprovedScope($clientId, $resourceOwner, $scope);
-    public function getApprovedScope($clientId, $resourceOwner);
-    public function generateAccessToken($clientId, $resourceOwner, $scope);
-    public function getAccessToken($accessToken);
-    public function generateAuthorizeNonce($clientId, $resourceOwner);
-    public function getAuthorizeNonce($clientId, $resourceOwner, $authorizeNonce);
+    public function getClient             ($clientId);
+    public function storeApprovedScope    ($clientId, $resourceOwner, $scope);
+    public function getApprovedScope      ($clientId, $resourceOwner, $scope);
+    public function generateAccessToken   ($clientId, $resourceOwner, $scope);
+    public function getAccessToken        ($accessToken);
+    public function generateAuthorizeNonce($clientId, $resourceOwner, $scope);
+    public function getAuthorizeNonce     ($clientId, $resourceOwner, $scope, $authorizeNonce);
 }
 
 class AuthorizationServer {
@@ -58,7 +58,7 @@ class AuthorizationServer {
         }
 
         if(NULL !== $r->get('response_type')) {
-            if($r->get('response_type') !== 'token') {
+            if("token" !== $r->get('response_type')) {
                 $error = array ( "error" => "unsupported_response_type", "error_description" => "response_type not supported");
                 if(NULL !== $r->get('state')) {
                     $error += array ( "state" => $r->get('state'));
@@ -68,12 +68,8 @@ class AuthorizationServer {
         }
 
         if(NULL !== $r->get('scope')) {
-            // scope       = scope-token *( SP scope-token )
-            // scope-token = 1*( %x21 / %x23-5B / %x5D-7E )
-            // FIXME: regexp fail? the first + should not be there?
-	        $scopeRegExp = '/^(?:\x21|[\x23-\x5B]|[\x5D-\x7E])+(?:\x20(?:\x21|[\x23-\x5B]|[\x5D-\x7E])+)*$/';
-            $result = preg_match($scopeRegExp, $r->get('scope'));
-    		if($result === 1) { 
+            $checkedScope = self::validateAndSortScope($r->get('scope'));
+            if(FALSE !== $checkedScope) {
                 // valid scope
                 $requestedScopeList = explode(" ", $r->get('scope'));
                 foreach($requestedScopeList as $c) {
@@ -85,8 +81,8 @@ class AuthorizationServer {
                         return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
                     }
                 }
-
             } else {
+                // invalid scope
                 $error = array ( "error" => "invalid_scope", "error_description" => "scope contains invalid characters");
                 if(NULL !== $r->get('state')) {
                     $error += array ( "state" => $r->get('state'));
@@ -95,11 +91,13 @@ class AuthorizationServer {
             }
         }
 
-        $approvedScope = $this->_storage->getApprovedScope($r->get('client_id'), $this->_resourceOwner);
+        $approvedScope = $this->_storage->getApprovedScope($r->get('client_id'), $this->_resourceOwner, $r->get('scope'));
 
         if(FALSE !== $approvedScope) {
-            $requestedList = explode(" ", $r->get('scope'));
-            $approvedScopeList = explode(" ", $approvedScope->scope);
+            $requestedList = self::validateAndSortScope($r->get('scope'));
+            // error_log(var_export($requestedList, TRUE));
+            $approvedScopeList = self::validateAndSortScope($approvedScope->scope);
+            // error_log(var_export($approvedScopeList, TRUE));
             $alreadyApproved = TRUE;
             foreach($requestedList as $c) {
                 if(!in_array($c, $approvedScopeList)) {
@@ -119,7 +117,14 @@ class AuthorizationServer {
             }
         }
 
-        $authorizeNonce = $this->_storage->generateAuthorizeNonce($r->get('client_id'), $this->_resourceOwner);
+        // FIXME: the scope is not always coming from the GET, but can also 
+        // come from the POST when this method is called from the approve
+        // method? How to deal with this? Maybe we should force it to be the
+        // same always?
+
+        // if this is called from the approve  method it MUST already be 
+        // approved, so it can never reach here?
+        $authorizeNonce = $this->_storage->generateAuthorizeNonce($r->get('client_id'), $this->_resourceOwner, $r->get('scope'));
         return array ("action" => "ask_approval", "authorize_nonce" => $authorizeNonce);
     }
 
@@ -127,7 +132,7 @@ class AuthorizationServer {
         // FIXME: don't allow different scope in post, make sure what is shown is actually also posted!! deal with different scope in FORM post!
         // FIXME: make sure state is retained and can't be modified!
 
-        $authorizeNonce = $this->_storage->getAuthorizeNonce($r->get('client_id'), $this->_resourceOwner, $r->post('authorize_nonce'));
+        $authorizeNonce = $this->_storage->getAuthorizeNonce($r->get('client_id'), $this->_resourceOwner, $r->get('scope'), $r->post('authorize_nonce'));
         if(FALSE === $authorizeNonce) { 
             throw new Exception("authorize nonce was not found");
         }
@@ -135,8 +140,6 @@ class AuthorizationServer {
         $client = $this->_storage->getClient($r->get('client_id'));
 
         if("Approve" === $r->post('approval')) {
-            // r->get('scope') should really be the results of the POST form 
-            // submit, not of the (hopefully) initial authorize request...
             $this->_storage->storeApprovedScope($r->get('client_id'), $this->_resourceOwner, $r->get('scope'));
             return $this->authorize($r);
         } else {
@@ -180,6 +183,21 @@ class AuthorizationServer {
             throw new Exception("invalid_token: the access token expired");
         }
         return $token;
+    }
+
+    public static function validateAndSortScope($scope, $toString = FALSE) {
+        // scope       = scope-token *( SP scope-token )
+        // scope-token = 1*( %x21 / %x23-5B / %x5D-7E )
+        // FIXME: regexp fail? the first + should not be there?
+        $scopeRegExp = '/^(?:\x21|[\x23-\x5B]|[\x5D-\x7E])+(?:\x20(?:\x21|[\x23-\x5B]|[\x5D-\x7E])+)*$/';
+        $result = preg_match($scopeRegExp, $scope);
+		if($result === 1) { 
+            // valid scope
+            $requestedScopeList = explode(" ", $scope);
+            sort($requestedScopeList, SORT_STRING);
+            return ($toString) ? implode(" ", $requestedScopeList) : $requestedScopeList;
+        }
+        return FALSE;
     }
 
 }

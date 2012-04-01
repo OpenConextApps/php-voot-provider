@@ -40,23 +40,16 @@ $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
 
             echo '<html><head><title>Authorization</title></head><body>' . PHP_EOL;
             echo '<h2>Authorization Requested</h2>' . PHP_EOL;
-            echo '<p>The application <strong>' . $app->request()->get('client_id') . '</strong> wants to access your resources.</p>' . PHP_EOL;
-            echo '<form method="post" action="">' . PHP_EOL;
+            echo '<p>The application <strong>' . $app->request()->get('client_id') . '</strong> wants access to your group membership details with the following permissions:' . PHP_EOL;
             if(NULL !== $app->request()->get('scope')) {
-                echo '<p>The following permissions are requested:' . PHP_EOL;
                 echo '<ul>' . PHP_EOL;
-                foreach($o->getSupportedScopes() as $s) {
-                    echo '<li style="list-style: none;"><label><input type="checkbox" name="scope[]" ';
-                    if(in_array($s, explode(" ", $app->request()->get('scope')))) {
-                        echo ' disabled="disabled" checked="checked" ';
-                    } else {
-                        echo ' disabled="disabled" ';
-                    }
-                    echo ' value="' . $s .'">' . $s . '</label></li>' . PHP_EOL;
+                foreach(AuthorizationServer::validateAndSortScope($app->request()->get('scope')) as $s) {
+                    echo '<li>' . $s . '</li>' . PHP_EOL;
                 }
                 echo '</ul>' . PHP_EOL;
-                echo 'You can either approve or reject the request.</p>' . PHP_EOL;
             }
+            echo 'You can either approve or reject the request.</p>' . PHP_EOL;
+            echo '<form method="post" action="">' . PHP_EOL;
             echo '<input type="submit" name="approval" value="Approve">' . PHP_EOL;
             echo '<input type="submit" name="approval" value="Deny">' . PHP_EOL;
             echo '<input type="hidden" name="authorize_nonce" value="' . $result['authorize_nonce'] . '">' . PHP_EOL;
@@ -85,6 +78,8 @@ $app->post('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
     $o = new AuthorizationServer($oauthStorage, $resourceOwner);
     $o->setSupportedScopes(array("read","write"));
     $result = $o->approve($app->request());
+    
+    // error_log(var_export($result, TRUE));
     $app->redirect($result['url']);
 });
 

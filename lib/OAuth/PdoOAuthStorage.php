@@ -26,10 +26,11 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->execute();
     }
 
-    public function getApprovedScope($clientId, $resourceOwner) {
-        $stmt = $this->_pdo->prepare("SELECT * FROM Approval WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id");
+    public function getApprovedScope($clientId, $resourceOwner, $scope) {
+        $stmt = $this->_pdo->prepare("SELECT * FROM Approval WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id AND scope = :scope");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
+        $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
         $result = $stmt->execute();
         if (FALSE === $result) {
             return FALSE;
@@ -59,29 +60,27 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->fetch(PDO::FETCH_OBJ);        
     }
 
-    public function generateAuthorizeNonce($clientId, $resourceOwner) {
+    public function generateAuthorizeNonce($clientId, $resourceOwner, $scope) {
         $authorizeNonce = $this->_randomHex(16);
-        $stmt = $this->_pdo->prepare("INSERT INTO AuthorizeNonce (client_id, resource_owner_id, authorize_nonce) VALUES(:client_id, :resource_owner_id, :authorize_nonce)");
+        $stmt = $this->_pdo->prepare("INSERT INTO AuthorizeNonce (client_id, resource_owner_id, scope, authorize_nonce) VALUES(:client_id, :resource_owner_id, :scope, :authorize_nonce)");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
+        $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
         $stmt->bindValue(":authorize_nonce", $authorizeNonce, PDO::PARAM_STR);
         return ($stmt->execute()) ? $authorizeNonce : FALSE;
     }
 
-    public function getAuthorizeNonce($clientId, $resourceOwner, $authorizeNonce) {
-        // FIXME: this should probably be a DELETE query that returns TRUE if 
-        // the row was deleted and FALSE when not.
-
-        $stmt = $this->_pdo->prepare("SELECT * FROM AuthorizeNonce WHERE client_id = :client_id AND authorize_nonce = :authorize_nonce AND resource_owner_id = :resource_owner_id");
+    public function getAuthorizeNonce($clientId, $resourceOwner, $scope, $authorizeNonce) {
+        $stmt = $this->_pdo->prepare("DELETE FROM AuthorizeNonce WHERE client_id = :client_id AND scope = :scope AND authorize_nonce = :authorize_nonce AND resource_owner_id = :resource_owner_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
+        $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
         $stmt->bindValue(":authorize_nonce", $authorizeNonce, PDO::PARAM_STR);
-    
         $result = $stmt->execute();
         if (FALSE === $result) {
             return FALSE;
         }
-        return $stmt->fetch(PDO::FETCH_OBJ);
+        return 1 === $stmt->rowCount();
     }
 
     private function _randomHex($len = 16) {
