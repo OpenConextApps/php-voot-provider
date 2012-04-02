@@ -1,6 +1,6 @@
 <?php
 
-class LdapVootStorage {
+class LdapVootStorage implements IVootStorage {
 
     private $_ldapConnection;
     private $_ldapGroupsDn;
@@ -38,4 +38,5 @@ class LdapVootStorage {
 // $l = new LdapVootStorage('ldap://localhost', 'ou=Groups,dc=wind,dc=surfnet,dc=nl');
 // echo json_encode($l->isMemberOf('fkooman'));
 
+// ldapsearch -H ldap://localhost -b 'ou=Groups,dc=wind,dc=surfnet,dc=nl' -x '(uniqueMember=*fkooman*)'
 ?>
