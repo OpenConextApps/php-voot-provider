@@ -4,7 +4,16 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>VOOT OAuth JavaScript Client</title>
-    <script type="text/javascript" charset="utf-8" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../ext/js/jquery.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../ext/js/jsrender.js"></script>
+
+    <script id="groupTemplate" type="text/x-jsrender">
+        <tr>
+		    <td><a href="#{{:id}}" title="{{:description}}">{{:title}}</a></td><td>{{:voot_membership_role}}</td>
+        </tr>
+    </script>
+
+
     <script type="text/javascript" charset="utf-8">
     $(function () {
         var extractToken = function(hash) {
@@ -22,9 +31,7 @@
 
         var token = extractToken(document.location.hash);
         if (token) {
-            $('div.authenticated').show();
-            $('span.token').text(token);
-
+            $('div.authorized').show();
             $.ajax({
                 url: settings.resourceUri,
                 beforeSend: function (xhr) {
@@ -32,20 +39,21 @@
                     xhr.setRequestHeader('Accept',        "application/json");
                 },
                 success: function (response) {
-                    var container = $('span.user');
                     if (response) {
-                        container.text(JSON.stringify(response));
+                    	$( "#groupList" ).html(
+		                    $( "#groupTemplate" ).render( response.entry )
+                    	);
                     } else {
-                        container.text("An error occurred.");
+                        alert("An error occurred.");
                     }
                 }
             });
         } else {
-            $('div.authenticate').show();
+            $('div.authorize').show();
             var authUrl = settings.authorizeUri + "?response_type=token" + 
                 "&client_id=" + settings.clientId + 
                 "&redirect_uri=" + settings.redirectUri + 
-		"&scope=read";
+                "&scope=read";
             $("a.connect").attr("href", authUrl);
         }
     });
@@ -54,24 +62,44 @@
       .hidden {
         display: none;
       }
+      h1 { 
+            text-align: center;
+      }
+      table {
+            border: 1px solid #000;
+            width: 75%;
+            margin: 0 auto;
+      }
+      tr.header {
+            color: #fff;
+            background-color: #222;
+            text-align: left;
+      }
+      tr {
+            color: #000;
+            background-color: #eee;
+      }
+      th {
+            padding: 5px;
+      }
+      td {
+            padding: 0 10px;
+      }
     </style>
   </head>
 
   <body>
-    <div class="authenticate hidden">
+    <div class="authorize hidden">
       <a class="connect" href="#">Connect to VOOT provider</a>
     </div>
 
-    <div class="authenticated hidden">
-      <h1>Your token</h1>
-      <p>
-        <span class="token">[no token]</span>
-      </p>
-
-      <h1>Group Membership</h1>
-      <p>
-        <span class="user">[no groups]</span>
-      </p>
+    <div class="authorized hidden">
+    <h1>Group Membership</h1>
+        <table>
+            <tr class="header"><th>Name</th><th>Role</th></tr>
+        	<tbody id="groupList"></tbody>
+        </table>
     </div>
+
   </body>
 </html>
