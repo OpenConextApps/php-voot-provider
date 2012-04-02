@@ -63,7 +63,7 @@ class PdoVootStorage implements IVootStorage {
             $count = $totalResults;
         }
 
-        $stmt = $this->_pdo->prepare("SELECT m.id, r.voot_membership_role FROM membership m, groups g, roles r WHERE g.id = m.groupid AND r.id=m.role AND g.id=:groupId LIMIT :startIndex, :count");
+        $stmt = $this->_pdo->prepare("SELECT m.id, r.voot_membership_role FROM membership m, groups g, roles r WHERE g.id = m.groupid AND r.id=m.role AND g.id=:groupId ORDER BY r.id LIMIT :startIndex, :count");
         $stmt->bindValue(":groupId", $groupId, PDO::PARAM_STR);
         $stmt->bindValue(":startIndex", $startIndex, PDO::PARAM_INT);
         $stmt->bindValue(":count", $count, PDO::PARAM_INT);
