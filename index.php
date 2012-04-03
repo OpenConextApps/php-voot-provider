@@ -22,7 +22,7 @@ if($vootStorageBackend === "PdoVootStorage") {
     require_once "lib/Voot/LdapVootStorage.php";
     $vootStorage = new LdapVootStorage($config['vootLdap']['host'], $config['vootLdap']['groupDn']);
 } else {
-    $app->halt("unsupported backend");
+    $app->halt("unsupported voot backend");
 }
 
 $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
@@ -31,10 +31,16 @@ $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
     require_once "lib/OAuth/$authMech.php";
     $ro = new $authMech();
     if($authMech === "SspResourceOwner") {
+        $ro = new $authMech();
         $ro->setPath($config['oauthSsp']['sspPath']);
         $ro->setAuthSource($config['oauthSsp']['authSource']);
         $ro->setResourceOwnerIdAttributeName($config['oauthSsp']['resourceOwnerIdAttributeName']);
-    }    
+    }else if($authMech === "DummyResourceOwner") {
+        $ro = new $authMech($config['oauthDummy']['resourceOwnerId'], $config['oauthDummy']['resourceOwnerDisplayName']);
+    } else {
+        $app->halt("unsupported authentication backend");
+    }
+    
     $resourceOwner = $ro->getResourceOwnerId();
 
     $o = new AuthorizationServer($oauthStorage, $resourceOwner);
@@ -76,10 +82,16 @@ $app->post('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
     require_once "lib/OAuth/$authMech.php";
     $ro = new $authMech();
     if($authMech === "SspResourceOwner") {
+        $ro = new $authMech();
         $ro->setPath($config['oauthSsp']['sspPath']);
         $ro->setAuthSource($config['oauthSsp']['authSource']);
         $ro->setResourceOwnerIdAttributeName($config['oauthSsp']['resourceOwnerIdAttributeName']);
-    }    
+    }else if($authMech === "DummyResourceOwner") {
+        $ro = new $authMech($config['oauthDummy']['resourceOwnerId'], $config['oauthDummy']['resourceOwnerDisplayName']);
+    } else {
+        $app->halt("unsupported authentication backend");
+    }
+   
     $resourceOwner = $ro->getResourceOwnerId();
 
     $o = new AuthorizationServer($oauthStorage, $resourceOwner);

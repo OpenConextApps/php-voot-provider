@@ -2,12 +2,20 @@
 
 class DummyResourceOwner implements IResourceOwner {
 
+    private $_resourceOwnerId;
+    private $_resourceOwnerDisplayName;
+
+    public function __construct($resourceOwnerId = "johndoe", $resourceOwnerDisplayName = "John Doe") {
+        $this->_resourceOwnerId = $resourceOwnerId;
+        $this->_resourceOwnerDisplayName = $resourceOwnerDisplayName;
+    }
+
     public function getResourceOwnerId() {
-        return "urn:collab:person:surfnet.nl:francois";
+        return $this->_resourceOwnerId;
     }
 
     public function getResourceOwnerDisplayName() {
-        return "François Kooman";
+        $this->_resourceOwnerDisplayName;
     }
 
 }
