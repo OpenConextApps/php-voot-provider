@@ -19,6 +19,7 @@ if($vootStorageBackend === "PdoVootStorage") {
     $vootDsn = 'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'voot.sqlite';
     $vootStorage = new PdoVootStorage(new PDO($vootDsn));
 } else if($vootStorageBackend === "LdapVootStorage") {
+    require_once "lib/Voot/LdapVootStorage.php";
     $vootStorage = new LdapVootStorage($config['vootLdap']['host'], $config['vootLdap']['groupDn']);
 } else {
     $app->halt("unsupported backend");
