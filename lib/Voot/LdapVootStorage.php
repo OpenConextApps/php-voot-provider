@@ -3,12 +3,11 @@
 class LdapVootStorage implements IVootStorage {
 
     private $_ldapConnection;
-    private $_ldapGroupsDn;
+    private $_ldapGroupDn;
 
-    public function __construct($ldapHost, $ldapGroupsDn, $ldapPeopleDn) {
+    public function __construct($ldapHost, $ldapGroupDn) {
         $this->_ldapConnection = ldap_connect($ldapHost);
-        $this->_ldapGroupsDn = $ldapGroupsDn;
-        $this->_ldapPeopleDn = $ldapPeopleDn;
+        $this->_ldapGroupDn = $ldapGroupDn;
     }
 
     public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = null) {
@@ -16,9 +15,8 @@ class LdapVootStorage implements IVootStorage {
     }
 
     public function isMemberOf($resourceOwnerId, $startIndex = null, $count = null) {
-        $resourceOwnerId = 'Francois Kooman';
-        // $filter = '(uniqueMember=uid=' . $resourceOwnerId . ',' . $this->_ldapPeopleDn . ')';        
-        $filter = '(uniqueMember=cn=' . $resourceOwnerId . ',' . $this->_ldapPeopleDn . ')';
+        $filter = '(uniqueMember=uid=' . $resourceOwnerId . ',' . $this->_ldapPeopleDn . ')';        
+        // $filter = '(uniqueMember=cn=' . $resourceOwnerId . ',' . $this->_ldapPeopleDn . ')';
 
         $query = ldap_search($this->_ldapConnection, $this->_ldapGroupsDn, $filter);
         $groups = array();

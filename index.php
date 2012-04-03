@@ -2,9 +2,7 @@
 require_once 'ext/Slim/Slim/Slim.php';
 require_once 'lib/OAuth/AuthorizationServer.php';
 require_once 'lib/OAuth/PdoOAuthStorage.php';
-require_once 'lib/OAuth/DummyResourceOwner.php';
 require_once 'lib/Voot/Provider.php';
-require_once 'lib/Voot/PdoVootStorage.php';
 
 $app = new Slim(array(
     'session.handler' => null
@@ -15,8 +13,16 @@ $config = parse_ini_file("config" . DIRECTORY_SEPARATOR . "voot.ini", TRUE);
 $oauthDsn = 'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'oauth2.sqlite';
 $oauthStorage = new PdoOAuthStorage(new PDO($oauthDsn));
 
-$vootDsn = 'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'voot.sqlite';
-$vootStorage = new PdoVootStorage(new PDO($vootDsn));
+$vootStorageBackend = $config['voot']['storageBackend'];
+if($vootStorageBackend === "PdoVootStorage") {
+    require_once "lib/Voot/PdoVootStorage.php";
+    $vootDsn = 'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'voot.sqlite';
+    $vootStorage = new PdoVootStorage(new PDO($vootDsn));
+} else if($vootStorageBackend === "LdapVootStorage") {
+    $vootStorage = new LdapVootStorage($config['vootLdap']['host'], $config['vootLdap']['groupDn']);
+} else {
+    $app->halt("unsupported backend");
+}
 
 $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
 

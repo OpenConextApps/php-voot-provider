@@ -53,6 +53,10 @@ This is an example for a search based on `cn`:
 
     $ ldapsearch -H ldap://directory.surfnet.nl -b 'ou=Groups,ou=Office,dc=surfnet,dc=nl' -x '(uniqueMember=cn=Francois Kooman,ou=Persons,ou=Office,dc=surfnet,dc=nl)' cn
 
+An example for Microsoft Active Directory (needs LDAP bind):
+
+    $ ldapsearch -H ldap://adfs-sp.aai.surfnet.nl -b 'cn=Users,dc=demo,dc=sharepoint,dc=aai,dc=surfnet,dc=nl' -D 'cn=Administrator,cn=Users,dc=demo,dc=sharepoint,dc=aai,dc=surfnet,dc=nl' -w secret "(samAccountName=fkooman)" memberOf
+
 This can be configured in `config/voot.ini` as well.
 
 # Configuring OAuth Consumers
