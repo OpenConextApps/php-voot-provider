@@ -5,9 +5,10 @@ class LdapVootStorage implements IVootStorage {
     private $_ldapConnection;
     private $_ldapGroupsDn;
 
-    public function __construct($ldapHost, $ldapGroupsDn) {
+    public function __construct($ldapHost, $ldapGroupsDn, $ldapPeopleDn) {
         $this->_ldapConnection = ldap_connect($ldapHost);
         $this->_ldapGroupsDn = $ldapGroupsDn;
+        $this->_ldapPeopleDn = $ldapPeopleDn;
     }
 
     public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = null) {
@@ -15,10 +16,11 @@ class LdapVootStorage implements IVootStorage {
     }
 
     public function isMemberOf($resourceOwnerId, $startIndex = null, $count = null) {
-        // Example ldapHost: ldap://localhost
-        // Example ldapGroupsDn: ou=Groups,dc=wind,dc=surfnet,dc=nl
-        // This works for the Fedora Directory Server
-        $query = ldap_search($this->_ldapConnection, $this->_ldapGroupsDn, '(uniqueMember=*' . $resourceOwnerId . '*)');
+        $resourceOwnerId = 'Francois Kooman';
+        // $filter = '(uniqueMember=uid=' . $resourceOwnerId . ',' . $this->_ldapPeopleDn . ')';        
+        $filter = '(uniqueMember=cn=' . $resourceOwnerId . ',' . $this->_ldapPeopleDn . ')';
+
+        $query = ldap_search($this->_ldapConnection, $this->_ldapGroupsDn, $filter);
         $groups = array();
         for ($entryID = ldap_first_entry($this->_ldapConnection,$query); $entryID !== FALSE; $entryID = ldap_next_entry($this->_ldapConnection, $entryID)) {
             $values = ldap_get_values($this->_ldapConnection, $entryID, 'cn');
@@ -35,8 +37,4 @@ class LdapVootStorage implements IVootStorage {
     }
 }
 
-// $l = new LdapVootStorage('ldap://localhost', 'ou=Groups,dc=wind,dc=surfnet,dc=nl');
-// echo json_encode($l->isMemberOf('fkooman'));
-
-// ldapsearch -H ldap://localhost -b 'ou=Groups,dc=wind,dc=surfnet,dc=nl' -x '(uniqueMember=*fkooman*)'
 ?>
