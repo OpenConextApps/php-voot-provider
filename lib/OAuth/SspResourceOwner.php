@@ -7,7 +7,7 @@ class SspResourceOwner implements IResourceOwner {
 
     public function __construct(array $config) {
         $this->_config = $config;
-        $this->_config['sspPath'] += DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . '_autoload.php';
+        $this->_config['sspPath'] .= DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . '_autoload.php';
         if(!file_exists($this->_config['sspPath'])) {
             throw new Exception("invalid path to simpleSAMLphp");
         }
@@ -28,7 +28,7 @@ class SspResourceOwner implements IResourceOwner {
         if(!array_key_exists($this->_config['resourceOwnerIdAttributeName'], $this->_resourceOwnerAttributes)) {
             $this->_performAuthentication();
         }
-        return $this->_resourceOwnerAttributes[$this->_config['resourceOwnerIdAttributeName'][0];
+        return $this->_resourceOwnerAttributes[$this->_config['resourceOwnerIdAttributeName']][0];
     }
 
     public function getResourceOwnerDisplayName() {
