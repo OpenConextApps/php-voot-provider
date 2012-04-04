@@ -20,12 +20,15 @@ class LdapVootStorage implements IVootStorage {
         $query = ldap_search($this->_ldapConnection, $this->_config['baseDn'], $filter);
         $groups = array();
         for ($entryID = ldap_first_entry($this->_ldapConnection,$query); $entryID !== FALSE; $entryID = ldap_next_entry($this->_ldapConnection, $entryID)) {
-            $values = ldap_get_values($this->_ldapConnection, $entryID, 'cn');
-            $groupName = $values[0];
+            $cnValue = ldap_get_values($this->_ldapConnection, $entryID, 'cn');
+            $groupName = $cnValue[0];
+            $descValue = ldap_get_values($this->_ldapConnection, $entryID, 'description');
+            $description = $descValue[0];
+
             // FIXME: pretty sure the full DN is not appropriate, maybe strip some stuff there...
             // FIXME: what to do with membership role? everyone is just a member for now...
             $groupId = ldap_get_dn($this->_ldapConnection, $entryID);
-            array_push($groups, array ( 'id' => $groupId, 'title' => $groupName, 'voot_membership_role' => 'member'));
+            array_push($groups, array ( 'id' => urlencode($groupId), 'title' => $groupName, 'description' => $description, 'voot_membership_role' => 'member'));
         }
         // FIXME: need to limit query somehow...
         $startIndex = 0;
