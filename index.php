@@ -1,7 +1,6 @@
 <?php
 require_once 'ext/Slim/Slim/Slim.php';
 require_once 'lib/OAuth/AuthorizationServer.php';
-require_once 'lib/OAuth/PdoOAuthStorage.php';
 require_once 'lib/Voot/Provider.php';
 
 $app = new Slim(array(
@@ -10,37 +9,19 @@ $app = new Slim(array(
 
 $config = parse_ini_file("config" . DIRECTORY_SEPARATOR . "voot.ini", TRUE);
 
-$oauthDsn = 'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'oauth2.sqlite';
-$oauthStorage = new PdoOAuthStorage(new PDO($oauthDsn));
+$oauthStorageBackend = $config['oauth']['storageBackend'];
+require_once "lib/OAuth/$oauthStorageBackend.php";
+$oauthStorage = new $oauthStorageBackend($config[$oauthStorageBackend]);
 
 $vootStorageBackend = $config['voot']['storageBackend'];
-if($vootStorageBackend === "PdoVootStorage") {
-    require_once "lib/Voot/PdoVootStorage.php";
-    $vootDsn = 'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'voot.sqlite';
-    $vootStorage = new PdoVootStorage(new PDO($vootDsn));
-} else if($vootStorageBackend === "LdapVootStorage") {
-    require_once "lib/Voot/LdapVootStorage.php";
-    $vootStorage = new LdapVootStorage($config['vootLdap']['host'], $config['vootLdap']['groupDn']);
-} else {
-    $app->halt("unsupported voot backend");
-}
+require_once "lib/Voot/$vootStorageBackend.php";
+$vootStorage = new $vootStorageBackend($config[$vootStorageBackend]);
 
 $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
 
     $authMech = $config['oauth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
-    $ro = new $authMech();
-    if($authMech === "SspResourceOwner") {
-        $ro = new $authMech();
-        $ro->setPath($config['oauthSsp']['sspPath']);
-        $ro->setAuthSource($config['oauthSsp']['authSource']);
-        $ro->setResourceOwnerIdAttributeName($config['oauthSsp']['resourceOwnerIdAttributeName']);
-    }else if($authMech === "DummyResourceOwner") {
-        $ro = new $authMech($config['oauthDummy']['resourceOwnerId'], $config['oauthDummy']['resourceOwnerDisplayName']);
-    } else {
-        $app->halt("unsupported authentication backend");
-    }
-    
+    $ro = new $authMech($config[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
 
     $o = new AuthorizationServer($oauthStorage, $resourceOwner);
@@ -80,18 +61,7 @@ $app->post('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
 
     $authMech = $config['oauth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
-    $ro = new $authMech();
-    if($authMech === "SspResourceOwner") {
-        $ro = new $authMech();
-        $ro->setPath($config['oauthSsp']['sspPath']);
-        $ro->setAuthSource($config['oauthSsp']['authSource']);
-        $ro->setResourceOwnerIdAttributeName($config['oauthSsp']['resourceOwnerIdAttributeName']);
-    }else if($authMech === "DummyResourceOwner") {
-        $ro = new $authMech($config['oauthDummy']['resourceOwnerId'], $config['oauthDummy']['resourceOwnerDisplayName']);
-    } else {
-        $app->halt("unsupported authentication backend");
-    }
-   
+    $ro = new $authMech($config[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
 
     $o = new AuthorizationServer($oauthStorage, $resourceOwner);

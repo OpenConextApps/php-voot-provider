@@ -5,26 +5,30 @@
 storageBackend = "PdoVootStorage"
 ;storageBackend = "LdapVootStorage"
 
-[vootPdo]
+[PdoVootStorage]
+dsn = "sqlite:/var/www/html/voot/data/voot.sqlite";
 
-
-[vootLdap]
-host = "ldap://localhost"
-groupDn = "ou=Groups,dc=wind,dc=surfnet,dc=nl"
+[LdapVootStorage]
+uri = "ldap://localhost"
+baseDn = "ou=Groups,dc=wind,dc=surfnet,dc=nl"
 
 ; OAuth Authorization Server configuration
 [oauth]
+storageBackend = "PdoOAuthStorage"
+
 authenticationMechanism = "DummyResourceOwner"
 ;authenticationMechanism = "SspResourceOwner"
 
+[PdoOAuthStorage]
+dsn = "sqlite:/var/www/html/voot/data/oauth2.sqlite";
 
 ; dummy configuration
-[oauthDummy]
+[DummyResourceOwner]
 resourceOwnerId = "fkooman"
 resourceOwnerDisplayName = "François Kooman"
 
 ; simpleSAMLphp configuration
-[oauthSsp]
+[SspResourceOwner]
 sspPath = "/var/simplesamlphp/lib"
 authSource = "default-sp"
 resourceOwnerIdAttributeName = "uid"
