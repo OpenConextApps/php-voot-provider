@@ -9,8 +9,21 @@ storageBackend = "PdoVootStorage"
 dsn = "sqlite:/var/www/html/voot/data/voot.sqlite";
 
 [LdapVootStorage]
+; OpenLDAP / Fedora Directory Server
 uri = "ldap://localhost"
-baseDn = "ou=Groups,dc=wind,dc=surfnet,dc=nl"
+peopleDn = "ou=People,dc=example,dc=org"
+groupDn = "ou=Groups,dc=example,dc=org"
+userIdAttribute = "uid"
+memberAttribute = "uniqueMember"
+
+; Microsoft Active Directory
+;uri = "ldap://ad.example.org"
+;bindDn = "cn=Administrator,cn=Users,dc=example,dc=org"
+;bindPass = "s3cr3t"
+;peopleDn = "cn=Users,dc=example,dc=org"
+;groupDn = "cn=Users,dc=example,dc=org"
+;userIdAttribute = "samAccountName"
+;memberAttribute = "member"
 
 ; OAuth Authorization Server configuration
 [oauth]

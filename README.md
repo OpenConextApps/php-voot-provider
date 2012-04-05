@@ -47,17 +47,33 @@ It depends on your LDAP server configuration how to configure this. It is
 always helpful to start out with some `ldapsearch` commands to see what will 
 work for your setup. Below is an example based on searching for `uid`:
 
-    $ ldapsearch -H ldap://localhost -b 'ou=Groups,dc=wind,dc=surfnet,dc=nl' -x '(uniqueMember=uid=fkooman,ou=People,dc=wind,dc=surfnet,dc=nl)' cn
+    $ ldapsearch -x -H ldap://localhost -b "ou=People,dc=example,dc=org" "(uid=fkooman)" dn
 
-This is an example for a search based on `cn`:
+This will retrieve the `distinguishedName` (DN) of that entry which can then in
+turn be used to query for the users's groups:
 
-    $ ldapsearch -H ldap://directory.surfnet.nl -b 'ou=Groups,ou=Office,dc=surfnet,dc=nl' -x '(uniqueMember=cn=Francois Kooman,ou=Persons,ou=Office,dc=surfnet,dc=nl)' cn
+    $ ldapsearch -x -H ldap://localhost -b "ou=Groups,dc=example,dc=org" "(uniqueMember=uid=fkooman,ou=People,dc=example,dc=org)" cn description
 
-An example for Microsoft Active Directory (needs LDAP bind):
+This works as well on Microsoft Active Directory servers (it does need a "bind" 
+though in the default configuration):
 
-    $ ldapsearch -H ldap://adfs-sp.aai.surfnet.nl -b 'cn=Users,dc=demo,dc=sharepoint,dc=aai,dc=surfnet,dc=nl' -D 'cn=Administrator,cn=Users,dc=demo,dc=sharepoint,dc=aai,dc=surfnet,dc=nl' -w secret "(samAccountName=fkooman)" memberOf
+    $ ldapsearch -H ldap://ad.example.org -b "cn=Users,dc=example,dc=org" -D "cn=Administrator,cn=Users,dc=example,dc=org" -w s3cr3t "(samAccountName=fkooman)" dn
 
-This can be configured in `config/voot.ini` as well.
+Now to fetch the groups for the user:
+
+    $ ldapsearch -H ldap://ad.example.org -b "cn=Users,dc=example,dc=org" -D "cn=Administrator,cn=Users,dc=example,dc=org" -w s3cr3t "(member=CN=François Kooman,CN=Users,DC=example,DC=org)" cn description
+
+This can all be configured in `config/voot.ini`.
+
+To test the configuration of your LDAP settings it is possible to use the 
+`LdapTest.php` script in the `docs/` directory. First configure LDAP in 
+`config/voot.ini` and then run the script like this:
+
+    $ php docs/LdapTest.php fkooman
+
+This should return an `array` with the group information. If it does not work,
+make sure you match the configuration values with the `ldapsearch` commands 
+that do work.
 
 # Configuring OAuth Consumers
 
@@ -65,6 +81,8 @@ The default OAuth token store contains one OAuth consumer. To add your own you
 can use the SQLite command line tool to add some:
 
     $ echo "INSERT INTO Client VALUES('client_id',NULL,'http://host.tld/redirect_uri','public');" | sqlite3 data/oauth2.sqlite
+
+In the future a web application will be written for this.
 
 # Testing
 
