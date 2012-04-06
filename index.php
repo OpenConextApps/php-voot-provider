@@ -24,9 +24,9 @@ $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
     $ro = new $authMech($config[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
 
-    $o = new AuthorizationServer($oauthStorage, $resourceOwner);
+    $o = new AuthorizationServer($oauthStorage);
     $o->setSupportedScopes(array("read","write"));
-    $result = $o->authorize($app->request());
+    $result = $o->authorize($resourceOwner, $app->request());
     if($result['action'] === 'ask_approval') { 
         // we know that all request parameters we used below are acceptable because they were verified by the authorize method.
 
@@ -50,11 +50,8 @@ $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
             echo '</form>' . PHP_EOL;
             echo '</body></html>' . PHP_EOL;
     } else {
-
         $app->redirect($result['url']);
-
     }
-
 });
 
 $app->post('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
@@ -64,9 +61,9 @@ $app->post('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
     $ro = new $authMech($config[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
 
-    $o = new AuthorizationServer($oauthStorage, $resourceOwner);
+    $o = new AuthorizationServer($oauthStorage);
     $o->setSupportedScopes(array("read","write"));
-    $result = $o->approve($app->request());
+    $result = $o->approve($resourceOwner, $app->request());
     
     // error_log(var_export($result, TRUE));
     $app->redirect($result['url']);
@@ -76,9 +73,7 @@ $app->get('/groups/:name', function ($name) use ($app, $oauthStorage, $vootStora
     // enable CORS (http://enable-cors.org)
     $app->response()->header("Access-Control-Allow-Origin", "*");
 
-    // FIXME: fix verify to not require instantiation of the AuthorizationServer
-    $resourceOwner = NULL;
-    $o = new AuthorizationServer($oauthStorage, $resourceOwner);
+    $o = new AuthorizationServer($oauthStorage);
     $o->setSupportedScopes(array("read","write"));
 
     $result = $o->verify($app->request());
@@ -94,9 +89,7 @@ $app->get('/people/:name/:groupId', function ($name, $groupId) use ($app, $oauth
     // enable CORS (http://enable-cors.org)
     $app->response()->header("Access-Control-Allow-Origin", "*");
 
-    // FIXME: fix verify to not require instantiation of the AuthorizationServer
-    $resourceOwner = NULL;
-    $o = new AuthorizationServer($oauthStorage, $resourceOwner);
+    $o = new AuthorizationServer($oauthStorage);
     $o->setSupportedScopes(array("read","write"));
 
     $result = $o->verify($app->request());

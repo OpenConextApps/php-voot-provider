@@ -15,16 +15,17 @@ interface IOAuthStorage {
     public function getAuthorizeNonce     ($clientId, $resourceOwner, $scope, $authorizeNonce);
 }
 
+class OAuthException extends Exception {
+
+}
+
 class AuthorizationServer {
 
     private $_supportedScopes;
     private $_storage;
-    private $_authentication;
 
-    public function __construct(IOAuthStorage $storage, $resourceOwner) {
+    public function __construct(IOAuthStorage $storage) {
         $this->_storage = $storage;
-        $this->_resourceOwner = $resourceOwner;
-
         $this->_supportedScopes = array();
     }
  
@@ -36,7 +37,7 @@ class AuthorizationServer {
         return $this->_supportedScopes;
     }
 
-    public function authorize(Slim_Http_Request $r) {
+    public function authorize($resourceOwner, Slim_Http_Request $r) {
         if(NULL === $r->get('client_id')) {
             throw new OAuthException('client_id missing');
         }
@@ -91,7 +92,7 @@ class AuthorizationServer {
             }
         }
 
-        $approvedScope = $this->_storage->getApprovedScope($r->get('client_id'), $this->_resourceOwner, $r->get('scope'));
+        $approvedScope = $this->_storage->getApprovedScope($r->get('client_id'), $resourceOwner, $r->get('scope'));
 
         if(FALSE !== $approvedScope) {
             $requestedList = self::validateAndSortScope($r->get('scope'));
@@ -105,7 +106,7 @@ class AuthorizationServer {
                 }
             }  
             if ($alreadyApproved) {
-                $accessToken = $this->_storage->generateAccessToken($r->get('client_id'), $this->_resourceOwner, $r->get('scope'));
+                $accessToken = $this->_storage->generateAccessToken($r->get('client_id'), $resourceOwner, $r->get('scope'));
                 $token = array("access_token" => $accessToken, "expires_in" => 3600, "token_type" => "bearer");
                 if(NULL !== $r->get('scope')) {
                     $token += array ("scope" => $r->get('scope'));
@@ -120,19 +121,21 @@ class AuthorizationServer {
         // FIXME: the scope is not always coming from the GET, but can also 
         // come from the POST when this method is called from the approve
         // method? How to deal with this? Maybe we should force it to be the
-        // same always?
+        // same always????
+        
 
         // if this is called from the approve  method it MUST already be 
-        // approved, so it can never reach here?
-        $authorizeNonce = $this->_storage->generateAuthorizeNonce($r->get('client_id'), $this->_resourceOwner, $r->get('scope'));
+        // approved, so it can never reach here? so we can block POST requests 
+        // to ever reach this far?
+        $authorizeNonce = $this->_storage->generateAuthorizeNonce($r->get('client_id'), $resourceOwner, $r->get('scope'));
         return array ("action" => "ask_approval", "authorize_nonce" => $authorizeNonce);
     }
 
-    public function approve(Slim_Http_Request $r) {
+    public function approve($resourceOwner, Slim_Http_Request $r) {
         // FIXME: don't allow different scope in post, make sure what is shown is actually also posted!! deal with different scope in FORM post!
         // FIXME: make sure state is retained and can't be modified!
 
-        $authorizeNonce = $this->_storage->getAuthorizeNonce($r->get('client_id'), $this->_resourceOwner, $r->get('scope'), $r->post('authorize_nonce'));
+        $authorizeNonce = $this->_storage->getAuthorizeNonce($r->get('client_id'), $resourceOwner, $r->get('scope'), $r->post('authorize_nonce'));
         if(FALSE === $authorizeNonce) { 
             throw new Exception("authorize nonce was not found");
         }
@@ -140,8 +143,8 @@ class AuthorizationServer {
         $client = $this->_storage->getClient($r->get('client_id'));
 
         if("Approve" === $r->post('approval')) {
-            $this->_storage->storeApprovedScope($r->get('client_id'), $this->_resourceOwner, $r->get('scope'));
-            return $this->authorize($r);
+            $this->_storage->storeApprovedScope($r->get('client_id'), $resourceOwner, $r->get('scope'));
+            return $this->authorize($resourceOwner, $r);
         } else {
             $error = array ( "error" => "access_denied", "error_description" => "not authorized by resource owner");
             if(NULL !== $r->get('state')) {
@@ -199,10 +202,6 @@ class AuthorizationServer {
         }
         return FALSE;
     }
-
-}
-
-class OAuthException extends Exception {
 
 }
 
