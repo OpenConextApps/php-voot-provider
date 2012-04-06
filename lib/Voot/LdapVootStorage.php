@@ -18,13 +18,7 @@ class LdapVootStorage implements IVootStorage {
         }
     }
 
-    public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = null) {
-        return FALSE;
-    }
-
-    public function isMemberOf($resourceOwnerId, $startIndex = null, $count = null) {
-        $userGroups = array();
-
+    private function _getUserDn($resourceOwnerId) {
         /* get the user distinguishedName */
         $filter = '(' . $this->_config['userIdAttribute'] . '=' . $resourceOwnerId . ')';
         $query = ldap_search($this->_ldapConnection, $this->_config['peopleDn'], $filter);
@@ -41,7 +35,24 @@ class LdapVootStorage implements IVootStorage {
         if(FALSE === $userDn) {
             throw new Exception("unable to get user distinguishedName");
         }
+        return $userDn;
+    }
 
+    public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = null) {
+        $userDn = $this->_getUserDn($resourceOwnerId);
+    
+        // get all members from the group specified by $groupId
+        // get the uid from all members in the group
+
+        // this is NOT NICE! (expensive, n^2!)
+
+        return FALSE;
+    }
+
+    public function isMemberOf($resourceOwnerId, $startIndex = null, $count = null) {
+        $userDn = $this->_getUserDn($resourceOwnerId);
+
+        $userGroups = array();
         /* get the groups the user is a member of */
         $filter = '(' . $this->_config['memberAttribute'] . '=' . $userDn . ')';
         $query = ldap_search($this->_ldapConnection, $this->_config['groupDn'], $filter);
