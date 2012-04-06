@@ -21,22 +21,14 @@ class OAuthException extends Exception {
 
 class AuthorizationServer {
 
-    private $_supportedScopes;
     private $_storage;
+    private $_config;
 
-    public function __construct(IOAuthStorage $storage) {
+    public function __construct(IOAuthStorage $storage, array $config) {
         $this->_storage = $storage;
-        $this->_supportedScopes = array();
+        $this->_config = $config;
     }
  
-    public function setSupportedScopes(array $supportedScopes) {
-        $this->_supportedScopes = $supportedScopes;
-    }
-
-    public function getSupportedScopes() {
-        return $this->_supportedScopes;
-    }
-
     public function authorize($resourceOwner, Slim_Http_Request $r) {
         if(NULL === $r->get('client_id')) {
             throw new OAuthException('client_id missing');
@@ -74,7 +66,7 @@ class AuthorizationServer {
                 // valid scope
                 $requestedScopeList = explode(" ", $r->get('scope'));
                 foreach($requestedScopeList as $c) {
-                    if(!in_array($c, $this->_supportedScopes)) {
+                    if(!in_array($c, $this->_config['supportedScopes'])) {
                         $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported");
                         if(NULL !== $r->get('state')) {
                             $error += array ( "state" => $r->get('state'));
@@ -107,7 +99,7 @@ class AuthorizationServer {
             }  
             if ($alreadyApproved) {
                 $accessToken = $this->_storage->generateAccessToken($r->get('client_id'), $resourceOwner, $r->get('scope'));
-                $token = array("access_token" => $accessToken, "expires_in" => 3600, "token_type" => "bearer");
+                $token = array("access_token" => $accessToken, "expires_in" => $this->_config['accessTokenExpiry'], "token_type" => "bearer");
                 if(NULL !== $r->get('scope')) {
                     $token += array ("scope" => $r->get('scope'));
                 }

@@ -24,8 +24,8 @@ $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
     $ro = new $authMech($config[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
 
-    $o = new AuthorizationServer($oauthStorage);
-    $o->setSupportedScopes(array("read","write"));
+    $o = new AuthorizationServer($oauthStorage, $config['oauth']);
+
     $result = $o->authorize($resourceOwner, $app->request());
     if($result['action'] === 'ask_approval') { 
         // we know that all request parameters we used below are acceptable because they were verified by the authorize method.
@@ -61,20 +61,19 @@ $app->post('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
     $ro = new $authMech($config[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
 
-    $o = new AuthorizationServer($oauthStorage);
-    $o->setSupportedScopes(array("read","write"));
+    $o = new AuthorizationServer($oauthStorage, $config['oauth']);
     $result = $o->approve($resourceOwner, $app->request());
     
     // error_log(var_export($result, TRUE));
     $app->redirect($result['url']);
 });
 
-$app->get('/groups/:name', function ($name) use ($app, $oauthStorage, $vootStorage) {
+$app->get('/groups/:name', function ($name) use ($app, $config, $oauthStorage, $vootStorage) {
     // enable CORS (http://enable-cors.org)
     $app->response()->header("Access-Control-Allow-Origin", "*");
 
-    $o = new AuthorizationServer($oauthStorage);
-    $o->setSupportedScopes(array("read","write"));
+    $o = new AuthorizationServer($oauthStorage, $config['oauth']);
+
 
     $result = $o->verify($app->request());
 
@@ -85,12 +84,11 @@ $app->get('/groups/:name', function ($name) use ($app, $oauthStorage, $vootStora
 
 });
 
-$app->get('/people/:name/:groupId', function ($name, $groupId) use ($app, $oauthStorage, $vootStorage) {
+$app->get('/people/:name/:groupId', function ($name, $groupId) use ($app, $config, $oauthStorage, $vootStorage) {
     // enable CORS (http://enable-cors.org)
     $app->response()->header("Access-Control-Allow-Origin", "*");
 
-    $o = new AuthorizationServer($oauthStorage);
-    $o->setSupportedScopes(array("read","write"));
+    $o = new AuthorizationServer($oauthStorage, $config['oauth']);
 
     $result = $o->verify($app->request());
 

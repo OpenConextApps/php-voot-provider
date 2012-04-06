@@ -32,6 +32,13 @@ storageBackend = "PdoOAuthStorage"
 authenticationMechanism = "DummyResourceOwner"
 ;authenticationMechanism = "SspResourceOwner"
 
+; the scopes supported by the resource server
+supportedScopes[] = "read"
+supportedScopes[] = "write"
+
+; the access token expiry time (in seconds)
+accessTokenExpiry = 3600
+
 [PdoOAuthStorage]
 dsn = "sqlite:/var/www/html/voot/data/oauth2.sqlite";
 
