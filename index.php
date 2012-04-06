@@ -9,7 +9,7 @@ $app = new Slim(array(
 
 $config = parse_ini_file("config" . DIRECTORY_SEPARATOR . "voot.ini", TRUE);
 
-$oauthStorageBackend = $config['oauth']['storageBackend'];
+$oauthStorageBackend = $config['OAuth']['storageBackend'];
 require_once "lib/OAuth/$oauthStorageBackend.php";
 $oauthStorage = new $oauthStorageBackend($config[$oauthStorageBackend]);
 
@@ -19,12 +19,12 @@ $vootStorage = new $vootStorageBackend($config[$vootStorageBackend]);
 
 $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
 
-    $authMech = $config['oauth']['authenticationMechanism'];
+    $authMech = $config['OAuth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
     $ro = new $authMech($config[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
 
-    $o = new AuthorizationServer($oauthStorage, $config['oauth']);
+    $o = new AuthorizationServer($oauthStorage, $config['OAuth']);
 
     $result = $o->authorize($resourceOwner, $app->request());
     if($result['action'] === 'ask_approval') { 
@@ -56,12 +56,12 @@ $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
 
 $app->post('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
 
-    $authMech = $config['oauth']['authenticationMechanism'];
+    $authMech = $config['OAuth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
     $ro = new $authMech($config[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
 
-    $o = new AuthorizationServer($oauthStorage, $config['oauth']);
+    $o = new AuthorizationServer($oauthStorage, $config['OAuth']);
     $result = $o->approve($resourceOwner, $app->request());
     
     // error_log(var_export($result, TRUE));
@@ -72,7 +72,7 @@ $app->get('/groups/:name', function ($name) use ($app, $config, $oauthStorage, $
     // enable CORS (http://enable-cors.org)
     $app->response()->header("Access-Control-Allow-Origin", "*");
 
-    $o = new AuthorizationServer($oauthStorage, $config['oauth']);
+    $o = new AuthorizationServer($oauthStorage, $config['OAuth']);
 
 
     $result = $o->verify($app->request());
@@ -88,7 +88,7 @@ $app->get('/people/:name/:groupId', function ($name, $groupId) use ($app, $confi
     // enable CORS (http://enable-cors.org)
     $app->response()->header("Access-Control-Allow-Origin", "*");
 
-    $o = new AuthorizationServer($oauthStorage, $config['oauth']);
+    $o = new AuthorizationServer($oauthStorage, $config['OAuth']);
 
     $result = $o->verify($app->request());
 
