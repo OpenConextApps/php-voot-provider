@@ -29,13 +29,20 @@ $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
     // we know that all request parameters we used below are acceptable because they were verified by the authorize method.
     // Do something with case where no scope is requested!
     if($result['action'] === 'ask_approval') { 
+        $client = $oauthStorage->getClient($app->request()->get('client_id'));
         $app->render('askAuthorization.php', array (
-            'clientId' => $app->request()->get('client_id'), 
+            'clientId' => $client->id,
+            'clientName' => $client->name,
+            'redirectUri' => $client->redirect_uri,
             'scope' => $app->request()->get('scope'), 
             'authorizeNonce' => $result['authorize_nonce']));
     } else {
         $app->redirect($result['url']);
     }
+});
+
+$app->get('/oauth/deapprove', function() use ($app, $oauthStorage, $config) {
+    $app->render('listApprovals.php');
 });
 
 $app->post('/oauth/authorize', function () use ($app, $oauthStorage, $config) {

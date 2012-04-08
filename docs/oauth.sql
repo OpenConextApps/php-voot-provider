@@ -19,8 +19,9 @@ CREATE TABLE `AuthorizeNonce` (
 );
 CREATE TABLE `Client` (
   `id` text,
+  `name` text,
   `secret` text,
   `redirect_uri` text,
   `type` text
 );
-INSERT INTO `Client` VALUES ('voot',NULL,'http://localhost/voot/client/vootClient.html','public');
+INSERT INTO `Client` VALUES ('voot','VOOT Demo Client', NULL,'http://localhost/voot/client/vootClient.html','public');

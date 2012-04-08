@@ -3,31 +3,32 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <meta name="generator" content=
-  "HTML Tidy for Linux/x86 (vers 25 March 2009), see www.w3.org" />
-
-  <title>Authorization</title>
+  <title>Authorization Request</title>
+  <style>
+    body { font-size: 90%; font-family: sans-serif; width: 400px; margin: 20px auto; border: 1px solid #000; padding: 10px; border-radius: 10px; }
+    h2 { text-align: center; }
+    th { text-align: left; font-weight: normal; }
+    td { font-weight: bold; color: red; }
+    table { border: 1px solid #000; width: 400px; background-color: #ddd; border-radius: 10px; }
+    td,th { padding: 5px; }
+  </style>
 </head>
 
 <body>
-  <h2>Authorization Requested</h2>
+  <h2>Authorization Request</h2>
 
-  <p>The application <strong><?php echo $clientId; ?></strong> wants access to your
-  group membership details with the following permissions:</p>
+  <p>An application wants to access your group membership details.</p>
+    <table>
+        <tr><th>Application</th><td><?php echo $clientName; ?></td></tr>
+        <tr><th>Requested Permission(s)</th><td><?php echo $scope; ?></td></tr>
+    </table>
 
-  <?php if(NULL !== $scope){ ?>
-  <ul>
-    <?php foreach(AuthorizationServer::normalizeScope($scope, TRUE) as $s) { ?>
-    <li><?php echo $s; ?></li>
-    <?php } ?>
-  </ul>You can either approve or reject the request.
-  <?php } ?>
+  <p>You can either approve or reject this request.</p>
 
   <form method="post" action="">
     <input type="submit" name="approval" value="Approve" />
-    <input type="submit" name="approval" value="Deny" />
-    <input type="hidden" name="authorize_nonce" value=
-    "<?php echo $authorizeNonce; ?>" />
+    <input type="submit" name="approval" value="Reject" />
+    <input type="hidden" name="authorize_nonce" value="<?php echo $authorizeNonce; ?>" />
   </form>
 </body>
 </html>
