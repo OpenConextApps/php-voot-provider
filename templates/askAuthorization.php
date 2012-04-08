@@ -17,7 +17,7 @@
 
   <?php if(NULL !== $scope){ ?>
   <ul>
-    <?php foreach(AuthorizationServer::validateAndSortScope($scope) as $s) { ?>
+    <?php foreach(AuthorizationServer::normalizeScope($scope, TRUE) as $s) { ?>
     <li><?php echo $s; ?></li>
     <?php } ?>
   </ul>You can either approve or reject the request.

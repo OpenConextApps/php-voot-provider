@@ -8,8 +8,8 @@ interface IResourceOwner {
 interface IOAuthStorage {
     public function getClient             ($clientId);
     public function storeApprovedScope    ($clientId, $resourceOwner, $scope);
-    public function getApprovedScope      ($clientId, $resourceOwner, $scope);
-    public function generateAccessToken   ($clientId, $resourceOwner, $scope);
+    public function getApprovedScope      ($clientId, $resourceOwner);
+    public function generateAccessToken   ($clientId, $resourceOwner, $scope, $expiry);
     public function getAccessToken        ($accessToken);
     public function generateAuthorizeNonce($clientId, $resourceOwner, $scope);
     public function getAuthorizeNonce     ($clientId, $resourceOwner, $scope, $authorizeNonce);
@@ -60,69 +60,47 @@ class AuthorizationServer {
             }
         }
 
-        if(NULL !== $r->get('scope')) {
-            $checkedScope = self::validateAndSortScope($r->get('scope'));
-            if(FALSE !== $checkedScope) {
-                // valid scope
-                $requestedScopeList = explode(" ", $r->get('scope'));
-                foreach($requestedScopeList as $c) {
-                    if(!in_array($c, $this->_config['supportedScopes'])) {
-                        $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported");
-                        if(NULL !== $r->get('state')) {
-                            $error += array ( "state" => $r->get('state'));
-                        }
-                        return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
-                    }
-                }
-            } else {
-                // invalid scope
-                $error = array ( "error" => "invalid_scope", "error_description" => "scope contains invalid characters");
+        $requestedScope = self::normalizeScope($r->get('scope'));
+
+        if(FALSE === $requestedScope) {
+            // malformed scope
+            $error = array ( "error" => "invalid_scope", "error_description" => "malformed scope");
+            if(NULL !== $r->get('state')) {
+                $error += array ( "state" => $r->get('state'));
+            }
+            return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+        } else {
+            if(FALSE === self::isSubsetScope($requestedScope, $this->_config['supportedScopes'])) {
+                // scope not supported
+                $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported");
                 if(NULL !== $r->get('state')) {
                     $error += array ( "state" => $r->get('state'));
                 }
                 return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
             }
         }
+   
+        $approvedScope = $this->_storage->getApprovedScope($r->get('client_id'), $resourceOwner, $requestedScope);
 
-        $approvedScope = $this->_storage->getApprovedScope($r->get('client_id'), $resourceOwner, $r->get('scope'));
-
-        if(FALSE !== $approvedScope) {
-            $requestedList = self::validateAndSortScope($r->get('scope'));
-            // error_log(var_export($requestedList, TRUE));
-            $approvedScopeList = self::validateAndSortScope($approvedScope->scope);
-            // error_log(var_export($approvedScopeList, TRUE));
-            $alreadyApproved = TRUE;
-            foreach($requestedList as $c) {
-                if(!in_array($c, $approvedScopeList)) {
-                    $alreadyApproved = FALSE;
-                }
-            }  
-            if ($alreadyApproved) {
-                $accessToken = $this->_storage->generateAccessToken($r->get('client_id'), $resourceOwner, $r->get('scope'));
-                $token = array("access_token" => $accessToken, "expires_in" => $this->_config['accessTokenExpiry'], "token_type" => "bearer");
-                if(NULL !== $r->get('scope')) {
-                    $token += array ("scope" => $r->get('scope'));
-                }
-                if(NULL !== $r->get('state')) {
-                    $token += array ("state" => $r->get('state'));
-                }
-                return array("action" => "redirect", "url" => $client->redirect_uri . "#" . http_build_query($token));
+        if(FALSE === $approvedScope || FALSE === self::isSubsetScope($requestedScope, $approvedScope->scope)) {
+            // need to ask user, scope not yet approved
+            $authorizeNonce = $this->_storage->generateAuthorizeNonce($r->get('client_id'), $resourceOwner, $requestedScope);
+            return array ("action" => "ask_approval", "authorize_nonce" => $authorizeNonce);
+        } else {
+            // approval already exists for this scope
+            $accessToken = $this->_storage->generateAccessToken($r->get('client_id'), $resourceOwner, $requestedScope, $this->_config['accessTokenExpiry']);
+            $token = array("access_token" => $accessToken, 
+                           "expires_in" => $this->_config['accessTokenExpiry'], 
+                           "token_type" => "bearer", 
+                           "scope" => $requestedScope);
+            if(NULL !== $r->get('state')) {
+                $token += array ("state" => $r->get('state'));
             }
+            return array("action" => "redirect", "url" => $client->redirect_uri . "#" . http_build_query($token));
         }
-
-        // FIXME: the scope is not always coming from the GET, but can also 
-        // come from the POST when this method is called from the approve
-        // method? How to deal with this? Maybe we should force it to be the
-        // same always????
-        
-
-        // if this is called from the approve  method it MUST already be 
-        // approved, so it can never reach here? so we can block POST requests 
-        // to ever reach this far?
-        $authorizeNonce = $this->_storage->generateAuthorizeNonce($r->get('client_id'), $resourceOwner, $r->get('scope'));
-        return array ("action" => "ask_approval", "authorize_nonce" => $authorizeNonce);
     }
 
+    // FIXME: clean this method up!
     public function approve($resourceOwner, Slim_Http_Request $r) {
         // FIXME: don't allow different scope in post, make sure what is shown is actually also posted!! deal with different scope in FORM post!
         // FIXME: make sure state is retained and can't be modified!
@@ -180,19 +158,44 @@ class AuthorizationServer {
         return $token;
     }
 
-    public static function validateAndSortScope($scope, $toString = FALSE) {
+    public static function isValidScopeToken($scopeToTest) {
         // scope       = scope-token *( SP scope-token )
         // scope-token = 1*( %x21 / %x23-5B / %x5D-7E )
-        // FIXME: regexp fail? the first + should not be there?
-        $scopeRegExp = '/^(?:\x21|[\x23-\x5B]|[\x5D-\x7E])+(?:\x20(?:\x21|[\x23-\x5B]|[\x5D-\x7E])+)*$/';
-        $result = preg_match($scopeRegExp, $scope);
-		if($result === 1) { 
-            // valid scope
-            $requestedScopeList = explode(" ", $scope);
-            sort($requestedScopeList, SORT_STRING);
-            return ($toString) ? implode(" ", $requestedScopeList) : $requestedScopeList;
+        $scopeToken = '(?:\x21|[\x23-\x5B]|[\x5D-\x7E])+';
+        $scope = '/^' . $scopeToken . '(?:\x20' . $scopeToken . ')*$/';
+        $result = preg_match($scope, $scopeToTest);
+		return $result === 1;
+    }
+
+    public static function getScopeArray($scopeToConvert) {
+        return is_array($scopeToConvert) ? $scopeToConvert : explode(" ", $scopeToConvert);
+    }
+
+    public static function getScopeString($scopeToConvert) {
+        return is_array($scopeToConvert) ? implode(" ", $scopeToConvert) : $scopeToConvert;
+    }
+
+    public static function normalizeScope($scopeToNormalize, $toArray = FALSE) {
+        if(self::isValidScopeToken($scopeToNormalize)) {
+            $a = self::getScopeArray($scopeToNormalize);
+            sort($a, SORT_STRING);
+            return $toArray ? $a : self::getScopeString($a);
         }
         return FALSE;
+    }
+
+    /**
+     * Compares two scopes and returns true if $s is a subset of $t
+     */
+    public static function isSubsetScope($s, $t) {
+        $u = self::getScopeArray($s);
+        $v = self::getScopeArray($t);
+        foreach($u as $i) {
+            if(!in_array($i, $v)) {
+                return FALSE;
+            }
+        }
+        return TRUE;
     }
 
 }

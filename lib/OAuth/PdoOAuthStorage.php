@@ -28,11 +28,10 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->execute();
     }
 
-    public function getApprovedScope($clientId, $resourceOwner, $scope) {
-        $stmt = $this->_pdo->prepare("SELECT * FROM Approval WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id AND scope = :scope");
+    public function getApprovedScope($clientId, $resourceOwner) {
+        $stmt = $this->_pdo->prepare("SELECT * FROM Approval WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
-        $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
         $result = $stmt->execute();
         if (FALSE === $result) {
             return FALSE;
@@ -40,13 +39,13 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->fetch(PDO::FETCH_OBJ);
     }
 
-    public function generateAccessToken($clientId, $resourceOwner, $scope) {
+    public function generateAccessToken($clientId, $resourceOwner, $scope, $expiry) {
         $accessToken = $this->_randomHex(16);
         $stmt = $this->_pdo->prepare("INSERT INTO AccessToken (client_id, resource_owner_id, issue_time, expires_in, scope, access_token) VALUES(:client_id, :resource_owner_id, :issue_time, :expires_in, :scope, :access_token)");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
         $stmt->bindValue(":issue_time", time(), PDO::PARAM_INT);
-        $stmt->bindValue(":expires_in", 3600, PDO::PARAM_INT);
+        $stmt->bindValue(":expires_in", $expiry, PDO::PARAM_INT);
         $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
         $stmt->bindValue(":access_token", $accessToken, PDO::PARAM_STR);
         return ($stmt->execute()) ? $accessToken : FALSE;
