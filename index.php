@@ -27,28 +27,13 @@ $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
     $o = new AuthorizationServer($oauthStorage, $config['OAuth']);
 
     $result = $o->authorize($resourceOwner, $app->request());
+    // we know that all request parameters we used below are acceptable because they were verified by the authorize method.
+    // Do something with case where no scope is requested!
     if($result['action'] === 'ask_approval') { 
-        // we know that all request parameters we used below are acceptable because they were verified by the authorize method.
-
-        // FIXME: template! Do something with case where no scope is requested!
-
-            echo '<html><head><title>Authorization</title></head><body>' . PHP_EOL;
-            echo '<h2>Authorization Requested</h2>' . PHP_EOL;
-            echo '<p>The application <strong>' . $app->request()->get('client_id') . '</strong> wants access to your group membership details with the following permissions:' . PHP_EOL;
-            if(NULL !== $app->request()->get('scope')) {
-                echo '<ul>' . PHP_EOL;
-                foreach(AuthorizationServer::validateAndSortScope($app->request()->get('scope')) as $s) {
-                    echo '<li>' . $s . '</li>' . PHP_EOL;
-                }
-                echo '</ul>' . PHP_EOL;
-            }
-            echo 'You can either approve or reject the request.</p>' . PHP_EOL;
-            echo '<form method="post" action="">' . PHP_EOL;
-            echo '<input type="submit" name="approval" value="Approve">' . PHP_EOL;
-            echo '<input type="submit" name="approval" value="Deny">' . PHP_EOL;
-            echo '<input type="hidden" name="authorize_nonce" value="' . $result['authorize_nonce'] . '">' . PHP_EOL;
-            echo '</form>' . PHP_EOL;
-            echo '</body></html>' . PHP_EOL;
+        $app->render('askAuthorization.php', array (
+            'clientId' => $app->request()->get('client_id'), 
+            'scope' => $app->request()->get('scope'), 
+            'authorizeNonce' => $result['authorize_nonce']));
     } else {
         $app->redirect($result['url']);
     }
