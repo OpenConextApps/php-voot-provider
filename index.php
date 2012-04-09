@@ -41,6 +41,16 @@ $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
     }
 });
 
+$app->post('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
+    $authMech = $config['OAuth']['authenticationMechanism'];
+    require_once "lib/OAuth/$authMech.php";
+    $ro = new $authMech($config[$authMech]);
+    $resourceOwner = $ro->getResourceOwnerId();
+    $o = new AuthorizationServer($oauthStorage, $config['OAuth']);
+    $result = $o->approve($resourceOwner, $app->request());
+    $app->redirect($result['url']);
+});
+
 $app->get('/oauth/revoke', function() use ($app, $oauthStorage, $config) {
     $authMech = $config['OAuth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
@@ -61,16 +71,6 @@ $app->post('/oauth/revoke', function() use ($app, $oauthStorage, $config) {
     $oauthStorage->deleteApproval($app->request()->post('client_id'), $resourceOwner, $app->request()->post('scope'));
     $approvals = $oauthStorage->getApprovals($resourceOwner);
     $app->render('listApprovals.php', array( 'approvals' => $approvals));
-});
-
-$app->post('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
-    $authMech = $config['OAuth']['authenticationMechanism'];
-    require_once "lib/OAuth/$authMech.php";
-    $ro = new $authMech($config[$authMech]);
-    $resourceOwner = $ro->getResourceOwnerId();
-    $o = new AuthorizationServer($oauthStorage, $config['OAuth']);
-    $result = $o->approve($resourceOwner, $app->request());
-    $app->redirect($result['url']);
 });
 
 $app->get('/groups/:name', function ($name) use ($app, $config, $oauthStorage, $vootStorage) {

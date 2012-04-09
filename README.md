@@ -36,10 +36,12 @@ correct:
 
     authenticationMechanism = "SspResourceOwner"
 
-    [oauthSsp]
-    sspPath = '/var/simplesamlphp/lib'
-    authSource = 'default-sp'
-    resourceOwnerIdAttributeName = 'uid'
+    ; simpleSAMLphp configuration
+    [SspResourceOwner]
+    sspPath = "/var/simplesamlphp/lib"
+    authSource = "default-sp"
+    resourceOwnerIdAttributeName = "uid"
+    ;resourceOwnerIdAttributeName = "urn:mace:dir:attribute-def:uid"
 
 ## LDAP 
 It is possible to use an LDAP server as backend to retrieve group membership.
@@ -80,7 +82,7 @@ that do work.
 The default OAuth token store contains one OAuth consumer. To add your own you
 can use the SQLite command line tool to add some:
 
-    $ echo "INSERT INTO Client VALUES('client_id',NULL,'http://host.tld/redirect_uri','public');" | sqlite3 data/oauth2.sqlite
+    $ echo "INSERT INTO Client VALUES('client_id',"Client Description",NULL,'http://host.tld/redirect_uri','public');" | sqlite3 data/oauth2.sqlite
 
 In the future a web application will be written for this.
 
