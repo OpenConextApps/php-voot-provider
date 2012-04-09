@@ -29,6 +29,13 @@ the permission to access LDAP servers. This permission can be given by using
 
     $ sudo setsebool -P httpd_can_connect_ldap=on
 
+# Apache
+Also make sure Apache can read and process the `.htaccess` file by giving it
+the appropriate permissions on the (in this case) `/var/www/html/voot` 
+directory:
+
+    AllowOverride FileInfo
+
 # Configuration
 In the configuration file `config/voot.ini` various aspects can be configured. 
 To configure the SAML integration, make sure the following settings are 
