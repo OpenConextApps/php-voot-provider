@@ -13,6 +13,9 @@ interface IOAuthStorage {
     public function getAccessToken        ($accessToken);
     public function generateAuthorizeNonce($clientId, $resourceOwner, $scope);
     public function getAuthorizeNonce     ($clientId, $resourceOwner, $scope, $authorizeNonce);
+
+    public function getApprovals          ($resourceOwner);
+    public function deleteApproval        ($clientId, $resourceOwner, $scope);
 }
 
 class OAuthException extends Exception {

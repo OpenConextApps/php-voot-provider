@@ -41,8 +41,26 @@ $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
     }
 });
 
-$app->get('/oauth/deapprove', function() use ($app, $oauthStorage, $config) {
-    $app->render('listApprovals.php');
+$app->get('/oauth/revoke', function() use ($app, $oauthStorage, $config) {
+    $authMech = $config['OAuth']['authenticationMechanism'];
+    require_once "lib/OAuth/$authMech.php";
+    $ro = new $authMech($config[$authMech]);
+    $resourceOwner = $ro->getResourceOwnerId();
+    $approvals = $oauthStorage->getApprovals($resourceOwner);
+    $app->render('listApprovals.php', array( 'approvals' => $approvals));
+});
+
+$app->post('/oauth/revoke', function() use ($app, $oauthStorage, $config) {
+    // FIXME: there is no "CSRF" protection here. Everyone who knows a client_id and 
+    //        scope can remove an approval for any (authenticated) user by crafting
+    //        a POST call to this endpoint. IMPACT: low risk, denial of service.
+    $authMech = $config['OAuth']['authenticationMechanism'];
+    require_once "lib/OAuth/$authMech.php";
+    $ro = new $authMech($config[$authMech]);
+    $resourceOwner = $ro->getResourceOwnerId();
+    $oauthStorage->deleteApproval($app->request()->post('client_id'), $resourceOwner, $app->request()->post('scope'));
+    $approvals = $oauthStorage->getApprovals($resourceOwner);
+    $app->render('listApprovals.php', array( 'approvals' => $approvals));
 });
 
 $app->post('/oauth/authorize', function () use ($app, $oauthStorage, $config) {

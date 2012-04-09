@@ -84,6 +84,24 @@ class PdoOAuthStorage implements IOAuthStorage {
         return 1 === $stmt->rowCount();
     }
 
+    public function getApprovals($resourceOwner) {
+        $stmt = $this->_pdo->prepare("SELECT a.client_id, a.scope, c.name FROM Approval a, Client c WHERE resource_owner_id = :resource_owner_id AND a.client_id = c.id");
+        $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
+        $result = $stmt->execute();
+        if (FALSE === $result) {
+            return FALSE;
+        }
+        return $stmt->fetchAll(PDO::FETCH_ASSOC); 
+    }
+
+    public function deleteApproval($clientId, $resourceOwner, $scope) {
+        $stmt = $this->_pdo->prepare("DELETE FROM Approval WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id AND scope = :scope");
+        $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
+        $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
+        $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
+        return $stmt->execute();
+    }
+
     private function _randomHex($len = 16) {
         $randomString = bin2hex(openssl_random_pseudo_bytes($len, $strong));
         // @codeCoverageIgnoreStart
