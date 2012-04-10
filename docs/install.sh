@@ -29,8 +29,15 @@ then
     wget -O ext/js/jquery.js -N http://code.jquery.com/jquery.min.js
 fi
 
-# fetch jsrender
+# fetch jsrender (JavaScript Template Rendering for jQuery)
 if [ ! -f ext/js/jsrender.js ]
 then
     wget -O ext/js/jsrender.js -N https://raw.github.com/BorisMoore/jsrender/master/jsrender.js
 fi
+
+# fetch jso (JavaScript OAuth 2 client)
+if [ ! -f ext/js/jso.js ]
+then
+    wget -O ext/js/jso.js -N https://raw.github.com/andreassolberg/jso/master/jso.js
+fi
+

@@ -6,6 +6,7 @@
     <title>VOOT OAuth JavaScript Client</title>
     <script type="text/javascript" charset="utf-8" src="../ext/js/jquery.js"></script>
     <script type="text/javascript" charset="utf-8" src="../ext/js/jsrender.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../ext/js/jso.js"></script>
 
     <script id="groupTemplate" type="text/x-jsrender">
         <tr>
@@ -16,52 +17,39 @@
 
     <script type="text/javascript" charset="utf-8">
     $(function () {
-        var extractToken = function(hash) {
-            var match = hash.match(/access_token=(\w+)/);
-            return !!match && match[1];
-        };
+        jso_configure({
+            "voot": {
+                client_id: "voot",
+                redirect_uri: window.location,
+                authorization: "http://localhost/voot/oauth/authorize"
+            }
+        });
 
-        var settings = {
-            'clientId': 'voot',
-            'authorizeUri': 'http://localhost/voot/oauth/authorize',
-            //'resourceUri': 'http://localhost/voot/people/@me/nl:surfnet:diensten:managementvo?startIndex=5&count=3',
-            'resourceUri': 'http://localhost/voot/groups/@me?startIndex=0&count=44',
-	    'redirectUri': window.location
-        };
+        jso_ensureTokens({
+            "voot": ["read"]
+        });
 
-        var token = extractToken(document.location.hash);
-        if (token) {
-            $('div.authorized').show();
-            $.ajax({
-                url: settings.resourceUri,
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('Authorization', "Bearer " + token);
-                    xhr.setRequestHeader('Accept',        "application/json");
-                },
-                success: function (response) {
-                    if (response) {
-                    	$( "#groupList" ).html(
-		                    $( "#groupTemplate" ).render( response.entry )
-                    	);
-                    } else {
-                        alert("An error occurred.");
-                    }
+        $.oajax({
+            url: "http://localhost/voot/groups/@me",
+            jso_provider: "voot",
+            jso_scopes: ["read"],
+            jso_allowia: true,
+            dataType: 'json',
+            success: function(data) {
+                // console.log("Response (voot):");
+                // console.log(data);
+                if (data) {
+                	$( "#groupList" ).html(
+                        $( "#groupTemplate" ).render( data.entry )
+                	);
+                } else {
+                    alert("An error occurred.");
                 }
-            });
-        } else {
-            $('div.authorize').show();
-            var authUrl = settings.authorizeUri + "?response_type=token" + 
-                "&client_id=" + settings.clientId + 
-                "&redirect_uri=" + settings.redirectUri + 
-                "&scope=read";
-            $("a.connect").attr("href", authUrl);
-        }
+            }
+        });
     });
     </script>
     <style>
-      .hidden {
-        display: none;
-      }
       h1 { 
             text-align: center;
       }
@@ -69,37 +57,21 @@
             border: 1px solid #000;
             width: 75%;
             margin: 0 auto;
-      }
-      tr.header {
-            color: #fff;
-            background-color: #222;
-            text-align: left;
-      }
-      tr {
-            color: #000;
             background-color: #eee;
+            border-radius: 10px;
+            padding: 10px;
       }
       th {
-            padding: 5px;
-      }
-      td {
-            padding: 0 10px;
+           text-align: left;
       }
     </style>
   </head>
 
   <body>
-    <div class="authorize hidden">
-      <a class="connect" href="#">Connect to VOOT provider</a>
-    </div>
-
-    <div class="authorized hidden">
     <h1>Group Membership</h1>
-        <table>
-            <tr class="header"><th>Name</th><th>Role</th></tr>
-        	<tbody id="groupList"></tbody>
-        </table>
-    </div>
-
+    <table>
+        <tr class="header"><th>Name</th><th>Role</th></tr>
+    	<tbody id="groupList"></tbody>
+    </table>
   </body>
 </html>
