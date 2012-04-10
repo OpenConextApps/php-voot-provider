@@ -9,22 +9,23 @@ $app = new Slim(array(
     'session.handler' => null
 ));
 
-$config = parse_ini_file("config" . DIRECTORY_SEPARATOR . "voot.ini", TRUE);
+$vootConfig = parse_ini_file("config" . DIRECTORY_SEPARATOR . "voot.ini", TRUE);
+$oauthConfig = parse_ini_file("config" . DIRECTORY_SEPARATOR . "oauth.ini", TRUE);
 
-$oauthStorageBackend = $config['OAuth']['storageBackend'];
+$oauthStorageBackend = $oauthConfig['OAuth']['storageBackend'];
 require_once "lib/OAuth/$oauthStorageBackend.php";
-$oauthStorage = new $oauthStorageBackend($config[$oauthStorageBackend]);
+$oauthStorage = new $oauthStorageBackend($oauthConfig[$oauthStorageBackend]);
 
-$vootStorageBackend = $config['voot']['storageBackend'];
+$vootStorageBackend = $vootConfig['voot']['storageBackend'];
 require_once "lib/Voot/$vootStorageBackend.php";
-$vootStorage = new $vootStorageBackend($config[$vootStorageBackend]);
+$vootStorage = new $vootStorageBackend($vootConfig[$vootStorageBackend]);
 
-$app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
-    $authMech = $config['OAuth']['authenticationMechanism'];
+$app->get('/oauth/authorize', function () use ($app, $oauthStorage, $oauthConfig) {
+    $authMech = $oauthConfig['OAuth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
-    $ro = new $authMech($config[$authMech]);
+    $ro = new $authMech($oauthConfig[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
-    $o = new AuthorizationServer($oauthStorage, $config['OAuth']);
+    $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
     $result = $o->authorize($resourceOwner, $app->request());
     // we know that all request parameters we used below are acceptable because they were verified by the authorize method.
     // Do something with case where no scope is requested!
@@ -41,26 +42,26 @@ $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
     }
 });
 
-$app->post('/oauth/authorize', function () use ($app, $oauthStorage, $config) {
-    $authMech = $config['OAuth']['authenticationMechanism'];
+$app->post('/oauth/authorize', function () use ($app, $oauthStorage, $oauthConfig) {
+    $authMech = $oauthConfig['OAuth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
-    $ro = new $authMech($config[$authMech]);
+    $ro = new $authMech($oauthConfig[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
-    $o = new AuthorizationServer($oauthStorage, $config['OAuth']);
+    $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
     $result = $o->approve($resourceOwner, $app->request());
     $app->redirect($result['url']);
 });
 
-$app->get('/oauth/revoke', function() use ($app, $oauthStorage, $config) {
-    $authMech = $config['OAuth']['authenticationMechanism'];
+$app->get('/oauth/revoke', function() use ($app, $oauthStorage, $oauthConfig) {
+    $authMech = $oauthConfig['OAuth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
-    $ro = new $authMech($config[$authMech]);
+    $ro = new $authMech($oauthConfig[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
     $approvals = $oauthStorage->getApprovals($resourceOwner);
     $app->render('listApprovals.php', array( 'approvals' => $approvals));
 });
 
-$app->post('/oauth/revoke', function() use ($app, $oauthStorage, $config) {
+$app->post('/oauth/revoke', function() use ($app, $oauthStorage, $oauthConfig) {
     // FIXME: there is no "CSRF" protection here. Everyone who knows a client_id and 
     //        scope can remove an approval for any (authenticated) user by crafting
     //        a POST call to this endpoint. IMPACT: low risk, denial of service.
@@ -69,36 +70,36 @@ $app->post('/oauth/revoke', function() use ($app, $oauthStorage, $config) {
     //        by this service if the user wants this. Maybe we should have a 
     //        checkbox "terminate current access" or "keep current access
     //        tokens available for at most 1h"
-    $authMech = $config['OAuth']['authenticationMechanism'];
+    $authMech = $oauthConfig['OAuth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
-    $ro = new $authMech($config[$authMech]);
+    $ro = new $authMech($oauthConfig[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
     $oauthStorage->deleteApproval($app->request()->post('client_id'), $resourceOwner, $app->request()->post('scope'));
     $approvals = $oauthStorage->getApprovals($resourceOwner);
     $app->render('listApprovals.php', array( 'approvals' => $approvals));
 });
 
-$app->get('/oauth/clients', function() use ($app, $oauthStorage, $config) {
-    $authMech = $config['OAuth']['authenticationMechanism'];
+$app->get('/oauth/clients', function() use ($app, $oauthStorage, $oauthConfig) {
+    $authMech = $oauthConfig['OAuth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
-    $ro = new $authMech($config[$authMech]);
+    $ro = new $authMech($oauthConfig[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
-    if($resourceOwner !== $config['OAuth']['adminResourceOwnerId']) {
+    if($resourceOwner !== $oauthConfig['OAuth']['adminResourceOwnerId']) {
         $app->halt(403, "Unauthorized");
     }
     $registeredClients = $oauthStorage->getClients();
     $app->render('listClients.php', array( 'registeredClients' => $registeredClients));
 });
 
-$app->post('/oauth/clients', function() use ($app, $oauthStorage, $config) {
+$app->post('/oauth/clients', function() use ($app, $oauthStorage, $oauthConfig) {
     // FIXME: there is no "CSRF" protection here. Everyone who knows a client_id 
     //        can remove or add! an application by crafting a POST call to this 
     //        endpoint. IMPACT: high risk, fake client registration
-    $authMech = $config['OAuth']['authenticationMechanism'];
+    $authMech = $oauthConfig['OAuth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
-    $ro = new $authMech($config[$authMech]);
+    $ro = new $authMech($oauthConfig[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
-    if($resourceOwner !== $config['OAuth']['adminResourceOwnerId']) {
+    if($resourceOwner !== $oauthConfig['OAuth']['adminResourceOwnerId']) {
         $app->halt(403, "Unauthorized");
     }
     
@@ -107,10 +108,10 @@ $app->post('/oauth/clients', function() use ($app, $oauthStorage, $config) {
 
 });
 
-$app->get('/groups/:name', function ($name) use ($app, $config, $oauthStorage, $vootStorage) {
+$app->get('/groups/:name', function ($name) use ($app, $oauthConfig, $oauthStorage, $vootStorage) {
     // enable CORS (http://enable-cors.org)
     $app->response()->header("Access-Control-Allow-Origin", "*");
-    $o = new AuthorizationServer($oauthStorage, $config['OAuth']);
+    $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
     $result = $o->verify($app->request());
     $g = new Provider($vootStorage);
     $grp_array = $g->isMemberOf($result->resource_owner_id, $app->request()->get('startIndex'), $app->request()->get('count'));
@@ -118,10 +119,10 @@ $app->get('/groups/:name', function ($name) use ($app, $config, $oauthStorage, $
     echo json_encode($grp_array);
 });
 
-$app->get('/people/:name/:groupId', function ($name, $groupId) use ($app, $config, $oauthStorage, $vootStorage) {
+$app->get('/people/:name/:groupId', function ($name, $groupId) use ($app, $oauthConfig, $oauthStorage, $vootStorage) {
     // enable CORS (http://enable-cors.org)
     $app->response()->header("Access-Control-Allow-Origin", "*");
-    $o = new AuthorizationServer($oauthStorage, $config['OAuth']);
+    $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
     $result = $o->verify($app->request());
     $g = new Provider($vootStorage);
     $grp_array = $g->getGroupMembers($result->resource_owner_id, $groupId, $app->request()->get('startIndex'), $app->request()->get('count'));

@@ -25,35 +25,3 @@ memberAttribute = "uniqueMember"
 ;userIdAttribute = "samAccountName"
 ;memberAttribute = "member"
 
-; OAuth Authorization Server configuration
-[OAuth]
-storageBackend = "PdoOAuthStorage"
-
-; this resourceOwnerId can manage client registrations
-adminResourceOwnerId = "fkooman"
-
-authenticationMechanism = "DummyResourceOwner"
-;authenticationMechanism = "SspResourceOwner"
-
-; the scopes supported by the resource server
-supportedScopes[] = "read"
-supportedScopes[] = "write"
-
-; the access token expiry time (in seconds)
-accessTokenExpiry = 3600
-
-[PdoOAuthStorage]
-dsn = "sqlite:/var/www/html/voot/data/oauth2.sqlite";
-
-; dummy configuration
-[DummyResourceOwner]
-resourceOwnerId = "fkooman"
-resourceOwnerDisplayName = "François Kooman"
-
-; simpleSAMLphp configuration
-[SspResourceOwner]
-sspPath = "/var/simplesamlphp/lib"
-authSource = "default-sp"
-resourceOwnerIdAttributeName = "uid"
-;resourceOwnerIdAttributeName = "urn:mace:dir:attribute-def:uid"
-

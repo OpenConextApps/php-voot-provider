@@ -10,6 +10,13 @@ chmod -R o+w data/
 chcon -R -t httpd_sys_rw_content_t data
 
 # configure
+if [ ! -f config/oauth.ini ]
+then
+        cp config/oauth.ini.defaults config/oauth.ini
+        BASE_DIR=`pwd`
+        sed -i "s|/var/www/html/voot|${BASE_DIR}|g" config/oauth.ini
+fi
+
 if [ ! -f config/voot.ini ]
 then
 	cp config/voot.ini.defaults config/voot.ini
