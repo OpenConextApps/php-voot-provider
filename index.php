@@ -91,6 +91,9 @@ $app->get('/oauth/clients', function() use ($app, $oauthStorage, $config) {
 });
 
 $app->post('/oauth/clients', function() use ($app, $oauthStorage, $config) {
+    // FIXME: there is no "CSRF" protection here. Everyone who knows a client_id 
+    //        can remove or add! an application by crafting a POST call to this 
+    //        endpoint. IMPACT: high risk, fake client registration
     $authMech = $config['OAuth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
     $ro = new $authMech($config[$authMech]);
