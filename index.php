@@ -64,6 +64,11 @@ $app->post('/oauth/revoke', function() use ($app, $oauthStorage, $config) {
     // FIXME: there is no "CSRF" protection here. Everyone who knows a client_id and 
     //        scope can remove an approval for any (authenticated) user by crafting
     //        a POST call to this endpoint. IMPACT: low risk, denial of service.
+
+    // FIXME: we need to also remove the access tokens that are currently used
+    //        by this service if the user wants this. Maybe we should have a 
+    //        checkbox "terminate current access" or "keep current access
+    //        tokens available for at most 1h"
     $authMech = $config['OAuth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
     $ro = new $authMech($config[$authMech]);
@@ -71,6 +76,32 @@ $app->post('/oauth/revoke', function() use ($app, $oauthStorage, $config) {
     $oauthStorage->deleteApproval($app->request()->post('client_id'), $resourceOwner, $app->request()->post('scope'));
     $approvals = $oauthStorage->getApprovals($resourceOwner);
     $app->render('listApprovals.php', array( 'approvals' => $approvals));
+});
+
+$app->get('/oauth/clients', function() use ($app, $oauthStorage, $config) {
+    $authMech = $config['OAuth']['authenticationMechanism'];
+    require_once "lib/OAuth/$authMech.php";
+    $ro = new $authMech($config[$authMech]);
+    $resourceOwner = $ro->getResourceOwnerId();
+    if($resourceOwner !== $config['OAuth']['adminResourceOwnerId']) {
+        $app->halt(403, "Unauthorized");
+    }
+    $registeredClients = $oauthStorage->getClients();
+    $app->render('listClients.php', array( 'registeredClients' => $registeredClients));
+});
+
+$app->post('/oauth/clients', function() use ($app, $oauthStorage, $config) {
+    $authMech = $config['OAuth']['authenticationMechanism'];
+    require_once "lib/OAuth/$authMech.php";
+    $ro = new $authMech($config[$authMech]);
+    $resourceOwner = $ro->getResourceOwnerId();
+    if($resourceOwner !== $config['OAuth']['adminResourceOwnerId']) {
+        $app->halt(403, "Unauthorized");
+    }
+    
+    // FIXME: should deal with deletion, new registrations, delete
+    //        current access tokens?
+
 });
 
 $app->get('/groups/:name', function ($name) use ($app, $config, $oauthStorage, $vootStorage) {

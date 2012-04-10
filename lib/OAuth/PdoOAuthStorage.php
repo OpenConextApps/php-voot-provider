@@ -102,6 +102,15 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->execute();
     }
 
+    public function getClients() {
+        $stmt = $this->_pdo->prepare("SELECT * FROM Client");
+        $result = $stmt->execute();
+        if (FALSE === $result) {
+            return FALSE;
+        }
+        return $stmt->fetchAll(PDO::FETCH_ASSOC); 
+    }
+
     private function _randomHex($len = 16) {
         $randomString = bin2hex(openssl_random_pseudo_bytes($len, $strong));
         // @codeCoverageIgnoreStart

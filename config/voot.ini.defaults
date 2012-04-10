@@ -29,6 +29,9 @@ memberAttribute = "uniqueMember"
 [OAuth]
 storageBackend = "PdoOAuthStorage"
 
+; this resourceOwnerId can manage client registrations
+adminResourceOwnerId = "fkooman"
+
 authenticationMechanism = "DummyResourceOwner"
 ;authenticationMechanism = "SspResourceOwner"
 

@@ -16,6 +16,7 @@ interface IOAuthStorage {
 
     public function getApprovals          ($resourceOwner);
     public function deleteApproval        ($clientId, $resourceOwner, $scope);
+    public function getClients            ();
 }
 
 class OAuthException extends Exception {
