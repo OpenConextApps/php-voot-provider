@@ -19,7 +19,7 @@
 
   <p>An application wants to access your group membership details.</p>
     <table>
-        <tr><th>Application</th><td><?php echo $clientName; ?></td></tr>
+        <tr><th>Application</th><td><span title="<?php echo $clientId; ?>"><?php echo $clientName; ?></span></td></tr>
         <tr><th>Requested Permission(s)</th><td><?php echo $scope; ?></td></tr>
     </table>
 

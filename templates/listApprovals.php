@@ -26,7 +26,7 @@
             <?php foreach ($approvals as $a) { ?>
                 <tr>
                     <td>
-                        <?php echo $a['name']; ?></td><td><?php echo $a['scope']; ?></td>
+                        <span title="<?php echo $a['client_id']; ?>"><?php echo $a['name']; ?></a></td><td><?php echo $a['scope']; ?></td>
                     <td>
                         <form method="post" action="">
                             <input type="submit" value="Revoke" />
