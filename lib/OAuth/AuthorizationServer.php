@@ -104,11 +104,7 @@ class AuthorizationServer {
         }
     }
 
-    // FIXME: clean this method up!
     public function approve($resourceOwner, Slim_Http_Request $r) {
-        // FIXME: don't allow different scope in post, make sure what is shown is actually also posted!! deal with different scope in FORM post!
-        // FIXME: make sure state is retained and can't be modified!
-
         $authorizeNonce = $this->_storage->getAuthorizeNonce($r->get('client_id'), $resourceOwner, $r->get('scope'), $r->post('authorize_nonce'));
         if(FALSE === $authorizeNonce) { 
             throw new Exception("authorize nonce was not found");

@@ -18,7 +18,6 @@ permissions.
     $ git clone git://github.com/fkooman/phpvoot.git /var/www/html/voot
     $ cd /var/www/html/voot
     $ docs/install.sh
-    $ cp config/voot.ini.defaults config/voot.ini
 
 # SELinux
 The install script already takes care of setting the file permissions of the
@@ -37,9 +36,9 @@ directory:
     AllowOverride FileInfo
 
 # Configuration
-In the configuration file `config/voot.ini` various aspects can be configured. 
-To configure the SAML integration, make sure the following settings are 
-correct:
+In the configuration file `config/voot.ini` and `config/oauth.ini` various 
+aspects can be configured. To configure the SAML integration (in `oauth.ini`), 
+make sure the following settings are correct:
 
     authenticationMechanism = "SspResourceOwner"
 
@@ -84,14 +83,15 @@ This should return an `array` with the group information. If it does not work,
 make sure you match the configuration values with the `ldapsearch` commands 
 that do work.
 
-# Configuring OAuth Consumers
+# Configuring OAuth Clients
 
-The default OAuth token store contains one OAuth consumer. To add your own you
+The default OAuth token store contains one OAuth client. To add your own you
 can use the SQLite command line tool to add some:
 
     $ echo "INSERT INTO Client VALUES('client_id',"Client Description",NULL,'http://host.tld/redirect_uri','public');" | sqlite3 data/oauth2.sqlite
 
-In the future a web application will be written for this.
+In the future a web application will be written for this to allow designated
+users to administer client registrations.
 
 # Testing
 
