@@ -84,7 +84,7 @@ $app->get('/oauth/clients', function() use ($app, $oauthStorage, $oauthConfig) {
     require_once "lib/OAuth/$authMech.php";
     $ro = new $authMech($oauthConfig[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
-    if($resourceOwner !== $oauthConfig['OAuth']['adminResourceOwnerId']) {
+    if(!in_array($resourceOwner, $oauthConfig['OAuth']['adminResourceOwnerId'])) {
         $app->halt(403, "Unauthorized");
     }
     $registeredClients = $oauthStorage->getClients();
@@ -99,7 +99,7 @@ $app->post('/oauth/clients', function() use ($app, $oauthStorage, $oauthConfig) 
     require_once "lib/OAuth/$authMech.php";
     $ro = new $authMech($oauthConfig[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
-    if($resourceOwner !== $oauthConfig['OAuth']['adminResourceOwnerId']) {
+    if(!in_array($resourceOwner, $oauthConfig['OAuth']['adminResourceOwnerId'])) {
         $app->halt(403, "Unauthorized");
     }
     

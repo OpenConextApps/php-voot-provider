@@ -2,8 +2,9 @@
 [OAuth]
 storageBackend = "PdoOAuthStorage"
 
-; this resourceOwnerId can manage client registrations
-adminResourceOwnerId = "fkooman"
+; these resourceOwnerIds can manage client registrations
+adminResourceOwnerId[] = "fkooman"
+;adminResourceOwnerId[] = "francois"
 
 authenticationMechanism = "DummyResourceOwner"
 ;authenticationMechanism = "SspResourceOwner"
