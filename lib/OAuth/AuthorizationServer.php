@@ -23,6 +23,14 @@ class OAuthException extends Exception {
 
 }
 
+class VerifyException extends Exception {
+
+}
+
+class AdminException extends Exception {
+
+}
+
 class AuthorizationServer {
 
     private $_storage;
@@ -131,13 +139,13 @@ class AuthorizationServer {
         // FIXME: only works on Apache!
         $headers = apache_request_headers();
         if(!array_key_exists("Authorization", $headers)) {
-            throw new Exception("invalid_request: authorization header missing");
+            throw new VerifyException("invalid_request: authorization header missing");
         }
         $authzHeader = $headers['Authorization'];
         
         $result = preg_match('|^Bearer (?P<value>' . $b64TokenRegExp . ')$|', $authzHeader, $matches);
         if($result === FALSE || $result === 0) {
-            throw new Exception("invalid_token: the access token is malformed");
+            throw new VerifyException("invalid_token: the access token is malformed");
         }
 
         //$accessToken = base64_decode($matches['value'], TRUE);
@@ -150,10 +158,10 @@ class AuthorizationServer {
         // FIXME: getAccessToken in Storage
         $token = $this->_storage->getAccessToken($accessToken);
         if($token === FALSE) {
-            throw new Exception("invalid_token: the access token is invalid");
+            throw new VerifyException("invalid_token: the access token is invalid");
         }
         if(time() > $token->issue_time + $token->expires_in) {
-            throw new Exception("invalid_token: the access token expired");
+            throw new VerifyException("invalid_token: the access token expired");
         }
         return $token;
     }
@@ -197,7 +205,6 @@ class AuthorizationServer {
         }
         return TRUE;
     }
-
 }
 
 ?>

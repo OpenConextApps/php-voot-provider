@@ -6,8 +6,31 @@ require_once 'lib/Voot/Provider.php';
 $app = new Slim(array(
     // we need to disable Slim's session handling due to incompatibilies with
     // simpleSAMLphp sessions
-    'session.handler' => null
+    'session.handler' => null,
+    'debug' => false
 ));
+
+$app->error(function ( Exception $e ) use ($app) {
+    switch(get_class($e)) {
+        case "VerifyException":
+            // the request for the resource was not valid, tell client
+            list($error, $description) = explode(":", $e->getMessage());
+            $app->response()->header('WWW-Authenticate', 'realm="VOOT API",error="' . $error . '",error_description="' . $description . '"');
+            $app->response()->status(401);
+            break;
+        case "OAuthException":
+            // we cannot establish the identity of the client, tell user
+            $app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "The identity of the application that tried to access this resource could not be established. Therefore we stopped processing this request. The message below may be of interest to the application developer."));
+            break;
+        case "AdminException":
+            // the authenticated user wants to perform some operation that is 
+            // privileged
+            $app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "You are not authorized to perform this operation."), 403);
+            break;
+        default:
+            $app->halt(500);
+    }
+});
 
 $vootConfig = parse_ini_file("config" . DIRECTORY_SEPARATOR . "voot.ini", TRUE);
 $oauthConfig = parse_ini_file("config" . DIRECTORY_SEPARATOR . "oauth.ini", TRUE);
@@ -85,7 +108,7 @@ $app->get('/oauth/clients', function() use ($app, $oauthStorage, $oauthConfig) {
     $ro = new $authMech($oauthConfig[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
     if(!in_array($resourceOwner, $oauthConfig['OAuth']['adminResourceOwnerId'])) {
-        $app->halt(403, "Unauthorized");
+        throw new AdminException("not an administrator");
     }
     $registeredClients = $oauthStorage->getClients();
     $app->render('listClients.php', array( 'registeredClients' => $registeredClients));
@@ -100,7 +123,7 @@ $app->post('/oauth/clients', function() use ($app, $oauthStorage, $oauthConfig) 
     $ro = new $authMech($oauthConfig[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
     if(!in_array($resourceOwner, $oauthConfig['OAuth']['adminResourceOwnerId'])) {
-        $app->halt(403, "Unauthorized");
+        throw new AdminException("not an administrator");
     }
     
     // FIXME: should deal with deletion, new registrations, delete
