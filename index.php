@@ -38,11 +38,14 @@ $oauthStorageBackend = $oauthConfig['OAuth']['storageBackend'];
 require_once "lib/OAuth/$oauthStorageBackend.php";
 $oauthStorage = new $oauthStorageBackend($oauthConfig[$oauthStorageBackend]);
 
-$app->get('/oauth/authorize', function () use ($app, $oauthStorage, $oauthConfig) {
+$app->get('/oauth/:uid/authorize', function ($uid) use ($app, $oauthStorage, $oauthConfig) {
     $authMech = $oauthConfig['OAuth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
     $ro = new $authMech($oauthConfig[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
+    if($resourceOwner !== $uid) {
+        throw new OAuthException("$uid does not match $resourceOwner");
+    }
     $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
     $result = $o->authorize($resourceOwner, $app->request());
     // we know that all request parameters we used below are acceptable because they were verified by the authorize method.
@@ -60,11 +63,14 @@ $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $oauthConfig
     }
 });
 
-$app->post('/oauth/authorize', function () use ($app, $oauthStorage, $oauthConfig) {
+$app->post('/oauth/:uid/authorize', function ($uid) use ($app, $oauthStorage, $oauthConfig) {
     $authMech = $oauthConfig['OAuth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
     $ro = new $authMech($oauthConfig[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
+    if($resourceOwner !== $uid) {
+        throw new OAuthException("$uid does not match $resourceOwner");
+    }
     $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
     $result = $o->approve($resourceOwner, $app->request());
     $app->redirect($result['url']);
@@ -126,7 +132,7 @@ $app->post('/oauth/clients', function() use ($app, $oauthStorage, $oauthConfig) 
 
 });
 
-$app->get('/:category/:name', function ($category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
+$app->get('/:uid/:category/:name', function ($uid, $category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
      $app->response()->header("Access-Control-Allow-Origin", "*");
      $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
      $result = $o->verify($app->request());
@@ -157,7 +163,7 @@ $app->get('/:category/:name', function ($category, $name) use ($app, $oauthConfi
     echo file_get_contents($absPath);
 });
 
-$app->put('/:category/:name', function ($category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
+$app->put('/:uid/:category/:name', function ($uid, $category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
      $app->response()->header("Access-Control-Allow-Origin", "*");
      $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
      $result = $o->verify($app->request());
@@ -179,14 +185,27 @@ $app->put('/:category/:name', function ($category, $name) use ($app, $oauthConfi
     file_put_contents($absPath, $app->request()->getBody());
 });
 
-$app->delete('/:category/:name', function ($category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
+$app->delete('/:uid/:category/:name', function ($uid, $category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
     echo "DELETE /var/www/html/storage/$category/$name";
 });
 
-$app->options('/:category/:name', function($category, $name) use ($app) {
+$app->options('/:uid/:category/:name', function($uid, $category, $name) use ($app) {
     $app->response()->header('Access-Control-Allow-Origin', $app->request()->headers('Origin'));
     $app->response()->header('Access-Control-Allow-Methods','GET, PUT, DELETE');
     $app->response()->header('Access-Control-Allow-Headers','content-length, authorization');
+});
+
+$app->get('/lrdd/', function() use ($app) {
+    $subject = $app->request()->get('uri');
+    list($x,$userAddress) = explode(":", $subject);
+    
+    // FIXME: too bad there is no helper function to get the RootUri including domain
+    $baseUri = Slim_Http_Uri::getScheme() . "://" . $_SERVER['HTTP_HOST'] . $app->request()->getRootUri();
+    $authUri = $baseUri . "/oauth/$userAddress/authorize";
+    $templateUri = $baseUri . "/$userAddress/{category}/";
+    $app->response()->header("Access-Control-Allow-Origin", "*");
+    $app->response()->header("Content-Type", "application/xrd+xml; charset=UTF-8");
+    $app->render('webFinger.php', array ( 'subject' => $subject, 'templateUri' => $templateUri, 'authUri' => $authUri));
 });
 
 $app->run();
