@@ -16,14 +16,9 @@ class SspResourceOwner implements IResourceOwner {
         $this->_ssp = new SimpleSAML_Auth_Simple($this->_config['authSource']);
     }
 
-    private function _performAuthentication() {
-        $this->_ssp->requireAuth();
-        $this->_resourceOwnerAttributes = $as->getAttributes();
-    }
-
     public function getResourceOwnerId() {
         $this->_ssp->requireAuth();
-        $attributes = $as->getAttributes();
+        $attributes = $this->_ssp->getAttributes();
         if(!array_key_exists($this->_config['resourceOwnerIdAttributeName'], $attributes)) {
             throw new Exception("resourceOwnerIdAttributeName is not available in SAML attributes");
         }
@@ -32,7 +27,7 @@ class SspResourceOwner implements IResourceOwner {
 
     public function getResourceOwnerDisplayName() {
         $this->_ssp->requireAuth();
-        $attributes = $as->getAttributes();
+        $attributes = $this->_ssp->getAttributes();
         if(!array_key_exists($this->_config['resourceOwnerDisplayNameAttributeName'], $attributes)) {
             throw new Exception("resourceOwnerDisplayNameAttributeName is not available in SAML attributes");
         }
