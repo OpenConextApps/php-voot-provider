@@ -30,4 +30,6 @@ sspPath = "/var/simplesamlphp/lib"
 authSource = "default-sp"
 resourceOwnerIdAttributeName = "uid"
 ;resourceOwnerIdAttributeName = "urn:mace:dir:attribute-def:uid"
+resourceOwnerDisplayNameAttributeName = "dn"
+;resourceOwnerIdAttributeName = "urn:mace:dir:attribute-def:cn"
 
