@@ -132,6 +132,38 @@ $app->post('/oauth/clients', function() use ($app, $oauthStorage, $oauthConfig) 
 
 });
 
+$app->put('/:uid/:category/:name', function ($uid, $category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
+     $app->response()->header("Access-Control-Allow-Origin", "*");
+     $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
+     $result = $o->verify($app->request());
+     $absPath = $remoteStorageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . $result->resource_owner_id . DIRECTORY_SEPARATOR . $category . DIRECTORY_SEPARATOR . $name;
+
+    // user directory
+    if(!file_exists(dirname(dirname($absPath)))) {
+        if (@mkdir(dirname(dirname($absPath)), 0775) === FALSE) {
+            $app->halt(500, "Unable to create directory");
+        }
+    }
+
+    // category directory
+    if(!file_exists(dirname($absPath))) {
+        if (@mkdir(dirname($absPath), 0775) === FALSE) {
+            $app->halt(500, "Unable to create directory");
+        }
+    }
+    file_put_contents($absPath, $app->request()->getBody());
+});
+
+$app->delete('/:uid/:category/:name', function ($uid, $category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
+    echo "DELETE /var/www/html/storage/$category/$name";
+});
+
+$app->options('/:uid/:category/:name', function($uid, $category, $name) use ($app) {
+    $app->response()->header('Access-Control-Allow-Origin', $app->request()->headers('Origin'));
+    $app->response()->header('Access-Control-Allow-Methods','GET, PUT, DELETE');
+    $app->response()->header('Access-Control-Allow-Headers','content-length, authorization');
+});
+
 $app->get('/:uid/:category/:name', function ($uid, $category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
     $app->response()->header("Access-Control-Allow-Origin", "*");
 
@@ -176,45 +208,11 @@ $app->get('/:uid/public/:name', function ($uid, $name) use ($app, $oauthConfig, 
                "public" . DIRECTORY_SEPARATOR . 
                $name;
     if(!file_exists($absPath) || !is_file($absPath)) {
-        $app->halt(404, "File Not Found");
+        $app->halt(404, "Not Found");
     }
     $finfo = new finfo(FILEINFO_MIME_TYPE);
     $app->response()->header("Content-Type", $finfo->file($absPath));
     echo file_get_contents($absPath);
-});
-
-
-
-$app->put('/:uid/:category/:name', function ($uid, $category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
-     $app->response()->header("Access-Control-Allow-Origin", "*");
-     $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
-     $result = $o->verify($app->request());
-     $absPath = $remoteStorageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . $result->resource_owner_id . DIRECTORY_SEPARATOR . $category . DIRECTORY_SEPARATOR . $name;
-
-    // user directory
-    if(!file_exists(dirname(dirname($absPath)))) {
-        if (@mkdir(dirname(dirname($absPath)), 0775) === FALSE) {
-            $app->halt(500, "Unable to create directory");
-        }
-    }
-
-    // category directory
-    if(!file_exists(dirname($absPath))) {
-        if (@mkdir(dirname($absPath), 0775) === FALSE) {
-            $app->halt(500, "Unable to create directory");
-        }
-    }
-    file_put_contents($absPath, $app->request()->getBody());
-});
-
-$app->delete('/:uid/:category/:name', function ($uid, $category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
-    echo "DELETE /var/www/html/storage/$category/$name";
-});
-
-$app->options('/:uid/:category/:name', function($uid, $category, $name) use ($app) {
-    $app->response()->header('Access-Control-Allow-Origin', $app->request()->headers('Origin'));
-    $app->response()->header('Access-Control-Allow-Methods','GET, PUT, DELETE');
-    $app->response()->header('Access-Control-Allow-Headers','content-length, authorization');
 });
 
 $app->get('/lrdd/', function() use ($app) {
