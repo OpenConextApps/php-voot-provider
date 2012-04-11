@@ -134,6 +134,15 @@ $app->get('/:category/:name', function ($category, $name) use ($app, $oauthConfi
                 $result->resource_owner_id . DIRECTORY_SEPARATOR . 
                 $category . DIRECTORY_SEPARATOR . 
                 $name;
+
+    // user directory
+    if(!file_exists(dirname(dirname($absPath)))) {
+        if (@mkdir(dirname(dirname($absPath)), 0775) === FALSE) {
+            $app->halt(500, "Unable to create directory");
+        }
+    }
+
+    // category directory
     if(!file_exists(dirname($absPath))) {
         if (@mkdir(dirname($absPath), 0775) === FALSE) {
             $app->halt(500, "Unable to create directory");
@@ -154,6 +163,14 @@ $app->put('/:category/:name', function ($category, $name) use ($app, $oauthConfi
      $result = $o->verify($app->request());
      $absPath = $remoteStorageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . $result->resource_owner_id . DIRECTORY_SEPARATOR . $category . DIRECTORY_SEPARATOR . $name;
 
+    // user directory
+    if(!file_exists(dirname(dirname($absPath)))) {
+        if (@mkdir(dirname(dirname($absPath)), 0775) === FALSE) {
+            $app->halt(500, "Unable to create directory");
+        }
+    }
+
+    // category directory
     if(!file_exists(dirname($absPath))) {
         if (@mkdir(dirname($absPath), 0775) === FALSE) {
             $app->halt(500, "Unable to create directory");
