@@ -2,6 +2,7 @@
 
 # create directories and set permissions
 mkdir -p data
+mkdir -p data/files
 mkdir -p ext
 mkdir -p ext/js
 docs/reset_oauth.sh

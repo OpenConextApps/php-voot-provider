@@ -27,7 +27,7 @@ $app->error(function ( Exception $e ) use ($app) {
             $app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "You are not authorized to perform this operation."), 403);
             break;
         default:
-            $app->halt(500);
+            $app->halt(500, $e->getMessage());
     }
 });
 
@@ -134,6 +134,11 @@ $app->get('/:category/:name', function ($category, $name) use ($app, $oauthConfi
                 $result->resource_owner_id . DIRECTORY_SEPARATOR . 
                 $category . DIRECTORY_SEPARATOR . 
                 $name;
+    if(!file_exists(dirname($absPath))) {
+        if (@mkdir(dirname($absPath), 0775) === FALSE) {
+            $app->halt(500, "Unable to create directory");
+        }
+    }
 
     if(!file_exists($absPath) || !is_file($absPath)) {
         $app->halt(404, "File Not Found");
@@ -147,8 +152,14 @@ $app->put('/:category/:name', function ($category, $name) use ($app, $oauthConfi
      $app->response()->header("Access-Control-Allow-Origin", "*");
      $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
      $result = $o->verify($app->request());
-     $absPath = $config['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . $result->resource_owner_id . DIRECTORY_SEPARATOR . $category . DIRECTORY_SEPARATOR . $name;
-     file_put_contents($absPath, $app->request()->getBody());
+     $absPath = $remoteStorageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . $result->resource_owner_id . DIRECTORY_SEPARATOR . $category . DIRECTORY_SEPARATOR . $name;
+
+    if(!file_exists(dirname($absPath))) {
+        if (@mkdir(dirname($absPath), 0775) === FALSE) {
+            $app->halt(500, "Unable to create directory");
+        }
+    }
+    file_put_contents($absPath, $app->request()->getBody());
 });
 
 $app->delete('/:category/:name', function ($category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
