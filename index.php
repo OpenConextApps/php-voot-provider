@@ -133,13 +133,19 @@ $app->post('/oauth/clients', function() use ($app, $oauthStorage, $oauthConfig) 
 });
 
 $app->get('/:uid/:category/:name', function ($uid, $category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
-     $app->response()->header("Access-Control-Allow-Origin", "*");
-     $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
-     $result = $o->verify($app->request());
-     $absPath = $remoteStorageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
-                $result->resource_owner_id . DIRECTORY_SEPARATOR . 
-                $category . DIRECTORY_SEPARATOR . 
-                $name;
+    $app->response()->header("Access-Control-Allow-Origin", "*");
+
+    if($app->request()->headers("Authorization") === NULL) {    
+        // if no authorization header is available try the next "public" route
+        $app->pass();
+    }
+
+    $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
+    $result = $o->verify($app->request());
+    $absPath = $remoteStorageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
+            $result->resource_owner_id . DIRECTORY_SEPARATOR . 
+            $category . DIRECTORY_SEPARATOR . 
+            $name;
 
     // user directory
     if(!file_exists(dirname(dirname($absPath)))) {
@@ -162,6 +168,22 @@ $app->get('/:uid/:category/:name', function ($uid, $category, $name) use ($app, 
     $app->response()->header("Content-Type", $finfo->file($absPath));
     echo file_get_contents($absPath);
 });
+
+$app->get('/:uid/public/:name', function ($uid, $name) use ($app, $oauthConfig, $remoteStorageConfig) {
+    $app->response()->header("Access-Control-Allow-Origin", "*");
+    $absPath = $remoteStorageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
+               $uid . DIRECTORY_SEPARATOR . 
+               "public" . DIRECTORY_SEPARATOR . 
+               $name;
+    if(!file_exists($absPath) || !is_file($absPath)) {
+        $app->halt(404, "File Not Found");
+    }
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $app->response()->header("Content-Type", $finfo->file($absPath));
+    echo file_get_contents($absPath);
+});
+
+
 
 $app->put('/:uid/:category/:name', function ($uid, $category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
      $app->response()->header("Access-Control-Allow-Origin", "*");
