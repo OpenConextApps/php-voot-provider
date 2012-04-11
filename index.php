@@ -1,7 +1,6 @@
 <?php
 require_once 'ext/Slim/Slim/Slim.php';
 require_once 'lib/OAuth/AuthorizationServer.php';
-require_once 'lib/Voot/Provider.php';
 
 $app = new Slim(array(
     // we need to disable Slim's session handling due to incompatibilies with
@@ -15,7 +14,7 @@ $app->error(function ( Exception $e ) use ($app) {
         case "VerifyException":
             // the request for the resource was not valid, tell client
             list($error, $description) = explode(":", $e->getMessage());
-            $app->response()->header('WWW-Authenticate', 'realm="VOOT API",error="' . $error . '",error_description="' . $description . '"');
+            $app->response()->header('WWW-Authenticate', 'realm="remoteStorage API",error="' . $error . '",error_description="' . $description . '"');
             $app->response()->status(401);
             break;
         case "OAuthException":
@@ -32,16 +31,12 @@ $app->error(function ( Exception $e ) use ($app) {
     }
 });
 
-$vootConfig = parse_ini_file("config" . DIRECTORY_SEPARATOR . "voot.ini", TRUE);
 $oauthConfig = parse_ini_file("config" . DIRECTORY_SEPARATOR . "oauth.ini", TRUE);
+$remoteStorageConfig = parse_ini_file("config" . DIRECTORY_SEPARATOR . "remoteStorage.ini", TRUE);
 
 $oauthStorageBackend = $oauthConfig['OAuth']['storageBackend'];
 require_once "lib/OAuth/$oauthStorageBackend.php";
 $oauthStorage = new $oauthStorageBackend($oauthConfig[$oauthStorageBackend]);
-
-$vootStorageBackend = $vootConfig['voot']['storageBackend'];
-require_once "lib/Voot/$vootStorageBackend.php";
-$vootStorage = new $vootStorageBackend($vootConfig[$vootStorageBackend]);
 
 $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $oauthConfig) {
     $authMech = $oauthConfig['OAuth']['authenticationMechanism'];
@@ -131,26 +126,39 @@ $app->post('/oauth/clients', function() use ($app, $oauthStorage, $oauthConfig) 
 
 });
 
-$app->get('/groups/:name', function ($name) use ($app, $oauthConfig, $oauthStorage, $vootStorage) {
-    // enable CORS (http://enable-cors.org)
-    $app->response()->header("Access-Control-Allow-Origin", "*");
-    $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
-    $result = $o->verify($app->request());
-    $g = new Provider($vootStorage);
-    $grp_array = $g->isMemberOf($result->resource_owner_id, $app->request()->get('startIndex'), $app->request()->get('count'));
-    $app->response()->header('Content-Type','application/json');
-    echo json_encode($grp_array);
+$app->get('/:category/:name', function ($category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
+     $app->response()->header("Access-Control-Allow-Origin", "*");
+     $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
+     $result = $o->verify($app->request());
+     $absPath = $remoteStorageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
+                $result->resource_owner_id . DIRECTORY_SEPARATOR . 
+                $category . DIRECTORY_SEPARATOR . 
+                $name;
+
+    if(!file_exists($absPath) || !is_file($absPath)) {
+        $app->halt(404, "File Not Found");
+    }
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $app->response()->header("Content-Type", $finfo->file($absPath));
+    echo file_get_contents($absPath);
 });
 
-$app->get('/people/:name/:groupId', function ($name, $groupId) use ($app, $oauthConfig, $oauthStorage, $vootStorage) {
-    // enable CORS (http://enable-cors.org)
-    $app->response()->header("Access-Control-Allow-Origin", "*");
-    $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
-    $result = $o->verify($app->request());
-    $g = new Provider($vootStorage);
-    $grp_array = $g->getGroupMembers($result->resource_owner_id, $groupId, $app->request()->get('startIndex'), $app->request()->get('count'));
-    $app->response()->header('Content-Type','application/json');
-    echo json_encode($grp_array);
+$app->put('/:category/:name', function ($category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
+     $app->response()->header("Access-Control-Allow-Origin", "*");
+     $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
+     $result = $o->verify($app->request());
+     $absPath = $config['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . $result->resource_owner_id . DIRECTORY_SEPARATOR . $category . DIRECTORY_SEPARATOR . $name;
+     file_put_contents($absPath, $app->request()->getBody());
+});
+
+$app->delete('/:category/:name', function ($category, $name) use ($app, $oauthConfig, $remoteStorageConfig, $oauthStorage) {
+    echo "DELETE /var/www/html/storage/$category/$name";
+});
+
+$app->options('/:category/:name', function($category, $name) use ($app) {
+    $app->response()->header('Access-Control-Allow-Origin', $app->request()->headers('Origin'));
+    $app->response()->header('Access-Control-Allow-Methods','GET, PUT, DELETE');
+    $app->response()->header('Access-Control-Allow-Headers','content-length, authorization');
 });
 
 $app->run();
