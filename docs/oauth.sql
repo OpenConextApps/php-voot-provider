@@ -24,4 +24,6 @@ CREATE TABLE `Client` (
   `redirect_uri` text,
   `type` text
 );
-INSERT INTO `Client` VALUES ('voot','VOOT Demo Client', NULL,'http://localhost/voot/client/vootClient.html','public');
+
+INSERT INTO "Client" VALUES('http://tutorial.unhosted.5apps.com/receive_token.html','5apps',NULL,'http://tutorial.unhosted.5apps.com/receive_token.html','public');
+INSERT INTO "Client" VALUES('http://libredocs.org/closeDialog.html','Libre Docs',NULL,'http://libredocs.org/closeDialog.html','public');
