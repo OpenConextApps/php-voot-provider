@@ -28,6 +28,14 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->execute();
     }
 
+    public function updateApprovedScope($clientId, $resourceOwner, $scope) {
+        $stmt = $this->_pdo->prepare("UPDATE Approval SET scope = :scope WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id");
+        $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
+        $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
+        $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
+        return $stmt->execute();
+    }
+
     public function getApprovedScope($clientId, $resourceOwner) {
         $stmt = $this->_pdo->prepare("SELECT * FROM Approval WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);

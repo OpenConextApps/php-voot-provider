@@ -49,7 +49,7 @@ $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $oauthConfig
     $ro = new $authMech($oauthConfig[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
     $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
-    $result = $o->authorize($resourceOwner, $app->request());
+    $result = $o->authorize($resourceOwner, $app->request()->get());
     // we know that all request parameters we used below are acceptable because they were verified by the authorize method.
     // Do something with case where no scope is requested!
     if($result['action'] === 'ask_approval') { 
@@ -59,7 +59,8 @@ $app->get('/oauth/authorize', function () use ($app, $oauthStorage, $oauthConfig
             'clientName' => $client->name,
             'redirectUri' => $client->redirect_uri,
             'scope' => $app->request()->get('scope'), 
-            'authorizeNonce' => $result['authorize_nonce']));
+            'authorizeNonce' => $result['authorize_nonce'],
+            'allowFilter' => $oauthConfig['OAuth']['allowResourceOwnerScopeFiltering']));
     } else {
         $app->redirect($result['url']);
     }
@@ -71,7 +72,7 @@ $app->post('/oauth/authorize', function () use ($app, $oauthStorage, $oauthConfi
     $ro = new $authMech($oauthConfig[$authMech]);
     $resourceOwner = $ro->getResourceOwnerId();
     $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
-    $result = $o->approve($resourceOwner, $app->request());
+    $result = $o->approve($resourceOwner, $app->request()->get(), $app->request()->post());
     $app->redirect($result['url']);
 });
 
@@ -117,7 +118,7 @@ $app->get('/oauth/clients', function() use ($app, $oauthStorage, $oauthConfig) {
 $app->post('/oauth/clients', function() use ($app, $oauthStorage, $oauthConfig) {
     // FIXME: there is no "CSRF" protection here. Everyone who knows a client_id 
     //        can remove or add! an application by crafting a POST call to this 
-    //        endpoint. IMPACT: high risk, fake client registration
+    //        endpoint. IMPACT: low, XSS required, how to fake POST on other domain?
     $authMech = $oauthConfig['OAuth']['authenticationMechanism'];
     require_once "lib/OAuth/$authMech.php";
     $ro = new $authMech($oauthConfig[$authMech]);
