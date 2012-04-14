@@ -12,6 +12,14 @@ authenticationMechanism = "DummyResourceOwner"
 ; the scopes supported by the resource server
 supportedScopes[] = "read"
 supportedScopes[] = "write"
+supportedScopes[] = "public"
+supportedScopes[] = "tutorial"
+supportedScopes[] = "documents"
+supportedScopes[] = "contacts"
+
+; bug in OAuth in Unhosted/remoteStorage uses "," to separate scopes
+supportedScopes[] = "public,tutorial"
+supportedScopes[] = "documents,contacts,public"
 
 ; makes it possible for resource owners to deselect some of the 
 ; scope fields requested by the client
