@@ -27,3 +27,4 @@ CREATE TABLE `Client` (
 
 INSERT INTO "Client" VALUES('http://tutorial.unhosted.5apps.com/receive_token.html','5apps',NULL,'http://tutorial.unhosted.5apps.com/receive_token.html','public');
 INSERT INTO "Client" VALUES('http://libredocs.org/closeDialog.html','Libre Docs',NULL,'http://libredocs.org/closeDialog.html','public');
+INSERT INTO "Client" VALUES('http://todomvc.unhosted.5apps.com/syncer/dialog.html','Todos',NULL,'http://todomvc.unhosted.5apps.com/syncer/dialog.html','public');

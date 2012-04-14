@@ -16,6 +16,7 @@ supportedScopes[] = "public"
 supportedScopes[] = "tutorial"
 supportedScopes[] = "documents"
 supportedScopes[] = "contacts"
+supportedScopes[] = "tasks"
 
 ; bug in OAuth in Unhosted/remoteStorage uses "," to separate scopes
 supportedScopes[] = "public,tutorial"
