@@ -20,7 +20,7 @@
         jso_configure({
             "voot": {
                 client_id: "voot",
-                redirect_uri: window.location,
+                redirect_uri: "http://localhost/voot/client/vootClient.html",
                 authorization: "http://localhost/voot/oauth/authorize"
             }
         });
@@ -32,7 +32,7 @@
         $.oajax({
             url: "http://localhost/voot/groups/@me",
             jso_provider: "voot",
-            jso_scopes: ["read"],
+            jso_scopes: ["read","write"],
             jso_allowia: true,
             dataType: 'json',
             success: function(data) {

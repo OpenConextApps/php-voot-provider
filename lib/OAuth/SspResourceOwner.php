@@ -3,7 +3,7 @@
 class SspResourceOwner implements IResourceOwner {
 
     private $_config;
-    private $_resourceOwnerAttributes;
+    private $_ssp;
 
     public function __construct(array $config) {
         $this->_config = $config;
@@ -13,31 +13,25 @@ class SspResourceOwner implements IResourceOwner {
         }
         require_once $this->_config['sspPath'];
 
-        $this->_resourceOwnerAttributes = array();
-    }
-
-    private function _performAuthentication() {
-        $as = new SimpleSAML_Auth_Simple($this->_config['authSource']);
-        $as->requireAuth();
-        $this->_resourceOwnerAttributes = $as->getAttributes();
+        $this->_ssp = new SimpleSAML_Auth_Simple($this->_config['authSource']);
     }
 
     public function getResourceOwnerId() {
-        // FIXME: really better error checking, maybe user is authenticated but
-        // the attribute 'uid' is not available!
-        if(!array_key_exists($this->_config['resourceOwnerIdAttributeName'], $this->_resourceOwnerAttributes)) {
-            $this->_performAuthentication();
+        $this->_ssp->requireAuth();
+        $attributes = $this->_ssp->getAttributes();
+        if(!array_key_exists($this->_config['resourceOwnerIdAttributeName'], $attributes)) {
+            throw new Exception("resourceOwnerIdAttributeName is not available in SAML attributes");
         }
-        return $this->_resourceOwnerAttributes[$this->_config['resourceOwnerIdAttributeName']][0];
+        return $attributes[$this->_config['resourceOwnerIdAttributeName']][0];
     }
 
     public function getResourceOwnerDisplayName() {
-        // FIXME: really better error checking, maybe user is authenticated but
-        // the attribute 'dn' is not available!
-        if(!array_key_exists('dn', $this->_resourceOwnerAttributes)) {
-            $this->_performAuthentication();
+        $this->_ssp->requireAuth();
+        $attributes = $this->_ssp->getAttributes();
+        if(!array_key_exists($this->_config['resourceOwnerDisplayNameAttributeName'], $attributes)) {
+            throw new Exception("resourceOwnerDisplayNameAttributeName is not available in SAML attributes");
         }
-        return $this->_resourceOwnerAttributes['dn'][0];
+        return $attributes[$this->_config['resourceOwnerDisplayNameAttributeName']][0];
     }
 
 }
