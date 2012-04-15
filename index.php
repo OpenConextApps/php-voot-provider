@@ -136,7 +136,15 @@ $app->get('/groups/:name', function ($name) use ($app, $oauthConfig, $oauthStora
     // enable CORS (http://enable-cors.org)
     $app->response()->header("Access-Control-Allow-Origin", "*");
     $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
-    $result = $o->verify($app->request());
+
+    // Apache Only!
+    $httpHeaders = apache_request_headers();
+    if(!array_key_exists("Authorization", $httpHeaders)) {
+        throw new VerifyException("invalid_request: authorization header missing");
+    }
+    $authorizationHeader = $httpHeaders['Authorization'];
+
+    $result = $o->verify($authorizationHeader);
     $g = new Provider($vootStorage);
     $grp_array = $g->isMemberOf($result->resource_owner_id, $app->request()->get('startIndex'), $app->request()->get('count'));
     $app->response()->header('Content-Type','application/json');
@@ -147,7 +155,15 @@ $app->get('/people/:name/:groupId', function ($name, $groupId) use ($app, $oauth
     // enable CORS (http://enable-cors.org)
     $app->response()->header("Access-Control-Allow-Origin", "*");
     $o = new AuthorizationServer($oauthStorage, $oauthConfig['OAuth']);
-    $result = $o->verify($app->request());
+
+    // Apache Only!
+    $httpHeaders = apache_request_headers();
+    if(!array_key_exists("Authorization", $httpHeaders)) {
+        throw new VerifyException("invalid_request: authorization header missing");
+    }
+    $authorizationHeader = $httpHeaders['Authorization'];
+
+    $result = $o->verify($authorizationHeader);
     $g = new Provider($vootStorage);
     $grp_array = $g->getGroupMembers($result->resource_owner_id, $groupId, $app->request()->get('startIndex'), $app->request()->get('count'));
     $app->response()->header('Content-Type','application/json');
