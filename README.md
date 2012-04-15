@@ -88,7 +88,7 @@ that do work.
 The default OAuth token store contains one OAuth client. To add your own you
 can use the SQLite command line tool to add some:
 
-    $ echo "INSERT INTO Client VALUES('client_id',"Client Description",NULL,'http://host.tld/redirect_uri','public');" | sqlite3 data/oauth2.sqlite
+    $ echo "INSERT INTO `Client` VALUES ('voot','Demo Client', 'This is a simple JavaScript client for demonstration purposes.', NULL,'http://localhost/voot/client/vootClient.html','public');" | sqlite3 data/oauth2.sqlite
 
 In the future a web application will be written for this to allow designated
 users to administer client registrations.
