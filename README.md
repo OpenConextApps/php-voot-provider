@@ -100,4 +100,9 @@ A JavaScript client is included to test the VOOT provider. It uses the
 be found in the `client/vootClient.html`. Modify the client code to point to the
 correct OAuth authorization endpoint and API URL.
 
+An endpoint is defined on the OAuth authorization server that can be used
+by the user to revoke authorization to clients at `/oauth/revoke`. An endpoint 
+for the administrator is `/oauth/clients` where the registered clients can be
+found. In the future this (or a similar) endpoint will be used to (dynamically)
+register new clients.
 
