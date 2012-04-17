@@ -22,6 +22,10 @@ supportedScopes[] = "tasks"
 supportedScopes[] = "public,tutorial"
 supportedScopes[] = "documents,contacts,public"
 
+; message to display on authorization dialog asking the user for permission
+; to access the resources
+protectedResourceDescription = "An application wants to access your data."
+
 ; makes it possible for resource owners to deselect some of the 
 ; scope fields requested by the client
 allowResourceOwnerScopeFiltering = FALSE

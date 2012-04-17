@@ -40,7 +40,7 @@ various aspects can be configured. To configure the SAML integration (in `oauth.
 The default OAuth token store contains one OAuth client. To add your own you
 can use the SQLite command line tool to add some:
 
-    $ echo "INSERT INTO Client VALUES('client_id',"Client Description",NULL,'http://host.tld/redirect_uri','public');" | sqlite3 data/oauth2.sqlite
+    $ echo "INSERT INTO Client VALUES ('voot','Demo Client', 'This is a simple JavaScript client for demonstration purposes.', NULL,'http://localhost/voot/client/vootClient.html','public');" | sqlite3 data/oauth2.sqlite
 
 In the future a web application will be written for this to allow designated
 users to administer client registrations.
@@ -67,3 +67,9 @@ actual installation. Also use a `https` URI whenever possible!
 # Testing
 One can test the remoteStorage provider by using 
 http://tutorial.unhosted.5apps.com.
+
+An endpoint is defined on the OAuth authorization server that can be used
+by the user to revoke authorization to clients at `/oauth/revoke`. An endpoint 
+for the administrator is `/oauth/clients` where the registered clients can be
+found. In the future this (or a similar) endpoint will be used to (dynamically)
+register new clients.

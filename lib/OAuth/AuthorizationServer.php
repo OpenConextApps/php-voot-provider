@@ -8,7 +8,7 @@ interface IResourceOwner {
 interface IOAuthStorage {
     public function getClient             ($clientId);
     public function storeApprovedScope    ($clientId, $resourceOwner, $scope);
-    public function updateApprovedScope    ($clientId, $resourceOwner, $scope);
+    public function updateApprovedScope   ($clientId, $resourceOwner, $scope);
 
     public function getApprovedScope      ($clientId, $resourceOwner);
     public function generateAccessToken   ($clientId, $resourceOwner, $scope, $expiry);
@@ -169,30 +169,15 @@ class AuthorizationServer {
         }
     }
 
-    public function verify(Slim_Http_Request $r) {
+    public function verify($authorizationHeader) {
         // b64token = 1*( ALPHA / DIGIT / "-" / "." / "_" / "~" / "+" / "/" ) *"="
         $b64TokenRegExp = '(?:[[:alpha:][:digit:]-._~+/]+=*)';
 
-        // FIXME: only works on Apache!
-        $headers = apache_request_headers();
-        if(!array_key_exists("Authorization", $headers)) {
-            throw new VerifyException("invalid_request: authorization header missing");
-        }
-        $authzHeader = $headers['Authorization'];
-        
-        $result = preg_match('|^Bearer (?P<value>' . $b64TokenRegExp . ')$|', $authzHeader, $matches);
+        $result = preg_match('|^Bearer (?P<value>' . $b64TokenRegExp . ')$|', $authorizationHeader, $matches);
         if($result === FALSE || $result === 0) {
             throw new VerifyException("invalid_token: the access token is malformed");
         }
-
-        //$accessToken = base64_decode($matches['value'], TRUE);
-        //if($accessToken === FALSE) {
-        //    throw new Exception("invalid_token: the access token is malformed");
-        //}
         $accessToken = $matches['value'];
-
-
-        // FIXME: getAccessToken in Storage
         $token = $this->_storage->getAccessToken($accessToken);
         if($token === FALSE) {
             throw new VerifyException("invalid_token: the access token is invalid");

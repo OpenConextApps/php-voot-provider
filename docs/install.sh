@@ -36,25 +36,3 @@ else
 	cd ../../
 fi
 
-####################################
-# Dependencies for the demo client #
-####################################
-
-# fetch jquery
-if [ ! -f ext/js/jquery.js ]
-then
-    wget -O ext/js/jquery.js http://code.jquery.com/jquery.min.js
-fi
-
-# fetch jsrender (JavaScript Template Rendering for jQuery)
-if [ ! -f ext/js/jsrender.js ]
-then
-    wget -O ext/js/jsrender.js https://raw.github.com/BorisMoore/jsrender/master/jsrender.js
-fi
-
-# fetch jso (JavaScript OAuth 2 client)
-if [ ! -f ext/js/jso.js ]
-then
-    wget -O ext/js/jso.js https://raw.github.com/andreassolberg/jso/master/jso.js
-fi
-
