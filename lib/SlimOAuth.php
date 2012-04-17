@@ -5,52 +5,59 @@ require_once 'lib/OAuth/AuthorizationServer.php';
 class SlimOAuth {
 
     private $_app;
+    private $_storage;
+    private $_config;
+
+    private $_as;
+    private $_resourceOwner;
 
     public function __construct(Slim $app, IOAuthStorage $storage, array $config) {
         $this->_app = $app;
         $this->_storage = $storage;
         $this->_config = $config;
 
-        // in PHP 5.4 $this is possible.
+        $authMech = $this->_config['OAuth']['authenticationMechanism'];
+        require_once "lib/OAuth/$authMech.php";
+        $ro = new $authMech($this->_config[$authMech]);
+        $this->_resourceOwner = $ro->getResourceOwnerId();
+        $this->_as = new AuthorizationServer($this->_storage, $this->_config['OAuth']);
+
+        // in PHP 5.4 $this is possible inside anonymous functions.
         $self = &$this;
 
         $this->_app->get('/oauth/authorize', function () use ($self) {
-            $self->_authorize();
+            $self->authorize();
         });
 
         $this->_app->post('/oauth/authorize', function () use ($self) {
-            $self->_approve();
+            $self->approve();
         });
 
         $this->_app->get('/oauth/revoke', function () use ($self) {
-            $self->_approvals();
+            $self->approvals();
         });
 
         $this->_app->post('/oauth/revoke', function () use ($self) {
-            $self->_revoke();
+            $self->revoke();
         });
 
         $this->_app->get('/oauth/clients', function () use ($self) {
-            $self->_clients();
+            $self->clients();
         });
         
         $this->_app->post('/oauth/clients', function () use ($self) {
-            $self->_register();
+            $self->register();
         });
 
         $this->_app->error(function(Exception $e) use ($self) {
-            $self->_errorHandler($e);
+            $self->errorHandler($e);
         });
 
     }
 
-    public function _authorize() {
-        $authMech = $this->_config['OAuth']['authenticationMechanism'];
-        require_once "lib/OAuth/$authMech.php";
-        $ro = new $authMech($this->_config[$authMech]);
-        $resourceOwner = $ro->getResourceOwnerId();
-        $o = new AuthorizationServer($this->_storage, $this->_config['OAuth']);
-        $result = $o->authorize($resourceOwner, $this->_app->request()->get());
+    public function authorize() {
+        $result = $this->_as->authorize($this->_resourceOwner, $this->_app->request()->get());
+
         // we know that all request parameters we used below are acceptable because they were verified by the authorize method.
         // Do something with case where no scope is requested!
         if($result['action'] === 'ask_approval') { 
@@ -67,26 +74,17 @@ class SlimOAuth {
         }
     }
 
-    public function _approve() {
-        $authMech = $this->_config['OAuth']['authenticationMechanism'];
-        require_once "lib/OAuth/$authMech.php";
-        $ro = new $authMech($this->_config[$authMech]);
-        $resourceOwner = $ro->getResourceOwnerId();
-        $o = new AuthorizationServer($this->_storage, $this->_config['OAuth']);
-        $result = $o->approve($resourceOwner, $this->_app->request()->get(), $this->_app->request()->post());
+    public function approve() {
+        $result = $this->_as->approve($this->_resourceOwner, $this->_app->request()->get(), $this->_app->request()->post());
         $this->_app->redirect($result['url']);
     }
 
-    public function _approvals() {
-        $authMech = $this->_config['OAuth']['authenticationMechanism'];
-        require_once "lib/OAuth/$authMech.php";
-        $ro = new $authMech($this->_config[$authMech]);
-        $resourceOwner = $ro->getResourceOwnerId();
-        $approvals = $this->_storage->getApprovals($resourceOwner);
+    public function approvals() {
+        $approvals = $this->_storage->getApprovals($this->_resourceOwner);
         $this->_app->render('listApprovals.php', array( 'approvals' => $approvals));
     }
 
-    public function _revoke() {
+    public function revoke() {
         // FIXME: there is no "CSRF" protection here. Everyone who knows a client_id and 
         //        scope can remove an approval for any (authenticated) user by crafting
         //        a POST call to this endpoint. IMPACT: low risk, denial of service.
@@ -95,36 +93,24 @@ class SlimOAuth {
         //        by this service if the user wants this. Maybe we should have a 
         //        checkbox "terminate current access" or "keep current access
         //        tokens available for at most 1h"
-        $authMech = $this->_config['OAuth']['authenticationMechanism'];
-        require_once "lib/OAuth/$authMech.php";
-        $ro = new $authMech($this->_config[$authMech]);
-        $resourceOwner = $ro->getResourceOwnerId();
-        $this->_storage->deleteApproval($this->_app->request()->post('client_id'), $resourceOwner, $this->_app->request()->post('scope'));
-        $approvals = $this->_storage->getApprovals($resourceOwner);
+        $this->_storage->deleteApproval($this->_app->request()->post('client_id'), $this->_resourceOwner, $this->_app->request()->post('scope'));
+        $approvals = $this->_storage->getApprovals($this->_resourceOwner);
         $this->_app->render('listApprovals.php', array( 'approvals' => $approvals));
     }
 
-    public function _clients() {
-        $authMech = $this->_config['OAuth']['authenticationMechanism'];
-        require_once "lib/OAuth/$authMech.php";
-        $ro = new $authMech($this->_config[$authMech]);
-        $resourceOwner = $ro->getResourceOwnerId();
-        if(!in_array($resourceOwner, $this->_config['OAuth']['adminResourceOwnerId'])) {
+    public function clients() {
+        if(!in_array($this->_resourceOwner, $this->_config['OAuth']['adminResourceOwnerId'])) {
             throw new AdminException("not an administrator");
         }
         $registeredClients = $this->_storage->getClients();
         $this->_app->render('listClients.php', array( 'registeredClients' => $registeredClients));
     }
 
-    public function _register() {
+    public function register() {
         // FIXME: there is no "CSRF" protection here. Everyone who knows a client_id 
         //        can remove or add! an application by crafting a POST call to this 
         //        endpoint. IMPACT: low, XSS required, how to fake POST on other domain?
-        $authMech = $this->_config['OAuth']['authenticationMechanism'];
-        require_once "lib/OAuth/$authMech.php";
-        $ro = new $authMech($this->_config[$authMech]);
-        $resourceOwner = $ro->getResourceOwnerId();
-        if(!in_array($resourceOwner, $this->_config['OAuth']['adminResourceOwnerId'])) {
+        if(!in_array($this->_resourceOwner, $this->_config['OAuth']['adminResourceOwnerId'])) {
             throw new AdminException("not an administrator");
         }
         
@@ -132,7 +118,7 @@ class SlimOAuth {
         //        current access tokens?
     }
 
-    public function _errorHandler(Exception $e) {
+    public function errorHandler(Exception $e) {
         switch(get_class($e)) {
             case "VerifyException":
                 // the request for the resource was not valid, tell client
