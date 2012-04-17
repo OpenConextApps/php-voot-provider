@@ -5,15 +5,24 @@ require_once 'lib/Voot/Provider.php';
 class SlimVoot {
 
     private $_app;
+    private $_oauthConfig;
+    private $_vootConfig;
+
     private $_oauthStorage;
     private $_vootStorage;
-    private $_config;
 
-    public function __construct(Slim $app, IOAuthStorage $oauthStorage, IVootStorage $vootStorage, array $config) {
+    public function __construct(Slim $app, array $oauthConfig, array $vootConfig) {
         $this->_app = $app;
-        $this->_oauthStorage = $oauthStorage;
-        $this->_vootStorage = $vootStorage;
-        $this->_config = $config;
+        $this->_oauthConfig = $oauthConfig;
+        $this->_vootConfig = $vootConfig;
+
+        $oauthStorageBackend = $this->_oauthConfig['OAuth']['storageBackend'];
+        require_once "lib/OAuth/$oauthStorageBackend.php";
+        $this->_oauthStorage = new $oauthStorageBackend($this->_oauthConfig[$oauthStorageBackend]);
+
+        $vootStorageBackend = $this->_vootConfig['voot']['storageBackend'];
+        require_once "lib/Voot/$vootStorageBackend.php";
+        $this->_vootStorage = new $vootStorageBackend($this->_vootConfig[$vootStorageBackend]);
 
         // in PHP 5.4 $this is possible inside anonymous functions.
         $self = &$this;
@@ -31,7 +40,7 @@ class SlimVoot {
         // enable CORS (http://enable-cors.org)
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
 
-        $as = new AuthorizationServer($this->_oauthStorage, $this->_config['OAuth']);
+        $as = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
 
         // Apache Only!
         $httpHeaders = apache_request_headers();
@@ -50,7 +59,7 @@ class SlimVoot {
     public function getGroupMembers($name, $groupId) {
         // enable CORS (http://enable-cors.org)
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
-        $as = new AuthorizationServer($this->_oauthStorage, $this->_config['OAuth']);
+        $as = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
 
         // Apache Only!
         $httpHeaders = apache_request_headers();

@@ -18,7 +18,7 @@
 <body>
   <h2>Authorization Request</h2>
 
-  <p>An application wants to access your group membership details.</p>
+  <p><?php echo $protectedResourceDescription; ?></p>
 
   <form method="post" action="">
 
