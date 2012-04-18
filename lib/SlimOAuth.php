@@ -20,10 +20,6 @@ class SlimOAuth {
         require_once "lib/OAuth/$oauthStorageBackend.php";
         $this->_oauthStorage = new $oauthStorageBackend($this->_oauthConfig[$oauthStorageBackend]);
 
-        $authMech = $this->_oauthConfig['OAuth']['authenticationMechanism'];
-        require_once "lib/OAuth/$authMech.php";
-        $ro = new $authMech($this->_oauthConfig[$authMech]);
-        $this->_resourceOwner = $ro->getResourceOwnerId();
         $this->_as = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
 
         // in PHP 5.4 $this is possible inside anonymous functions.
@@ -59,7 +55,15 @@ class SlimOAuth {
 
     }
 
+    private function _authenticate() {
+        $authMech = $this->_oauthConfig['OAuth']['authenticationMechanism'];
+        require_once "lib/OAuth/$authMech.php";
+        $ro = new $authMech($this->_oauthConfig[$authMech]);
+        $this->_resourceOwner = $ro->getResourceOwnerId();
+    }
+
     public function authorize() {
+        $this->_authenticate();
         $result = $this->_as->authorize($this->_resourceOwner, $this->_app->request()->get());
 
         // we know that all request parameters we used below are acceptable because they were verified by the authorize method.
@@ -80,16 +84,19 @@ class SlimOAuth {
     }
 
     public function approve() {
+        $this->_authenticate();
         $result = $this->_as->approve($this->_resourceOwner, $this->_app->request()->get(), $this->_app->request()->post());
         $this->_app->redirect($result['url']);
     }
 
     public function approvals() {
+        $this->_authenticate();
         $approvals = $this->_oauthStorage->getApprovals($this->_resourceOwner);
         $this->_app->render('listApprovals.php', array( 'approvals' => $approvals));
     }
 
     public function revoke() {
+        $this->_authenticate();
         // FIXME: there is no "CSRF" protection here. Everyone who knows a client_id and 
         //        scope can remove an approval for any (authenticated) user by crafting
         //        a POST call to this endpoint. IMPACT: low risk, denial of service.
@@ -104,6 +111,7 @@ class SlimOAuth {
     }
 
     public function clients() {
+        $this->_authenticate();
         if(!in_array($this->_resourceOwner, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
             throw new AdminException("not an administrator");
         }
@@ -112,6 +120,7 @@ class SlimOAuth {
     }
 
     public function register() {
+        $this->_authenticate();
         // FIXME: there is no "CSRF" protection here. Everyone who knows a client_id 
         //        can remove or add! an application by crafting a POST call to this 
         //        endpoint. IMPACT: low, XSS required, how to fake POST on other domain?
