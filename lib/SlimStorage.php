@@ -134,11 +134,10 @@ class SlimStorage {
     public function lrdd() {
         $subject = $this->_app->request()->get('uri');
         list($x,$userAddress) = explode(":", $subject);
-        
-        // FIXME: too bad there is no helper function to get the RootUri including domain
-        $baseUri = Slim_Http_Uri::getScheme() . "://" . $_SERVER['HTTP_HOST'] . $this->_app->request()->getRootUri();
-//        $authUri = $baseUri . "/oauth/$userAddress/authorize";
-	$authUri = $baseUri . "/oauth/authorize";
+        $baseUri = $this->_app->request()->getUrl() . $this->_app->request()->getRootUri();
+
+        // $authUri = $baseUri . "/oauth/$userAddress/authorize";
+        $authUri = $baseUri . "/oauth/authorize";
         $templateUri = $baseUri . "/$userAddress/{category}/";
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
         $this->_app->response()->header("Content-Type", "application/xrd+xml; charset=UTF-8");
