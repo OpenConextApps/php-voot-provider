@@ -37,7 +37,7 @@ class SlimStorage {
         });
 
         $this->_app->get('/lrdd/', function() use ($self) {
-            $self->lrdd($uid, $category, $name);
+            $self->lrdd();
         });
 
     }
@@ -47,13 +47,22 @@ class SlimStorage {
 
         if($category !== "public") {    
             $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
-            $result = $o->verify($this->_app->request());
-            $absPath = $this->_remoteStorageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
+
+            // Apache Only!
+            $httpHeaders = apache_request_headers();
+            if(!array_key_exists("Authorization", $httpHeaders)) {
+                throw new VerifyException("invalid_request: authorization header missing");
+            }
+            $authorizationHeader = $httpHeaders['Authorization'];
+
+            $result = $o->verify($authorizationHeader);
+
+            $absPath = $this->_storageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
                     $result->resource_owner_id . DIRECTORY_SEPARATOR . 
                     $category . DIRECTORY_SEPARATOR . 
                     $name;
         } else {
-            $absPath = $this->_remoteStorageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
+            $absPath = $this->_storageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
                     $uid . DIRECTORY_SEPARATOR . 
                     "public" . DIRECTORY_SEPARATOR . 
                     $name;
@@ -84,8 +93,17 @@ class SlimStorage {
     public function putFile($uid, $category, $name) {
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
         $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
-        $result = $o->verify($this->_app->request());
-        $absPath = $this->_remoteStorageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . $result->resource_owner_id . DIRECTORY_SEPARATOR . $category . DIRECTORY_SEPARATOR . $name;
+
+        // Apache Only!
+        $httpHeaders = apache_request_headers();
+        if(!array_key_exists("Authorization", $httpHeaders)) {
+            throw new VerifyException("invalid_request: authorization header missing");
+        }
+        $authorizationHeader = $httpHeaders['Authorization'];
+
+        $result = $o->verify($authorizationHeader);
+
+        $absPath = $this->_storageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . $result->resource_owner_id . DIRECTORY_SEPARATOR . $category . DIRECTORY_SEPARATOR . $name;
 
         // user directory
         if(!file_exists(dirname(dirname($absPath)))) {
@@ -119,7 +137,8 @@ class SlimStorage {
         
         // FIXME: too bad there is no helper function to get the RootUri including domain
         $baseUri = Slim_Http_Uri::getScheme() . "://" . $_SERVER['HTTP_HOST'] . $this->_app->request()->getRootUri();
-        $authUri = $baseUri . "/oauth/$userAddress/authorize";
+//        $authUri = $baseUri . "/oauth/$userAddress/authorize";
+	$authUri = $baseUri . "/oauth/authorize";
         $templateUri = $baseUri . "/$userAddress/{category}/";
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
         $this->_app->response()->header("Content-Type", "application/xrd+xml; charset=UTF-8");
