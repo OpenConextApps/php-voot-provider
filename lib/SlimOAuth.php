@@ -41,14 +41,28 @@ class SlimOAuth {
             $self->revoke();
         });
 
-        $this->_app->get('/oauth/clients', function () use ($self) {
-            $self->clients();
-        });
-        
-        $this->_app->post('/oauth/clients', function () use ($self) {
-            $self->register();
+        // management
+        $this->_app->get('/oauth/client/:client_id', function ($clientId) use ($self) {
+            $self->getClient($clientId);
         });
 
+        $this->_app->put('/oauth/client/:client_id', function ($clientId) use ($self) {
+            $self->updateClient($clientId);
+        });
+
+        $this->_app->delete('/oauth/client/:client_id', function ($clientId) use ($self) {
+            $this->deleteClient($clientId);
+        });
+        
+        $this->_app->post('/oauth/client', function () use ($self) {
+            $self->addClient();
+        });
+
+        $this->_app->get('/oauth/client', function () use ($self) {
+            $self->getClients();
+        });
+
+        // error
         $this->_app->error(function(Exception $e) use ($self) {
             $self->errorHandler($e);
         });
@@ -110,26 +124,54 @@ class SlimOAuth {
         $this->_app->render('listApprovals.php', array( 'approvals' => $approvals));
     }
 
-    public function clients() {
+    public function getClient($clientId) {
+        $this->_authenticate();    
+        if(!in_array($this->_resourceOwner, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
+            throw new AdminException("not an administrator");
+        }
+        $result = $this->_oauthStorage->getClient($clientId);
+        if(FALSE === $result) {
+            $this->_app->halt(404);
+        }
+        return json_encode($result);
+    }
+
+    public function deleteClient($clientId) {
+        $this->_authenticate();    
+        if(!in_array($this->_resourceOwner, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
+            throw new AdminException("not an administrator");
+        }
+        $result = $this->_oauthStorage->deleteClient($clientId);
+        if(FALSE === $result) {
+            $this->_app->halt(404);
+        }
+        return json_encode($result);
+    }
+
+    public function updateClient($clientId) {
+        $this->_authenticate();    
+        if(!in_array($this->_resourceOwner, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
+            throw new AdminException("not an administrator");
+        }
+        // TODO
+    }
+
+    public function addClient() {
+        $this->_authenticate();
+        if(!in_array($this->_resourceOwner, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
+            throw new AdminException("not an administrator");
+        }
+        // TODO
+    }
+
+    // FIXME: This should be replaced by returning a JSON object...
+    public function getClients() {
         $this->_authenticate();
         if(!in_array($this->_resourceOwner, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
             throw new AdminException("not an administrator");
         }
         $registeredClients = $this->_oauthStorage->getClients();
         $this->_app->render('listClients.php', array( 'registeredClients' => $registeredClients));
-    }
-
-    public function register() {
-        $this->_authenticate();
-        // FIXME: there is no "CSRF" protection here. Everyone who knows a client_id 
-        //        can remove or add! an application by crafting a POST call to this 
-        //        endpoint. IMPACT: low, XSS required, how to fake POST on other domain?
-        if(!in_array($this->_resourceOwner, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
-            throw new AdminException("not an administrator");
-        }
-        
-        // FIXME: should deal with deletion, new registrations, delete
-        //        current access tokens?
     }
 
     public function errorHandler(Exception $e) {
