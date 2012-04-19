@@ -133,7 +133,9 @@ class SlimOAuth {
         if(FALSE === $result) {
             $this->_app->halt(404);
         }
-        return json_encode($result);
+        $response = $this->_app->response();
+        $response['Content-Type'] = 'application/json';
+        $response->body(json_encode($result));
     }
 
     public function deleteClient($clientId) {
@@ -164,14 +166,18 @@ class SlimOAuth {
         // TODO
     }
 
-    // FIXME: This should be replaced by returning a JSON object...
     public function getClients() {
-        $this->_authenticate();
+        $this->_authenticate();    
         if(!in_array($this->_resourceOwner, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
             throw new AdminException("not an administrator");
         }
-        $registeredClients = $this->_oauthStorage->getClients();
-        $this->_app->render('listClients.php', array( 'registeredClients' => $registeredClients));
+        $result = $this->_oauthStorage->getClients();
+        if(FALSE === $result) {
+            $this->_app->halt(404);
+        }
+        $response = $this->_app->response();
+        $response['Content-Type'] = 'application/json';
+        $response->body(json_encode($result));
     }
 
     public function errorHandler(Exception $e) {
