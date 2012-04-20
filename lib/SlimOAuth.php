@@ -51,7 +51,7 @@ class SlimOAuth {
         });
 
         $this->_app->delete('/oauth/client/:client_id', function ($clientId) use ($self) {
-            $this->deleteClient($clientId);
+            $self->deleteClient($clientId);
         });
         
         $this->_app->post('/oauth/client', function () use ($self) {
@@ -147,7 +147,9 @@ class SlimOAuth {
         if(FALSE === $result) {
             $this->_app->halt(404);
         }
-        return json_encode($result);
+        $response = $this->_app->response();
+        $response['Content-Type'] = 'application/json';
+        $response->body(json_encode($result));
     }
 
     public function updateClient($clientId) {
@@ -155,7 +157,13 @@ class SlimOAuth {
         if(!in_array($this->_resourceOwner, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
             throw new AdminException("not an administrator");
         }
-        // TODO
+        $result = $this->_oauthStorage->updateClient($clientId, json_decode($this->_app->request()->getBody(), TRUE));
+        if(FALSE === $result) {
+            $this->_app->halt(404);
+        }
+        $response = $this->_app->response();
+        $response['Content-Type'] = 'application/json';
+        $response->body(json_encode($result));
     }
 
     public function addClient() {
@@ -163,7 +171,15 @@ class SlimOAuth {
         if(!in_array($this->_resourceOwner, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
             throw new AdminException("not an administrator");
         }
-        // TODO
+        //var_dump(json_decode($this->_app->request()->getBody(), TRUE));
+        //die();
+        $result = $this->_oauthStorage->addClient(json_decode($this->_app->request()->getBody(), TRUE));
+        if(FALSE === $result) {
+            $this->_app->halt(500);
+        }
+        $response = $this->_app->response();
+        $response['Content-Type'] = 'application/json';
+        $response->body(json_encode($result));
     }
 
     public function getClients() {
