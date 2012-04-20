@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>OAuth Management Interface</title>
+    <script type="text/javascript" charset="utf-8" src="../ext/js/jquery.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../ext/js/jsrender.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../ext/js/jso.js"></script>
+    <script type="text/javascript" charset="utf-8" src="manage.js"></script>
+    <script id="clientListTemplate" type="text/x-jsrender">
+        <tr>
+            <td><strong>{{:name}}</strong><br><small>{{:description}}</small><td><a class="delete" href="#{{:id}}">Delete</a> | <a class="edit" href="#{{:id}}">Edit</a></td>
+        </tr>
+    </script>
+    <script id="clientEditTemplate" type="text/x-jsrender">
+        <form>
+            <label>Client Identifier <input size="40" type="text" name="id" value="{{:id}}" /></label>
+            <label>Name <input size="40" type="text" name="name" value="{{:name}}" /></label>
+            <label>Description <input size="40" type="text" name="description" value="{{:description}}" /></label>
+            <label>Secret <input size="40" type="text" name="secret" value="{{:secret}}" /></label>
+            <label>Type <select name="type"><option value="public">Public</option><option value="confidential">Confidential</option></select></label>
+            <label>Redirect URI <input size="40" type="text" name="redirect_uri" value="{{:redirect_uri}}" /></label>
+            <input type="submit" value="Update" />
+        </form>
+    </script>
+
+    <style>
+      h1 { 
+            text-align: center;
+      }
+      table {
+            border: 1px solid #000;
+            margin: 0 auto;
+            background-color: #eee;
+            border-radius: 10px;
+            padding: 10px;
+      }
+      th {
+           text-align: left;
+      }
+      div.editClient, div.addClient {
+        background-color: #eee;
+        border: 1px solid #000;
+        border-radius: 10px;
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        display: none;
+      }
+
+      label {
+        display: block;
+      }
+      input,select {
+        display: block;
+    }
+    </style>
+  </head>
+
+  <body>
+    <h1>OAuth Management Interface</h1>
+    <table>
+        <tr class="header"><th>Name</th><th>Actions</th></tr>
+    	<tbody id="clientList"></tbody>
+    </table>
+    
+    <button id="addClient" name="addClient">Add Client</button>
+
+    <div class="editClient">
+        <h1>Edit Client</h1>
+        <div class="editForm">
+        </div>
+    </div>
+
+    <div class="addClient">
+        <h1>Add Client</h1>
+        <div class="addForm">
+        </div>
+    </div>
+
+  </body>
+</html>
