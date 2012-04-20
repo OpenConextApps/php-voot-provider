@@ -15,15 +15,17 @@ interface IOAuthStorage {
     public function generateAuthorizeNonce($clientId, $resourceOwner, $scope);
     public function getAuthorizeNonce     ($clientId, $resourceOwner, $scope, $authorizeNonce);
 
-    public function getApprovals          ($resourceOwner);
-    public function deleteApproval        ($clientId, $resourceOwner, $scope);
-
-    /* management */
-    public function getClients            ();
     public function getClient             ($clientId);
+
+    // management interface
+    public function getClients            ();
     public function addClient             ($data);
     public function updateClient          ($clientId, $data);
     public function deleteClient          ($clientId);
+
+    public function getApprovals          ($resourceOwner);
+    public function deleteApproval        ($clientId, $resourceOwner, $scope);
+
 }
 
 class OAuthException extends Exception {

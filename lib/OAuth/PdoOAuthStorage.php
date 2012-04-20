@@ -37,14 +37,30 @@ class PdoOAuthStorage implements IOAuthStorage {
         $stmt->bindValue(":redirect_uri", $data['redirect_uri'], PDO::PARAM_STR);
         $stmt->bindValue(":type", $data['type'], PDO::PARAM_STR);
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
-        return $stmt->execute();
+        if(FALSE === $stmt->execute()) {
+            return FALSE;
+        }
+        return 1 === $stmt->rowCount();
     }
 
     public function addClient($data) {
         $stmt = $this->_pdo->prepare("INSERT INTO Client (id, name, description, secret, redirect_uri, type) VALUES(:client_id, :name, :description, :secret, :redirect_uri, :type)");
-        $clientId = $this->_randomHex(16);
-        if($data['type'] === "confidential") {
-            $secret = $this->_randomHex(16);
+
+        // if id is set, use it for the registration, if not generate one
+        if(array_key_exists('id', $data) && !empty($data['id'])) {
+            $clientId = $data['id'];
+        } else {
+            $clientId = $this->_randomHex(16);
+        }
+
+        // if confidential client and secret is set, use it, if confidential
+        // and secret is not set generate one
+        if(array_key_exists('type', $data) && $data['type'] === "confidential") {
+            if(array_key_exists('secret', $data) && !empty($data['secret'])) {
+                $secret = $data['secret'];
+            } else {
+                $secret = $this->_randomHex(16);
+            }
         } else {
             $secret = NULL;
         }
@@ -63,8 +79,7 @@ class PdoOAuthStorage implements IOAuthStorage {
     public function deleteClient($clientId) {
         $stmt = $this->_pdo->prepare("DELETE FROM Client WHERE id = :client_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
-        $result = $stmt->execute();
-        if (FALSE === $result) {
+        if(FALSE === $stmt->execute()) {
             return FALSE;
         }
         return 1 === $stmt->rowCount();
