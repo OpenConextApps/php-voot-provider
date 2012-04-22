@@ -36,3 +36,21 @@ else
 	cd ../../
 fi
 
+###############################
+# Dependencies for the portal #
+###############################
+
+# fetch jquery
+if [ ! -f ext/js/jquery.js ]
+then
+    wget -O ext/js/jquery.js http://code.jquery.com/jquery.min.js
+fi
+
+if [ ! -d ext/bootstrap ]
+then
+	cd ext/
+	wget -O bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip
+	unzip -o -q bootstrap.zip
+	rm bootstrap.zip
+fi
+
