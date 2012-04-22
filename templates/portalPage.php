@@ -32,12 +32,12 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="#">Demo Portal</a>
+          <a class="brand" href="#">Portal</a>
           <div class="nav-collapse">
             <ul class="nav">
               <li class="active"><a href="#">Home</a></li>
-             <!-- <li><a href="#about">About</a></li>
-              <li><a href="#contact">Contact</a></li> -->
+              <!-- how to use pull-right on an element? -->
+              <li><a href="#">Welcome <strong><?php echo $resourceOwner; ?></strong></a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -47,8 +47,32 @@
     <div class="container">
 
       <h1>Demo Portal</h1>
-      <p>Welcome <strong><?php echo $resourceOwner; ?></strong>. This is the Demo Portal for Web Applications.<br> On this page you can find selected applications that use data storage provided by this service, leaving <strong>you</strong> in charge of your data.</p>
+      <h2>My Installed Applications</h2>
+    <p>Below is a list of applications that you approved and can access your data without requiring your authorization (again). Removing them revokes this permission and also removes all currently active access tokens.</p>
+    <table class="table table-striped">
+        <tr><th>Application</th><th>Description</th><th>Action</th></tr>
+        <?php if(!empty($resourceOwnerApprovals)) { ?>
+            <?php foreach ($resourceOwnerApprovals as $r) { ?>
+                <tr>
+                    <td>
+                        <span title="<?php echo $r['id']; ?>"><?php echo $r['name']; ?></a>
+                    </td>
+                    <td>
+                        <?php echo $r['description']; ?>
+                    </td>                    
+                    <td>
+                        <a class="btn btn-success" href="<?php echo $r['redirect_uri'] . $appLaunchFragment; ?>">Launch</a>
+                        <a class="btn btn-inverse" href="#">Remove</a>
+                    </td>
+                </tr>
+            <?php } ?>
+        <?php } else { ?>
+            <tr><td class="note" colspan="3"><small>No applications installed...</small></td></tr>
+        <?php } ?>
+    </table>
 
+     <h2>Available Applications</h2>
+<p>Installing these applications will create an OAuth approval for this particular client, removing them above will remove the approval (and possibly delete all current active access tokens).</p>
     <table class="table table-striped">
         <tr><th>Application</th><th>Description</th><th>Action</th></tr>
         <?php if(!empty($registeredClients)) { ?>
@@ -61,7 +85,7 @@
                         <?php echo $r['description']; ?>
                     </td>                    
                     <td>
-                        <a href="<?php echo $r['redirect_uri'] . $appLaunchFragment; ?>">Launch</a>
+                        <a class="btn btn-success" href="<?php echo $r['redirect_uri'] . $appLaunchFragment; ?>">Install</a>
                     </td>
                 </tr>
             <?php } ?>
@@ -69,6 +93,7 @@
             <tr><td class="note" colspan="3"><small>No applications available...</small></td></tr>
         <?php } ?>
     </table>
+
 
 
     </div> <!-- /container -->

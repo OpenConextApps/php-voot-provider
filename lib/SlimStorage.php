@@ -153,9 +153,10 @@ class SlimStorage {
 
     public function showPortal() {
         $registeredClients = $this->_oauthStorage->getClients();
+        $resourceOwnerApprovals = $this->_oauthStorage->getApprovals($this->_resourceOwner);
         $baseUri = $this->_app->request()->getUrl() . $this->_app->request()->getRootUri();
         $appLaunchFragment = "#remote_storage_uri=$baseUri&remote_storage_uid=$this->_resourceOwner";
-        $this->_app->render('portalPage.php', array ('registeredClients' => $registeredClients, 'appLaunchFragment' => $appLaunchFragment, 'resourceOwner' => $this->_resourceOwner));
+        $this->_app->render('portalPage.php', array ('resourceOwnerApprovals' => $resourceOwnerApprovals, 'registeredClients' => $registeredClients, 'appLaunchFragment' => $appLaunchFragment, 'resourceOwner' => $this->_resourceOwner));
     }
 
 }
