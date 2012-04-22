@@ -17,7 +17,7 @@
 </head>
 
 <body>
-  <h2>My Portal</h2>
+  <h2>My Unhosted Portal</h2>
     <p>Hello <strong><?php echo $resourceOwner; ?></strong></p>
     <table>
         <tr><th>Application</th><th>Description</th><th>Action</th></tr>
