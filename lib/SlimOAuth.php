@@ -132,6 +132,11 @@ class SlimOAuth {
         //        current access tokens?
     }
 
+    public function getResourceOwner() {
+        $this->_authenticate();
+        return $this->_resourceOwner;
+    }
+
     public function errorHandler(Exception $e) {
         switch(get_class($e)) {
             case "VerifyException":

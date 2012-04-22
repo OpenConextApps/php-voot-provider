@@ -5,13 +5,15 @@ class SlimStorage {
     private $_app;
     private $_oauthConfig;
     private $_storageConfig;
+    private $_resourceOwner;
 
     private $_oauthStorage;
 
-    public function __construct(Slim $app, array $oauthConfig, array $storageConfig) {
+    public function __construct(Slim $app, array $oauthConfig, array $storageConfig, $resourceOwner) {
         $this->_app = $app;
         $this->_oauthConfig = $oauthConfig;
         $this->_storageConfig = $storageConfig;
+        $this->_resourceOwner = $resourceOwner;
 
         $oauthStorageBackend = $this->_oauthConfig['OAuth']['storageBackend'];
         require_once "lib/OAuth/$oauthStorageBackend.php";
@@ -38,6 +40,10 @@ class SlimStorage {
 
         $this->_app->get('/lrdd/', function() use ($self) {
             $self->lrdd();
+        });
+
+        $this->_app->get('/portal', function() use ($self) {
+            $self->showPortal();
         });
 
     }
@@ -85,8 +91,9 @@ class SlimStorage {
         if(!file_exists($absPath) || !is_file($absPath)) {
             $this->_app->halt(404, "File Not Found");
         }
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $this->_app->response()->header("Content-Type", $finfo->file($absPath));
+//        $finfo = new finfo(FILEINFO_MIME_TYPE);
+//        $this->_app->response()->header("Content-Type", $finfo->file($absPath));
+	$this->_app->response()->header("Content-Type", "application/json");
         echo file_get_contents($absPath);
     }
 
@@ -142,6 +149,13 @@ class SlimStorage {
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
         $this->_app->response()->header("Content-Type", "application/xrd+xml; charset=UTF-8");
         $this->_app->render('webFinger.php', array ( 'subject' => $subject, 'templateUri' => $templateUri, 'authUri' => $authUri));
+    }
+
+    public function showPortal() {
+        $registeredClients = $this->_oauthStorage->getClients();
+        $baseUri = $this->_app->request()->getUrl() . $this->_app->request()->getRootUri();
+        $appLaunchFragment = "#remote_storage_uri=$baseUri&remote_storage_uid=$this->_resourceOwner";
+        $this->_app->render('portalPage.php', array ('registeredClients' => $registeredClients, 'appLaunchFragment' => $appLaunchFragment, 'resourceOwner' => $this->_resourceOwner));
     }
 
 }

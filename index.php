@@ -28,7 +28,7 @@ $remoteStorageConfig = parse_ini_file("config" . DIRECTORY_SEPARATOR . "remoteSt
 $s = new SlimOAuth($app, $oauthConfig);
 
 // Storage
-$t = new SlimStorage($app, $oauthConfig, $remoteStorageConfig);
+$t = new SlimStorage($app, $oauthConfig, $remoteStorageConfig, $s->getResourceOwner());
 
 $app->run();
 
