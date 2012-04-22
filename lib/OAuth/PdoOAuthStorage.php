@@ -93,7 +93,7 @@ class PdoOAuthStorage implements IOAuthStorage {
     }
 
     public function getApprovals($resourceOwner) {
-        $stmt = $this->_pdo->prepare("SELECT a.client_id, a.scope, c.name FROM Approval a, Client c WHERE resource_owner_id = :resource_owner_id AND a.client_id = c.id");
+        $stmt = $this->_pdo->prepare("SELECT c.id, a.scope, c.name, c.description, c.redirect_uri FROM Approval a, Client c WHERE resource_owner_id = :resource_owner_id AND a.client_id = c.id");
         $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
         $result = $stmt->execute();
         if (FALSE === $result) {
