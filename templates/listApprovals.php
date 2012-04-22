@@ -26,11 +26,11 @@
             <?php foreach ($approvals as $a) { ?>
                 <tr>
                     <td>
-                        <span title="<?php echo $a['client_id']; ?>"><?php echo $a['name']; ?></a></td><td><?php echo $a['scope']; ?></td>
+                        <span title="<?php echo $a['id']; ?>"><?php echo $a['name']; ?></a></td><td><?php echo $a['scope']; ?></td>
                     <td>
                         <form method="post" action="">
                             <input type="submit" value="Revoke" />
-                            <input type="hidden" name="client_id" value="<?php echo $a['client_id']; ?>" />
+                            <input type="hidden" name="client_id" value="<?php echo $a['id']; ?>" />
                             <input type="hidden" name="scope" value="<?php echo $a['scope']; ?>" />
                         </form>
                     </td>
