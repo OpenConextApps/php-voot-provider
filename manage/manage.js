@@ -1,7 +1,5 @@
 $(document).ready(function () {
-
     var apiRoot = 'http://localhost/voot';
-
     jso_configure({
         "manage": {
             client_id: "manage",
@@ -31,14 +29,14 @@ $(document).ready(function () {
         $("a.editClient").click(function () {
             editClient($(this).data('clientId'));
         });
-        $("a.deleteClient").click(function() {
-            if(confirm("Are you sure you want to delete '" + $(this).data('clientName') + "'")) {
-               deleteClient($(this).data('clientId'));
+        $("a.deleteClient").click(function () {
+            if (confirm("Are you sure you want to delete '" + $(this).data('clientName') + "'")) {
+                deleteClient($(this).data('clientId'));
             }
         });
     }
 
-    function deleteClient(clientId) { 
+    function deleteClient(clientId) {
         $.oajax({
             url: apiRoot + "/oauth/client/" + clientId,
             jso_provider: "manage",
@@ -52,7 +50,7 @@ $(document).ready(function () {
     }
 
     function editClient(clientId) {
-        if(clientId) {
+        if (clientId) {
             // client specified, we edit
             $.oajax({
                 url: apiRoot + "/oauth/client/" + clientId,
@@ -73,7 +71,7 @@ $(document).ready(function () {
             addEditClientHandlers();
         }
     }
-    
+
     function parseForm(formData) {
         var params = {};
         $.each(formData.serializeArray(), function (k, v) {
@@ -81,7 +79,7 @@ $(document).ready(function () {
         });
         return JSON.stringify(params);
     }
-   
+
     function addEditClientHandlers() {
         $("#editModal a.close").click(function () {
             $("#editModal").hide();
@@ -92,7 +90,7 @@ $(document).ready(function () {
         $("#editModal a.editSave").click(function () {
             // FIXME: not really a nice way to fetch form data...
             var clientData = parseForm($('form.editClient'));
-            if($(this).data('clientId')) {
+            if ($(this).data('clientId')) {
                 // if clientId was available, we update
                 updateClient($(this).data('clientId'), clientData);
             } else {
@@ -133,17 +131,13 @@ $(document).ready(function () {
             }
         });
     }
-
     $("a.addClient").click(function () {
         editClient();
     });
-
 
     function initPage() {
         $("#editModal").hide();
         renderClientList();
     }
-
     initPage();
-
 });
