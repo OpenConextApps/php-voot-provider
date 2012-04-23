@@ -5,15 +5,15 @@ class SlimStorage {
     private $_app;
     private $_oauthConfig;
     private $_storageConfig;
-    private $_resourceOwner;
+    private $_slimOAuth;
 
     private $_oauthStorage;
 
-    public function __construct(Slim $app, array $oauthConfig, array $storageConfig, $resourceOwner) {
+    public function __construct(Slim $app, array $oauthConfig, array $storageConfig, SlimOAuth $s) {
         $this->_app = $app;
         $this->_oauthConfig = $oauthConfig;
         $this->_storageConfig = $storageConfig;
-        $this->_resourceOwner = $resourceOwner;
+        $this->_slimOAuth = $s;
 
         $oauthStorageBackend = $this->_oauthConfig['OAuth']['storageBackend'];
         require_once "lib/OAuth/$oauthStorageBackend.php";
@@ -153,10 +153,11 @@ class SlimStorage {
 
     public function showPortal() {
         $registeredClients = $this->_oauthStorage->getClients();
-        $resourceOwnerApprovals = $this->_oauthStorage->getApprovals($this->_resourceOwner);
+        $resourceOwner = $this->_slimOAuth->getResourceOwner();
+        $resourceOwnerApprovals = $this->_oauthStorage->getApprovals($resourceOwner);
         $baseUri = $this->_app->request()->getUrl() . $this->_app->request()->getRootUri();
-        $appLaunchFragment = "#remote_storage_uri=$baseUri&remote_storage_uid=$this->_resourceOwner";
-        $this->_app->render('portalPage.php', array ('resourceOwnerApprovals' => $resourceOwnerApprovals, 'registeredClients' => $registeredClients, 'appLaunchFragment' => $appLaunchFragment, 'resourceOwner' => $this->_resourceOwner));
+        $appLaunchFragment = "#remote_storage_uri=$baseUri&remote_storage_uid=$resourceOwner";
+        $this->_app->render('portalPage.php', array ('resourceOwnerApprovals' => $resourceOwnerApprovals, 'registeredClients' => $registeredClients, 'appLaunchFragment' => $appLaunchFragment, 'resourceOwner' => $resourceOwner));
     }
 
 }
