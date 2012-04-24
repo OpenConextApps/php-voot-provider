@@ -1,28 +1,44 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>OAuth Management Interface</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <title>Authorization Request</title>
-  <style>
-    body { font-size: 90%; font-family: sans-serif; width: 400px; margin: 20px auto; border: 1px solid #000; padding: 10px; border-radius: 10px; }
-    h2 { text-align: center; }
-    th { text-align: left; vertical-align: top; }
-    table { border: 1px solid #000; width: 400px; background-color: #ddd; border-radius: 10px; }
-    td,th { padding: 5px; }
-    ul { margin-left: 0; }
-    label { display: block; }
-  </style>
-</head>
+    <!-- Le styles -->
+    <link href="../ext/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+    <link href="../ext/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
 
-<body>
-  <h2>Authorization Request</h2>
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="container">
+
+
+    <div class="modal"> 
+  <form method="post" class="form-horizontal">
+
+   <div class="modal-header">
+                <h3>Authorization Request</h3>
+            </div>
+            <div class="modal-body">
 
   <p><?php echo $protectedResourceDescription; ?></p>
 
-  <form method="post" action="">
 
-    <table>
+    <table class="table table-striped"> 
         <tr><th>Application</th><td><span title="<?php echo $clientId; ?>"><?php echo $clientName; ?></span></td></tr>
         <tr><th>Requested Permission(s)</th>
             <td>
@@ -46,14 +62,22 @@
     </table>
 
     <?php if($allowFilter) { ?>
-        <p>You can either approve or reject this request and deselect some of the requested permissions.</p><p>Please note by doing this the application may not work as expected.</p>
+        <p>You can either approve or reject this request and deselect some of the requested permissions. <strong>Please note by removing permissions the application may not work as expected</strong>.</p>
     <?php } else { ?>
         <p>You can either approve or reject this request.</p>
     <?php } ?>
 
-    <input type="submit" name="approval" value="Approve" />
-    <input type="submit" name="approval" value="Reject" />
+     </div>
+            <div class="modal-footer">
     <input type="hidden" name="authorize_nonce" value="<?php echo $authorizeNonce; ?>" />
-  </form>
+
+                <input type="submit" name="approval" class="btn" value="Reject">
+                <input type="submit" name="approval" class="btn btn-primary" value="Approve">
+            </div>
+ </form>
+
+</div>
+    </div> <!-- /container -->
+
 </body>
 </html>
