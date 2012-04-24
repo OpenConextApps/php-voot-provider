@@ -1,6 +1,6 @@
 <?php
 
-require_once '../../ext/browserid.php';
+require_once 'ext/browserid/browserid.php';
 
 class BrowserIDResourceOwner implements IResourceOwner {
 
