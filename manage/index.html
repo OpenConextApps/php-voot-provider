@@ -58,7 +58,7 @@
 
     <script id="clientListTemplate" type="text/x-jsrender">
         <tr>
-            <td>{{:name}}</td>
+            <td><span title="{{:description}}">{{:name}}</span></td>
             <td>
                 <a class="btn btn-primary editClient" data-client-id="{{:id}}" href="#">Edit</a>
                 <a class="btn btn-inverse deleteClient" data-client-name="{{:name}}" data-client-id="{{:id}}" href="#">Delete</a>
@@ -96,7 +96,10 @@
 
                     <label class="control-label" for="form_type">Type</label>
                     <div class="controls">
-                        <select class="input-xlarge" id="form_type" name="type"><option value="public">Public</option><option value="confidential">Confidential</option></select>
+                        <select class="input-xlarge" id="form_type" name="type">
+                            <option value="public" {{if type === 'public' }} selected="selected" {{/if}}>Public</option>
+                            <option value="confidential" {{if type === 'confidential' }} selected="selected" {{/if}}>Confidential</option>
+                        </select>
                         <p class="help-block">Type of OAuth client: <strong>Public</strong> is for "in browser" applications and mobile apps; <strong>Confidential</strong> is for hosted web applications.</p>
                     </div>
 
