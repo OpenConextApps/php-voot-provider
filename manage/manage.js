@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    var apiRoot = 'http://localhost/voot';
+    var apiRoot = 'http://localhost/storage';
     jso_configure({
         "manage": {
             client_id: "manage",
