@@ -48,16 +48,8 @@ class SlimVoot {
     public function isMemberOf($name) {
         // enable CORS (http://enable-cors.org)
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
-
         $as = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
-
-        // Apache Only!
-        $httpHeaders = apache_request_headers();
-        if(!array_key_exists("Authorization", $httpHeaders)) {
-            throw new VerifyException("invalid_request: authorization header missing");
-        }
-        $authorizationHeader = $httpHeaders['Authorization'];
-
+        $authorizationHeader = self::_getAuthorizationHeader();
         $result = $as->verify($authorizationHeader);
         $g = new Provider($this->_vootStorage);
         $grp_array = $g->isMemberOf($result->resource_owner_id, $this->_app->request()->get('startIndex'), $this->_app->request()->get('count'));
@@ -69,14 +61,7 @@ class SlimVoot {
         // enable CORS (http://enable-cors.org)
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
         $as = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
-
-        // Apache Only!
-        $httpHeaders = apache_request_headers();
-        if(!array_key_exists("Authorization", $httpHeaders)) {
-            throw new VerifyException("invalid_request: authorization header missing");
-        }
-        $authorizationHeader = $httpHeaders['Authorization'];
-
+        $authorizationHeader = self::_getAuthorizationHeader();
         $result = $as->verify($authorizationHeader);
         $g = new Provider($this->_vootStorage);
         $grp_array = $g->getGroupMembers($result->resource_owner_id, $groupId, $this->_app->request()->get('startIndex'), $this->_app->request()->get('count'));
@@ -90,7 +75,14 @@ class SlimVoot {
         $this->_app->response()->header('Access-Control-Allow-Headers','content-length, authorization');
     }
 
-
+    private static function _getAuthorizationHeader() {
+        // Apache Only!
+        $httpHeaders = apache_request_headers();
+        if(!array_key_exists("Authorization", $httpHeaders)) {
+            throw new VerifyException("invalid_request: authorization header missing");
+        }
+        return $httpHeaders['Authorization'];
+    }
 }
 
 ?>

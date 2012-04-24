@@ -208,21 +208,21 @@ class AuthorizationServer {
 		return $result === 1;
     }
 
-    private static function _getScopeArray($scopeToConvert) {
+    public static function getScopeArray($scopeToConvert) {
         return is_array($scopeToConvert) ? $scopeToConvert : explode(" ", $scopeToConvert);
     }
 
-    private static function _getScopeString($scopeToConvert) {
+    public static function getScopeString($scopeToConvert) {
         return is_array($scopeToConvert) ? implode(" ", $scopeToConvert) : $scopeToConvert;
     }
 
     public static function normalizeScope($scopeToNormalize, $toArray = FALSE) {
-        $scopeToNormalize = self::_getScopeString($scopeToNormalize);
+        $scopeToNormalize = self::getScopeString($scopeToNormalize);
         if(self::_isValidScopeToken($scopeToNormalize)) {
-            $a = self::_getScopeArray($scopeToNormalize);
+            $a = self::getScopeArray($scopeToNormalize);
             sort($a, SORT_STRING);
             $a = array_unique($a, SORT_STRING);
-            return $toArray ? $a : self::_getScopeString($a);
+            return $toArray ? $a : self::getScopeString($a);
         }
         return FALSE;
     }
