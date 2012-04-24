@@ -1,37 +1,26 @@
 <?php
 
+require_once '../../ext/browserid.php';
+
 class BrowserIDResourceOwner implements IResourceOwner {
 
-    private $_config;
+    private $_config, $_verifier;
 
     public function __construct(array $config) {
         $this->_config = $config;
-    }
-
-    private static function verifyAssertion($assertion, $audience) {
-        $url = $this->_config['verifier'];
-        $params = 'assertion='.$assertion.'&audience=' . $audience;
-        $ch = curl_init();
-        curl_setopt($ch,CURLOPT_URL,$url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
-        curl_setopt($ch,CURLOPT_POST,2);
-        curl_setopt($ch,CURLOPT_POSTFIELDS, $params);
-        $result = curl_exec($ch);
-        curl_close($ch);
-        try {
-            $resultObj = json_decode($result, true);
-            return (isset($resultObj['email']) ? $resultObj['email'] : false);
-        } catch (Exception $e) {
-            return false;
-        }
+        $this->_verifier = new BrowserIDVerifier($config);
     }
 
     public function getResourceOwnerId() {
-        return $this->_config['resourceOwnerId'];
+        $this->_verifier->requireAuth();
+        $attributes = $this->_verifier->getAttributes();
+        return $attributes[$this->_config['resourceOwnerIdAttributeName']];
     }
 
     public function getResourceOwnerDisplayName() {
-        return $this->getResourceOwnerId();
+        $this->_verifier->requireAuth();
+        $attributes = $this->_verifier->getAttributes();
+        return $attributes[$this->_config['resourceOwnerDisplayNameAttributeName']];
     }
 
 }

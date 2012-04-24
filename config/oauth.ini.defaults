@@ -44,8 +44,10 @@ resourceOwnerDisplayName = "François Kooman"
 
 ; BrowserID configuration
 [BrowserID]
-verifier = "https://browserid.org/verify"
+verifierAddress = "https://browserid.org/verify"
 userAddressIsRequiredEmail = true
+resourceOwnerIdAttributeName = "email"
+resourceOwnerDisplayNameAttributeName = "email"
 
 ; simpleSAMLphp configuration
 [SspResourceOwner]
