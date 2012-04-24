@@ -54,7 +54,7 @@ class AuthorizationServer {
         $clientId     = self::getParameter($get, 'client_id');
         $responseType = self::getParameter($get, 'response_type');
         $redirectUri  = self::getParameter($get, 'redirect_uri');
-        $scope        = self::getParameter($get, 'scope');
+        $scope        = self::normalizeScope(self::getParameter($get, 'scope'));
         $state        = self::getParameter($get, 'state');
 
         if(NULL === $clientId) {
@@ -96,10 +96,21 @@ class AuthorizationServer {
                 $error += array ( "state" => $state);
             }
             return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
-        } else {
-            if(FALSE === self::isSubsetScope($requestedScope, $this->_config['supportedScopes'])) {
-                // scope not supported
-                $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported");
+        }
+
+        if(FALSE === self::isSubsetScope($requestedScope, $this->_config['supportedScopes'])) {
+            // scope not supported
+            $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported");
+            if(NULL !== $state) {
+                $error += array ( "state" => $state);
+            }
+            return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+        }
+
+        if(in_array('admin', self::getScopeArray($requestedScope))) {
+            // administrator scope requested, need to be in admin list
+            if(!in_array($resourceOwner, $this->_config['adminResourceOwnerId'])) {
+                $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported resource owner is not an administrator");
                 if(NULL !== $state) {
                     $error += array ( "state" => $state);
                 }
@@ -131,13 +142,17 @@ class AuthorizationServer {
         $clientId       = self::getParameter($get, 'client_id');
         $responseType   = self::getParameter($get, 'response_type');
         $redirectUri    = self::getParameter($get, 'redirect_uri');
-        $scope          = self::getParameter($get, 'scope');
+        $scope          = self::normalizeScope(self::getParameter($get, 'scope'));
         $state          = self::getParameter($get, 'state');
 
         $authorizeNonce = self::getParameter($post, 'authorize_nonce');
         $postScope      = self::normalizeScope(self::getParameter($post, 'scope'));
         $approval       = self::getParameter($post, 'approval');
 
+        // FIXME: normalizeScope returns FALSE if it is a broken scope, do something
+        //        with this...
+        // FIXME: we should add all parameters from above to the 
+        //        getAuthorizeNonce check, also responseType, redirectUri, state...
         if(FALSE === $this->_storage->getAuthorizeNonce($clientId, $resourceOwner, $scope, $authorizeNonce)) {
             throw new Exception("authorize nonce was not found");
         }

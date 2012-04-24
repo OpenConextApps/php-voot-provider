@@ -135,11 +135,6 @@ class SlimOAuth {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
 
-        // FIXME: this should go away, and only adminstrators should be allowed admin scope!
-        if(!in_array($result->resource_owner_id, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
-            throw new VerifyException("insufficient_scope: not an adminstrator");
-        }
-
         if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need admin scope");
         }
@@ -156,12 +151,6 @@ class SlimOAuth {
     public function deleteClient($clientId) {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
-
-        // FIXME: this should go away, and only adminstrators should be allowed admin scope!
-        if(!in_array($result->resource_owner_id, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
-            throw new VerifyException("insufficient_scope: not an adminstrator");
-        }
-
 
         if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need admin scope");
@@ -180,12 +169,6 @@ class SlimOAuth {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
 
-        // FIXME: this should go away, and only adminstrators should be allowed admin scope!
-        if(!in_array($result->resource_owner_id, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
-            throw new VerifyException("insufficient_scope: not an adminstrator");
-        }
-
-
         if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need admin scope");
         }
@@ -203,12 +186,6 @@ class SlimOAuth {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
 
-        // FIXME: this should go away, and only adminstrators should be allowed admin scope!
-        if(!in_array($result->resource_owner_id, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
-            throw new VerifyException("insufficient_scope: not an adminstrator");
-        }
-
-
         if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need admin scope");
         }
@@ -225,12 +202,6 @@ class SlimOAuth {
     public function getClients() {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
-
-        // FIXME: this should go away, and only adminstrators should be allowed admin scope!
-        if(!in_array($result->resource_owner_id, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
-            throw new VerifyException("insufficient_scope: not an adminstrator");
-        }
-
 
         if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need admin scope");
