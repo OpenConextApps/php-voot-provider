@@ -54,12 +54,7 @@ class SlimStorage {
         if($category !== "public") {    
             $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
 
-            // Apache Only!
-            $httpHeaders = apache_request_headers();
-            if(!array_key_exists("Authorization", $httpHeaders)) {
-                throw new VerifyException("invalid_request: authorization header missing");
-            }
-            $authorizationHeader = $httpHeaders['Authorization'];
+            $authorizationHeader = self::_getAuthorizationHeader();
 
             $result = $o->verify($authorizationHeader);
 
@@ -101,12 +96,7 @@ class SlimStorage {
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
         $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
 
-        // Apache Only!
-        $httpHeaders = apache_request_headers();
-        if(!array_key_exists("Authorization", $httpHeaders)) {
-            throw new VerifyException("invalid_request: authorization header missing");
-        }
-        $authorizationHeader = $httpHeaders['Authorization'];
+        $authorizationHeader = self::_getAuthorizationHeader();
 
         $result = $o->verify($authorizationHeader);
 
@@ -158,6 +148,15 @@ class SlimStorage {
         $baseUri = $this->_app->request()->getUrl() . $this->_app->request()->getRootUri();
         $appLaunchFragment = "#remote_storage_uri=$baseUri&remote_storage_uid=$resourceOwner";
         $this->_app->render('portalPage.php', array ('resourceOwnerApprovals' => $resourceOwnerApprovals, 'registeredClients' => $registeredClients, 'appLaunchFragment' => $appLaunchFragment, 'resourceOwner' => $resourceOwner));
+    }
+
+    private static function _getAuthorizationHeader() {
+        // Apache Only!
+        $httpHeaders = apache_request_headers();
+        if(!array_key_exists("Authorization", $httpHeaders)) {
+            throw new VerifyException("invalid_request: authorization header missing");
+        }
+        return $httpHeaders['Authorization'];
     }
 
 }
