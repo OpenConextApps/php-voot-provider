@@ -36,6 +36,19 @@ else
 	cd ../../
 fi
 
+# BrowserID
+if [ ! -d ext/browserid-session ]
+then
+	cd ext/
+	git clone https://github.com/michielbdejong/browserid-session.git
+        cd ..
+else
+	cd ext/browserid-session
+	git pull
+	cd ../../
+fi
+
+
 ####################################
 # Dependencies for the demo client #
 ####################################
