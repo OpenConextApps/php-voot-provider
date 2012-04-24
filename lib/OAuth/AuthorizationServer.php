@@ -24,7 +24,7 @@ interface IOAuthStorage {
     public function deleteClient          ($clientId);
 
     public function getApprovals          ($resourceOwner);
-    public function deleteApproval        ($clientId, $resourceOwner, $scope);
+    public function deleteApproval        ($clientId, $resourceOwner);
 
 }
 

@@ -127,7 +127,7 @@ class SlimOAuth {
         //        by this service if the user wants this. Maybe we should have a 
         //        checkbox "terminate current access" or "keep current access
         //        tokens available for at most 1h"
-        $this->_oauthStorage->deleteApproval($this->_app->request()->post('client_id'), $this->_resourceOwner, $this->_app->request()->post('scope'));
+        $this->_oauthStorage->deleteApproval($this->_app->request()->post('client_id'), $this->_resourceOwner);
         $approvals = $this->_oauthStorage->getApprovals($this->_resourceOwner);
         $this->_app->render('listApprovals.php', array( 'approvals' => $approvals));
     }
