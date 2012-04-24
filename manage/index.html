@@ -97,19 +97,19 @@
                     <label class="control-label" for="form_type">Type</label>
                     <div class="controls">
                         <select class="input-xlarge" id="form_type" name="type"><option value="public">Public</option><option value="confidential">Confidential</option></select>
-                        <p class="help-block">Type of OAuth client: public is XXX, confidential is YYY</p>
+                        <p class="help-block">Type of OAuth client: <strong>Public</strong> is for "in browser" applications and mobile apps; <strong>Confidential</strong> is for hosted web applications.</p>
                     </div>
 
                     <label class="control-label" for="form_secret">Secret</label>
                     <div class="controls">
                         <input type="text" class="input-xlarge" id="form_secret" name="secret" value="{{:secret}}" >
-                        <p class="help-block">Secret for the OAuth client (only for confidential clients)</p>
+                        <p class="help-block">Secret for the OAuth client (only for <strong>Confidential</strong> clients)</p>
                     </div>
 
                     <label class="control-label" for="form_redirect_uri">Redirect URI</label>
                     <div class="controls">
                         <input type="text" class="input-xlarge" id="form_redirect_uri" name="redirect_uri" value="{{:redirect_uri}}" >
-                        <p class="help-block">Redirect URI of the Client (MORE!)</p>
+                        <p class="help-block">Redirect URI of the Client for redirecting the browser after authentication and authorization.</p>
                     </div>
                 </div>
             </fieldset>
