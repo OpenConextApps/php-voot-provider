@@ -79,7 +79,7 @@
                     <label class="control-label" for="form_id">Client Identifier</label>
                     <div class="controls">
                         <input type="text" class="input-xlarge" id="form_id" name="id" value="{{:id}}" >
-                        <p class="help-block">A unique identifier for the OAuth client</p>
+                        <p class="help-block">A unique identifier for the OAuth client. If this field is left empty a client identifier will be generated.</p>
                     </div>
 
                     <label class="control-label" for="form_name">Name</label>
@@ -106,7 +106,7 @@
                     <label class="control-label" for="form_secret">Secret</label>
                     <div class="controls">
                         <input type="text" class="input-xlarge" id="form_secret" name="secret" value="{{:secret}}" >
-                        <p class="help-block">Secret for the OAuth client (only for <strong>Confidential</strong> clients)</p>
+                        <p class="help-block">Secret for the OAuth client (only for <strong>Confidential</strong> clients). If this field is left empty and the client type is <strong>Confidential</strong> a secret will be generated.</p>
                     </div>
 
                     <label class="control-label" for="form_redirect_uri">Redirect URI</label>
