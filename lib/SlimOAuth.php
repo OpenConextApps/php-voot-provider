@@ -109,12 +109,14 @@ class SlimOAuth {
         $this->_app->redirect($result['url']);
     }
 
+    // FIXME: this should be removed and use REST API instead with GET, POST and DELETE support
     public function approvals() {
         $this->_authenticate();
         $approvals = $this->_oauthStorage->getApprovals($this->_resourceOwner);
         $this->_app->render('listApprovals.php', array( 'approvals' => $approvals));
     }
 
+    // FIXME: this should be removed and use REST API instead with GET, POST and DELETE support
     public function revoke() {
         $this->_authenticate();
         // FIXME: there is no "CSRF" protection here. Everyone who knows a client_id and 

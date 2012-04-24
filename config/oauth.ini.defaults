@@ -12,6 +12,8 @@ authenticationMechanism = "DummyResourceOwner"
 ; the scopes supported by the resource server
 supportedScopes[] = "read"
 supportedScopes[] = "write"
+
+; *ONLY* users in the list adminResourceOwnerId can request the admin scope
 supportedScopes[] = "admin"
 
 ; message to display on authorization dialog asking the user for permission
