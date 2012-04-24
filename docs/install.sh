@@ -68,8 +68,8 @@ fi
 # fetch jso (JavaScript OAuth 2 client)
 if [ ! -f ext/js/jso.js ]
 then
-    # wget -O ext/js/jso.js https://raw.github.com/andreassolberg/jso/master/jso.js
-    wget -O ext/js/jso.js https://raw.github.com/fkooman/jso/master/jso.js
+    wget -O ext/js/jso.js https://raw.github.com/andreassolberg/jso/master/jso.js
+    #wget -O ext/js/jso.js https://raw.github.com/fkooman/jso/master/jso.js
 fi
 
 if [ ! -d ext/bootstrap ]

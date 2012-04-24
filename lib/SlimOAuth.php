@@ -76,6 +76,7 @@ class SlimOAuth {
         $this->_resourceOwner = $ro->getResourceOwnerId();
     }
 
+    // FIXME: this should probably not be here!
     public function getResourceOwner() {
         $this->_authenticate();
         return $this->_resourceOwner;
@@ -108,12 +109,14 @@ class SlimOAuth {
         $this->_app->redirect($result['url']);
     }
 
+    // FIXME: this should be removed and use REST API instead with GET, POST and DELETE support
     public function approvals() {
         $this->_authenticate();
         $approvals = $this->_oauthStorage->getApprovals($this->_resourceOwner);
         $this->_app->render('listApprovals.php', array( 'approvals' => $approvals));
     }
 
+    // FIXME: this should be removed and use REST API instead with GET, POST and DELETE support
     public function revoke() {
         $this->_authenticate();
         // FIXME: there is no "CSRF" protection here. Everyone who knows a client_id and 
@@ -129,11 +132,15 @@ class SlimOAuth {
         $this->_app->render('listApprovals.php', array( 'approvals' => $approvals));
     }
 
+    // REST API
     public function getClient($clientId) {
-        $this->_authenticate();    
-        if(!in_array($this->_resourceOwner, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
-            throw new AdminException("not an administrator");
+        $authorizationHeader = self::_getAuthorizationHeader();
+        $result = $this->_as->verify($authorizationHeader);
+
+        if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need admin scope");
         }
+
         $result = $this->_oauthStorage->getClient($clientId);
         if(FALSE === $result) {
             $this->_app->halt(404);
@@ -144,10 +151,13 @@ class SlimOAuth {
     }
 
     public function deleteClient($clientId) {
-        $this->_authenticate();    
-        if(!in_array($this->_resourceOwner, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
-            throw new AdminException("not an administrator");
+        $authorizationHeader = self::_getAuthorizationHeader();
+        $result = $this->_as->verify($authorizationHeader);
+
+        if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need admin scope");
         }
+
         $result = $this->_oauthStorage->deleteClient($clientId);
         if(FALSE === $result) {
             $this->_app->halt(404);
@@ -158,10 +168,13 @@ class SlimOAuth {
     }
 
     public function updateClient($clientId) {
-        $this->_authenticate();    
-        if(!in_array($this->_resourceOwner, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
-            throw new AdminException("not an administrator");
+        $authorizationHeader = self::_getAuthorizationHeader();
+        $result = $this->_as->verify($authorizationHeader);
+
+        if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need admin scope");
         }
+
         $result = $this->_oauthStorage->updateClient($clientId, json_decode($this->_app->request()->getBody(), TRUE));
         if(FALSE === $result) {
             $this->_app->halt(404);
@@ -172,12 +185,13 @@ class SlimOAuth {
     }
 
     public function addClient() {
-        $this->_authenticate();
-        if(!in_array($this->_resourceOwner, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
-            throw new AdminException("not an administrator");
+        $authorizationHeader = self::_getAuthorizationHeader();
+        $result = $this->_as->verify($authorizationHeader);
+
+        if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need admin scope");
         }
-        //var_dump(json_decode($this->_app->request()->getBody(), TRUE));
-        //die();
+
         $result = $this->_oauthStorage->addClient(json_decode($this->_app->request()->getBody(), TRUE));
         if(FALSE === $result) {
             $this->_app->halt(500);
@@ -188,10 +202,13 @@ class SlimOAuth {
     }
 
     public function getClients() {
-        $this->_authenticate();    
-        if(!in_array($this->_resourceOwner, $this->_oauthConfig['OAuth']['adminResourceOwnerId'])) {
-            throw new AdminException("not an administrator");
+        $authorizationHeader = self::_getAuthorizationHeader();
+        $result = $this->_as->verify($authorizationHeader);
+
+        if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need admin scope");
         }
+
         $result = $this->_oauthStorage->getClients();
         if(FALSE === $result) {
             $this->_app->halt(404);
@@ -207,22 +224,36 @@ class SlimOAuth {
                 // the request for the resource was not valid, tell client
                 list($error, $description) = explode(":", $e->getMessage());
                 $this->_app->response()->header('WWW-Authenticate', 'realm="VOOT API",error="' . $error . '",error_description="' . $description . '"');
-                $this->_app->response()->status(401);
+                $code = 400;
+                if($error === 'invalid_request') {
+                    $code = 400;
+                }
+                if($error === 'invalid_token') {
+                    $code = 401;
+                }
+                if($error === 'insufficient_scope') {
+                    $code = 403;
+                }
+                $this->_app->response()->status($code);
                 break;
             case "OAuthException":
                 // we cannot establish the identity of the client, tell user
                 $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "The identity of the application that tried to access this resource could not be established. Therefore we stopped processing this request. The message below may be of interest to the application developer."));
-                break;
-            case "AdminException":
-                // the authenticated user wants to perform some operation that is 
-                // privileged
-                $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "You are not authorized to perform this operation."), 403);
                 break;
             case "ErrorException":
             default:
                 $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "Internal Server Error"), 500);
                 break;
         }
+    }
+
+    private static function _getAuthorizationHeader() {
+        // Apache Only!
+        $httpHeaders = apache_request_headers();
+        if(!array_key_exists("Authorization", $httpHeaders)) {
+            throw new VerifyException("invalid_request: authorization header missing");
+        }
+        return $httpHeaders['Authorization'];
     }
 
 }

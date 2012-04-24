@@ -1,5 +1,6 @@
 $(document).ready(function () {
-    var apiRoot = 'http://localhost/storage';
+    var apiRoot = 'http://localhost/voot';
+    var apiScopes = ["admin"];
     jso_configure({
         "manage": {
             client_id: "manage",
@@ -8,14 +9,14 @@ $(document).ready(function () {
         }
     });
     jso_ensureTokens({
-        "manage": ["read"]
+        "manage": apiScopes
     });
 
     function renderClientList() {
         $.oajax({
             url: apiRoot + "/oauth/client",
             jso_provider: "manage",
-            jso_scopes: ["read"],
+            jso_scopes: apiScopes,
             jso_allowia: true,
             dataType: 'json',
             success: function (data) {
@@ -40,7 +41,7 @@ $(document).ready(function () {
         $.oajax({
             url: apiRoot + "/oauth/client/" + clientId,
             jso_provider: "manage",
-            jso_scopes: ["read"],
+            jso_scopes: apiScopes,
             jso_allowia: true,
             type: "DELETE",
             success: function (data) {
@@ -55,7 +56,7 @@ $(document).ready(function () {
             $.oajax({
                 url: apiRoot + "/oauth/client/" + clientId,
                 jso_provider: "manage",
-                jso_scopes: ["read"],
+                jso_scopes: apiScopes,
                 jso_allowia: true,
                 success: function (data) {
                     $("#editModal").html($("#clientEditTemplate").render(data));
@@ -104,7 +105,7 @@ $(document).ready(function () {
         $.oajax({
             url: apiRoot + "/oauth/client/" + clientId,
             jso_provider: "manage",
-            jso_scopes: ["read"],
+            jso_scopes: apiScopes,
             jso_allowia: true,
             type: "PUT",
             dataType: 'json',
@@ -120,7 +121,7 @@ $(document).ready(function () {
         $.oajax({
             url: apiRoot + "/oauth/client",
             jso_provider: "manage",
-            jso_scopes: ["read"],
+            jso_scopes: apiScopes,
             jso_allowia: true,
             type: "POST",
             dataType: 'json',

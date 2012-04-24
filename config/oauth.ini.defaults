@@ -22,6 +22,9 @@ supportedScopes[] = "tasks"
 supportedScopes[] = "public,tutorial"
 supportedScopes[] = "documents,contacts,public"
 
+; *ONLY* users in the list adminResourceOwnerId can request the admin scope
+supportedScopes[] = "admin"
+
 ; message to display on authorization dialog asking the user for permission
 ; to access the resources
 protectedResourceDescription = "An application wants to access your data."
