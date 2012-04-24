@@ -76,6 +76,11 @@ class SlimOAuth {
         $this->_resourceOwner = $ro->getResourceOwnerId();
     }
 
+    public function getResourceOwner() {
+        $this->_authenticate();
+        return $this->_resourceOwner;
+    }
+
     public function authorize() {
         $this->_authenticate();
         $result = $this->_as->authorize($this->_resourceOwner, $this->_app->request()->get());
