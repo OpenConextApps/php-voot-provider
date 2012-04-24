@@ -167,11 +167,10 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->fetchAll(PDO::FETCH_ASSOC); 
     }
 
-    public function deleteApproval($clientId, $resourceOwner, $scope) {
-        $stmt = $this->_pdo->prepare("DELETE FROM Approval WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id AND scope = :scope");
+    public function deleteApproval($clientId, $resourceOwner) {
+        $stmt = $this->_pdo->prepare("DELETE FROM Approval WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
-        $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
         return $stmt->execute();
     }
 
