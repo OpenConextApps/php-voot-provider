@@ -1,6 +1,6 @@
 # PHP VOOT group provider
 
-This project is a tiny stand-alone VOOT group provider. The 
+This project is a stand-alone VOOT group provider. The 
 [VOOT specification](http://www.openvoot.org/) is implemented.
 
 # Features
@@ -8,6 +8,7 @@ This project is a tiny stand-alone VOOT group provider. The
 * LDAP backend for VOOT
 * OAuth 2 support (implicit grant only for now)
 * SAML authentication support ([simpleSAMLphp](http://www.simplesamlphp.org)) 
+* BrowserID support (almost)
 
 # Installation
 The project includes an install script that downloads the required dependencies
@@ -85,13 +86,21 @@ that do work.
 
 # Configuring OAuth Clients
 
-The default OAuth token store contains one OAuth client. To add your own you
-can use the SQLite command line tool to add some:
+The default OAuth token store contains two OAuth clients, one for the included
+demo VOOT client (`client/vootClient.html` and for the management environment 
+(`manage/index.html`). You may need to update the `redirect_uri` to have them
+point to your actual server. By default they point to `http://localhost/voot/`:
 
-    $ echo "INSERT INTO Client VALUES ('voot','Demo Client', 'This is a simple JavaScript client for demonstration purposes.', NULL,'http://localhost/voot/client/vootClient.html','public');" | sqlite3 data/oauth2.sqlite
+    $ echo "UPDATE Client SET redirect_uri='https://www.example.com/voot/client/vootClient.html' WHERE id='voot';" | sqlite3 data/oauth2.sqlite
+    $ echo "UPDATE Client SET redirect_uri='https://www.example.com/voot/manage/index.html' WHERE id='manage';" | sqlite3 data/oauth2.sqlite
 
-In the future a web application will be written for this to allow designated
-users to administer client registrations.
+For now you also need to modify the endpoint in the `manage/manage.js` file, 
+this is currently stored in the source code... 
+
+Once this is done you can manage the OAuth client registrations by going to the
+URL configured above at `https://www.example.com/voot/manage/index.html`. Make
+sure the user identifiers you want to allow `admin` permissions are listed in 
+the `adminResourceOwnerId[]` list in `config/oauth.ini`.
 
 # Testing
 
@@ -100,9 +109,7 @@ A JavaScript client is included to test the VOOT provider. It uses the
 be found in the `client/vootClient.html`. Modify the client code to point to the
 correct OAuth authorization endpoint and API URL.
 
+# Revoking Access
 An endpoint is defined on the OAuth authorization server that can be used
-by the user to revoke authorization to clients at `/oauth/revoke`. An endpoint 
-for the administrator is `/oauth/clients` where the registered clients can be
-found. In the future this (or a similar) endpoint will be used to (dynamically)
-register new clients.
+by the user to revoke authorization to clients at `/oauth/revoke`.
 
