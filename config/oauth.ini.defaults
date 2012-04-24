@@ -12,6 +12,7 @@ authenticationMechanism = "DummyResourceOwner"
 ; the scopes supported by the resource server
 supportedScopes[] = "read"
 supportedScopes[] = "write"
+supportedScopes[] = "admin"
 
 ; message to display on authorization dialog asking the user for permission
 ; to access the resources
