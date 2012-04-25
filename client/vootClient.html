@@ -14,7 +14,6 @@
         </tr>
     </script>
 
-
     <script type="text/javascript" charset="utf-8">
     $(function () {
         jso_configure({
@@ -30,21 +29,26 @@
         });
 
         $.oajax({
+            url: "http://localhost/voot/oauth/whoami",
+            jso_provider: "voot",
+            jso_scopes: ["read"],
+            jso_allowia: true,
+            dataType: 'json',
+            success: function(data) {
+            	$("#myid").html(data.id);
+            }
+        });
+
+        $.oajax({
             url: "http://localhost/voot/groups/@me",
             jso_provider: "voot",
             jso_scopes: ["read"],
             jso_allowia: true,
             dataType: 'json',
             success: function(data) {
-                // console.log("Response (voot):");
-                // console.log(data);
-                if (data) {
-                	$( "#groupList" ).html(
-                        $( "#groupTemplate" ).render( data.entry )
-                	);
-                } else {
-                    alert("An error occurred.");
-                }
+            	$( "#groupList" ).html(
+                    $( "#groupTemplate" ).render( data.entry )
+            	);
             }
         });
     });
@@ -64,10 +68,18 @@
       th {
            text-align: left;
       }
+      div#userid {
+        position: absolute;
+        right: 0;
+        top: 0;
+        padding: 5px;
+      }
     </style>
   </head>
 
   <body>
+	<div id="userid">Welcome <strong><span id="myid"></span></strong></div>
+
     <h1>Group Membership</h1>
     <table>
         <tr class="header"><th>Name</th><th>Role</th></tr>

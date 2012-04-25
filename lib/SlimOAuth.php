@@ -42,6 +42,12 @@ class SlimOAuth {
         });
 
         // management
+        
+	// FIXME: maybe we should add CORS headers and OPTIONS call to this endpoint...
+	$this->_app->get('/oauth/whoami', function () use ($self) {
+            $self->whoAmI();
+        });
+
         $this->_app->get('/oauth/client/:client_id', function ($clientId) use ($self) {
             $self->getClient($clientId);
         });
@@ -133,6 +139,14 @@ class SlimOAuth {
     }
 
     // REST API
+    public function whoAmI() {
+        $authorizationHeader = self::_getAuthorizationHeader();
+        $result = $this->_as->verify($authorizationHeader);
+        $response = $this->_app->response();
+        $response['Content-Type'] = 'application/json';
+        $response->body(json_encode(array ("id" => $result->resource_owner_id)));
+    }
+
     public function getClient($clientId) {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
