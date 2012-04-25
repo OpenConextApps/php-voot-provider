@@ -1,6 +1,6 @@
 $(document).ready(function () {
     var apiRoot = 'http://localhost/voot';
-    var apiScopes = ["oauth_admin"];
+    var apiScopes = ["oauth_admin","oauth_whoami"];
     jso_configure({
         "manage": {
             client_id: "manage",
@@ -22,6 +22,19 @@ $(document).ready(function () {
             success: function (data) {
                 $("#clientList").html($("#clientListTemplate").render(data));
                 addClientListHandlers();
+            }
+        });
+    }
+
+    function getUserId() {
+        $.oajax({
+            url: apiRoot + "/oauth/whoami",
+            jso_provider: "manage",
+            jso_scopes: apiScopes,
+            jso_allowia: true,
+            dataType: 'json',
+            success: function (data) {
+                $("#adminUserId").html(data.id);
             }
         });
     }
@@ -139,6 +152,7 @@ $(document).ready(function () {
     function initPage() {
         $("#editModal").hide();
         renderClientList();
+	    getUserId();
     }
     initPage();
 });

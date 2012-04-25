@@ -33,15 +33,21 @@ class SlimOAuth {
             $self->approve();
         });
 
-        $this->_app->get('/oauth/revoke', function () use ($self) {
-            $self->approvals();
-        });
-
-        $this->_app->post('/oauth/revoke', function () use ($self) {
-            $self->revoke();
-        });
-
         // management
+        $this->_app->get('/oauth/approval', function () use ($self) {
+            $self->getApprovals();
+        });
+
+        // FIXME: impl
+        $this->_app->post('/oauth/approval', function () use ($self) {
+            $self->addApproval();
+        });
+
+        $this->_app->delete('/oauth/approval/:client_id', function ($clientId) use ($self) {
+            $self->deleteApproval($clientId);
+        });
+
+
 	    $this->_app->get('/oauth/whoami', function () use ($self) {
             $self->whoAmI();
         });
@@ -118,31 +124,8 @@ class SlimOAuth {
         $this->_app->redirect($result['url']);
     }
 
-    // FIXME: this should be removed and use REST API instead with GET, POST and DELETE support
-    public function approvals() {
-        $this->_authenticate();
-        $approvals = $this->_oauthStorage->getApprovals($this->_resourceOwner);
-        $this->_app->render('listApprovals.php', array( 'approvals' => $approvals));
-    }
-
-    // FIXME: this should be removed and use REST API instead with GET, POST and DELETE support
-    public function revoke() {
-        $this->_authenticate();
-        // FIXME: there is no "CSRF" protection here. Everyone who knows a client_id and 
-        //        scope can remove an approval for any (authenticated) user by crafting
-        //        a POST call to this endpoint. IMPACT: low risk, denial of service.
-
-        // FIXME: we need to also remove the access tokens that are currently used
-        //        by this service if the user wants this. Maybe we should have a 
-        //        checkbox "terminate current access" or "keep current access
-        //        tokens available for at most 1h"
-        $this->_oauthStorage->deleteApproval($this->_app->request()->post('client_id'), $this->_resourceOwner);
-        $approvals = $this->_oauthStorage->getApprovals($this->_resourceOwner);
-        $this->_app->render('listApprovals.php', array( 'approvals' => $approvals));
-    }
-
     // REST API
-    public function OptionsWhoAmi() {
+    public function optionsWhoAmi() {
         $this->_app->response()->header('Access-Control-Allow-Origin', $this->_app->request()->headers('Origin'));
         $this->_app->response()->header('Access-Control-Allow-Methods','GET');
         $this->_app->response()->header('Access-Control-Allow-Headers','Authorization');
@@ -244,6 +227,25 @@ class SlimOAuth {
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
         $response->body(json_encode($result));
+    }
+
+    public function getApprovals() {
+        $authorizationHeader = self::_getAuthorizationHeader();
+        $result = $this->_as->verify($authorizationHeader);
+        // FIXME: all methods should have data with PDO data from OAuth and not "result"
+        $approvals = $this->_oauthStorage->getApprovals($result->resource_owner_id);
+        if(FALSE === $result) {
+            $this->_app->halt(404);
+        }
+        $response = $this->_app->response();
+        $response['Content-Type'] = 'application/json';
+        $response->body(json_encode($approvals));
+    }
+
+    public function deleteApproval($clientId) {
+        $authorizationHeader = self::_getAuthorizationHeader();
+        $result = $this->_as->verify($authorizationHeader);
+        $this->_oauthStorage->deleteApproval($clientId, $result->resource_owner_id);
     }
 
     public function errorHandler(Exception $e) {
