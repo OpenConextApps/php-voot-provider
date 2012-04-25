@@ -42,11 +42,14 @@ class SlimOAuth {
         });
 
         // management
-        
-	// FIXME: maybe we should add CORS headers and OPTIONS call to this endpoint...
-	$this->_app->get('/oauth/whoami', function () use ($self) {
+	    $this->_app->get('/oauth/whoami', function () use ($self) {
             $self->whoAmI();
         });
+
+	    $this->_app->options('/oauth/whoami', function () use ($self) {
+            $self->optionsWhoAmI();
+        });
+
 
         $this->_app->get('/oauth/client/:client_id', function ($clientId) use ($self) {
             $self->getClient($clientId);
@@ -139,9 +142,20 @@ class SlimOAuth {
     }
 
     // REST API
+    public function OptionsWhoAmi() {
+        $this->_app->response()->header('Access-Control-Allow-Origin', $this->_app->request()->headers('Origin'));
+        $this->_app->response()->header('Access-Control-Allow-Methods','GET');
+        $this->_app->response()->header('Access-Control-Allow-Headers','Authorization');
+    }
+
     public function whoAmI() {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
+
+        if(!in_array('oauth_whoami', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_whoami scope");
+        }
+
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
         $response->body(json_encode(array ("id" => $result->resource_owner_id)));
@@ -151,8 +165,8 @@ class SlimOAuth {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
 
-        if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
-            throw new VerifyException("insufficient_scope: need admin scope");
+        if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
         $result = $this->_oauthStorage->getClient($clientId);
@@ -168,8 +182,8 @@ class SlimOAuth {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
 
-        if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
-            throw new VerifyException("insufficient_scope: need admin scope");
+        if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
         $result = $this->_oauthStorage->deleteClient($clientId);
@@ -185,8 +199,8 @@ class SlimOAuth {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
 
-        if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
-            throw new VerifyException("insufficient_scope: need admin scope");
+        if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
         $result = $this->_oauthStorage->updateClient($clientId, json_decode($this->_app->request()->getBody(), TRUE));
@@ -202,8 +216,8 @@ class SlimOAuth {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
 
-        if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
-            throw new VerifyException("insufficient_scope: need admin scope");
+        if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
         $result = $this->_oauthStorage->addClient(json_decode($this->_app->request()->getBody(), TRUE));
@@ -219,8 +233,8 @@ class SlimOAuth {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
 
-        if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
-            throw new VerifyException("insufficient_scope: need admin scope");
+        if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
         $result = $this->_oauthStorage->getClients();

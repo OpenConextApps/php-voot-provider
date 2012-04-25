@@ -72,7 +72,7 @@ class SlimVoot {
     public function optionsResponse() {
         $this->_app->response()->header('Access-Control-Allow-Origin', $this->_app->request()->headers('Origin'));
         $this->_app->response()->header('Access-Control-Allow-Methods','GET, PUT, DELETE');
-        $this->_app->response()->header('Access-Control-Allow-Headers','content-length, authorization');
+        $this->_app->response()->header('Access-Control-Allow-Headers','Authorization');
     }
 
     private static function _getAuthorizationHeader() {

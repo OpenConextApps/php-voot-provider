@@ -1,6 +1,6 @@
 $(document).ready(function () {
     var apiRoot = 'http://localhost/voot';
-    var apiScopes = ["admin"];
+    var apiScopes = ["oauth_admin"];
     jso_configure({
         "manage": {
             client_id: "manage",
