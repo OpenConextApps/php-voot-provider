@@ -10,6 +10,16 @@ This project is a stand-alone VOOT group provider. The
 * SAML authentication support ([simpleSAMLphp](http://www.simplesamlphp.org)) 
 * BrowserID support (almost)
 
+
+# Requirements
+The installation requirements on Fedora/CentOS can be installed like this:
+
+    $ su -c 'yum install php-pdo php httpd'
+
+On Debian/Ubuntu:
+
+    $ sudo apt-get install php5-sqlite
+
 # Installation
 The project includes an install script that downloads the required dependencies
 and sets the permissions for the directories to write to and fixes SELinux 
@@ -87,29 +97,37 @@ that do work.
 # Configuring OAuth Clients
 
 The default OAuth token store contains two OAuth clients, one for the included
-demo VOOT client (`client/vootClient.html` and for the management environment 
+demo VOOT client (`client/index.html` and one for the management environment 
 (`manage/index.html`). You may need to update the `redirect_uri` to have them
-point to your actual server. By default they point to `http://localhost/voot/`:
+point to your actual server if you don't run the code on `localhost`:
 
-    $ echo "UPDATE Client SET redirect_uri='https://www.example.com/voot/client/vootClient.html' WHERE id='voot';" | sqlite3 data/oauth2.sqlite
+    http://localhost/voot/manage/index.html
+
+Modify it to the actual location where the files were installed, for example:
+
+    https://www.example.org/voot/manage/index.html
+
+To update the client registration:
+
+    $ echo "UPDATE Client SET redirect_uri='https://www.example.com/voot/client/index.html' WHERE id='voot';" | sqlite3 data/oauth2.sqlite
     $ echo "UPDATE Client SET redirect_uri='https://www.example.com/voot/manage/index.html' WHERE id='manage';" | sqlite3 data/oauth2.sqlite
 
-For now you also need to modify the endpoint in the `manage/manage.js` file, 
-this is currently stored in the source code... 
+You also need to modify the API endpoint in `manage/manage.js`:
+
+    var apiRoot = 'http://localhost/voot';
+
+To (in this example):
+
+    var apiRoot = 'https://www.example.org/voot';
 
 Once this is done you can manage the OAuth client registrations by going to the
-URL configured above at `https://www.example.com/voot/manage/index.html`. Make
+URL configured above at `https://www.example.org/voot/manage/index.html`. Make
 sure the user identifiers you want to allow `admin` permissions are listed in 
 the `adminResourceOwnerId[]` list in `config/oauth.ini`.
 
 # Testing
 
 A JavaScript client is included to test the VOOT provider. It uses the 
-"implicit grant" OAuth 2 profile to obtain an access token. The client code can 
-be found in the `client/vootClient.html`. Modify the client code to point to the
-correct OAuth authorization endpoint and API URL.
-
-# Revoking Access
-An endpoint is defined on the OAuth authorization server that can be used
-by the user to revoke authorization to clients at `/oauth/revoke`.
-
+"implicit grant" OAuth 2 profile to obtain an access token. The client can 
+be found at `client/index.html`. Modify the client registration and the file 
+`client/voot.js` to point to the correct base endpoint as well.

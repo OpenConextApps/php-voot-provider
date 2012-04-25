@@ -17,3 +17,5 @@
 
 - rename approval storing methods in de storage layer
 
+- implement logging infrastructure, seems Slim has some functionality for that
+
