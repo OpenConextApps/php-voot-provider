@@ -77,6 +77,8 @@ class PdoOAuthStorage implements IOAuthStorage {
     }
 
     public function deleteClient($clientId) {
+        // FIXME: we should also remove all access tokens, approvals and
+        // authorize nonces
         $stmt = $this->_pdo->prepare("DELETE FROM Client WHERE id = :client_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         if(FALSE === $stmt->execute()) {
@@ -174,6 +176,7 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->execute();
     }
 
+    // FIXME: this code should move to a more generic place...
     private function _randomHex($len = 16) {
         $randomString = bin2hex(openssl_random_pseudo_bytes($len, $strong));
         // @codeCoverageIgnoreStart
