@@ -6,10 +6,14 @@ interface IResourceOwner {
 }
 
 interface IOAuthStorage {
+
+    // FIXME: the next three should probably be renamed to
+    //        addApproval, updateApproval, getApproval
+    //        to make them more in line with the getApprovals, deleteApproval
     public function storeApprovedScope    ($clientId, $resourceOwner, $scope);
     public function updateApprovedScope   ($clientId, $resourceOwner, $scope);
-
     public function getApprovedScope      ($clientId, $resourceOwner);
+
     public function generateAccessToken   ($clientId, $resourceOwner, $scope, $expiry);
     public function getAccessToken        ($accessToken);
     public function generateAuthorizeNonce($clientId, $resourceOwner, $scope);

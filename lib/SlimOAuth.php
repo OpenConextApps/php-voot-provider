@@ -248,6 +248,28 @@ class SlimOAuth {
         $this->_oauthStorage->deleteApproval($clientId, $result->resource_owner_id);
     }
 
+    public function addApproval() {
+        $authorizationHeader = self::_getAuthorizationHeader();
+        $result = $this->_as->verify($authorizationHeader);
+
+        $data = json_decode($this->_app->request()->getBody(), TRUE);
+        // FIXME: we should verify the client exists
+        $clientId = $data['client_id'];
+        // FIXME: we should verify the scope is valid and normalize it before
+        //        storing it
+        $scope = $data['scope'];
+
+        $result = $this->_oauthStorage->storeApprovedScope($clientId, $result->resource_owner_id, $scope);
+        if(FALSE === $result) {
+            $this->_app->halt(500);
+        }
+        $response = $this->_app->response();
+        $response['Content-Type'] = 'application/json';
+        $response->body(json_encode($result));
+
+    }
+
+
     public function errorHandler(Exception $e) {
         switch(get_class($e)) {
             case "VerifyException":
