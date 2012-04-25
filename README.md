@@ -109,8 +109,8 @@ Modify it to the actual location where the files were installed, for example:
 
 To update the client registration:
 
-    $ echo "UPDATE Client SET redirect_uri='https://www.example.com/voot/client/index.html' WHERE id='voot';" | sqlite3 data/oauth2.sqlite
-    $ echo "UPDATE Client SET redirect_uri='https://www.example.com/voot/manage/index.html' WHERE id='manage';" | sqlite3 data/oauth2.sqlite
+    $ echo "UPDATE Client SET redirect_uri='https://www.example.org/voot/client/index.html' WHERE id='voot';" | sqlite3 data/oauth2.sqlite
+    $ echo "UPDATE Client SET redirect_uri='https://www.example.org/voot/manage/index.html' WHERE id='manage';" | sqlite3 data/oauth2.sqlite
 
 You also need to modify the API endpoint in `manage/manage.js`:
 
