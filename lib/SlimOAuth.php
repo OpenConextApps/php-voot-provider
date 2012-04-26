@@ -140,13 +140,14 @@ class SlimOAuth {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
-        $result = $this->_oauthStorage->getClient($clientId);
-        if(FALSE === $result) {
+        $data = $this->_oauthStorage->getClient($clientId);
+        if(FALSE === $data) {
+            // FIXME: better error handling
             $this->_app->halt(404);
         }
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode($result));
+        $response->body(json_encode($data));
     }
 
     public function deleteClient($clientId) {
@@ -157,13 +158,16 @@ class SlimOAuth {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
-        $result = $this->_oauthStorage->deleteClient($clientId);
-        if(FALSE === $result) {
+        $data = $this->_oauthStorage->deleteClient($clientId);
+        if(FALSE === $data) {
+            // FIXME: better error handling
             $this->_app->halt(404);
         }
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode($result));
+        $response->body(json_encode($data));
+
+        $this->_app->getLog()->info("oauth client '" . $clientId . "' deleted by '" . $result->resource_owner_id . "'");
     }
 
     public function updateClient($clientId) {
@@ -174,13 +178,16 @@ class SlimOAuth {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
-        $result = $this->_oauthStorage->updateClient($clientId, json_decode($this->_app->request()->getBody(), TRUE));
-        if(FALSE === $result) {
+        $data = $this->_oauthStorage->updateClient($clientId, json_decode($this->_app->request()->getBody(), TRUE));
+        if(FALSE === $data) {
+            // FIXME: better error handling
             $this->_app->halt(404);
         }
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode($result));
+        $response->body(json_encode($data));
+
+        $this->_app->getLog()->info("oauth client '" . $clientId . "' updated by '" . $result->resource_owner_id . "'");
     }
 
     public function addClient() {
@@ -191,13 +198,16 @@ class SlimOAuth {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
-        $result = $this->_oauthStorage->addClient(json_decode($this->_app->request()->getBody(), TRUE));
-        if(FALSE === $result) {
+        $data = $this->_oauthStorage->addClient(json_decode($this->_app->request()->getBody(), TRUE));
+        if(FALSE === $data) {
+            // FIXME: better error handling
             $this->_app->halt(500);
         }
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode($result));
+        $response->body(json_encode($data));
+
+        $this->_app->getLog()->info("oauth client '" . $data['client_id'] . "' added by '" . $result->resource_owner_id . "'");
     }
 
     public function getClients() {
@@ -208,32 +218,41 @@ class SlimOAuth {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
-        $result = $this->_oauthStorage->getClients();
-        if(FALSE === $result) {
+        $data = $this->_oauthStorage->getClients();
+        if(FALSE === $data) {
+            // FIXME: better error handling
             $this->_app->halt(404);
         }
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode($result));
+        $response->body(json_encode($data));
     }
 
     public function getApprovals() {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
-        // FIXME: all methods should have data with PDO data from OAuth and not "result"
-        $approvals = $this->_oauthStorage->getApprovals($result->resource_owner_id);
-        if(FALSE === $result) {
+
+        $data = $this->_oauthStorage->getApprovals($result->resource_owner_id);
+        if(FALSE === $data) {
+            // FIXME: better error handling
             $this->_app->halt(404);
         }
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode($approvals));
+        $response->body(json_encode($data));
     }
 
     public function deleteApproval($clientId) {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
-        $this->_oauthStorage->deleteApproval($clientId, $result->resource_owner_id);
+        $data = $this->_oauthStorage->deleteApproval($clientId, $result->resource_owner_id);
+        if(FALSE === $data) {
+            // FIXME: better error handling
+            $this->_app->halt(404);
+        }
+        $response = $this->_app->response();
+        $response['Content-Type'] = 'application/json';
+        $response->body(json_encode($data));
     }
 
     public function addApproval() {
@@ -247,16 +266,16 @@ class SlimOAuth {
         //        storing it
         $scope = $data['scope'];
 
-        $result = $this->_oauthStorage->storeApprovedScope($clientId, $result->resource_owner_id, $scope);
-        if(FALSE === $result) {
+        $data = $this->_oauthStorage->storeApprovedScope($clientId, $result->resource_owner_id, $scope);
+        if(FALSE === $data) {
+            // FIXME: better error handling
             $this->_app->halt(500);
         }
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode($result));
+        $response->body(json_encode($data));
 
     }
-
 
     public function errorHandler(Exception $e) {
         switch(get_class($e)) {
@@ -282,6 +301,7 @@ class SlimOAuth {
                 break;
             case "ErrorException":
             default:
+                $this->_app->getLog()->error($e->getMessage());
                 $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "Internal Server Error"), 500);
                 break;
         }
