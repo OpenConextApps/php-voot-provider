@@ -48,7 +48,7 @@ $(document).ready(function () {
             jso_allowia: true,
             dataType: 'json',
             success: function (data) {
-                $("#userId").html(data.id);
+                $("#userId").append(data.id);
             }
         });
     }
