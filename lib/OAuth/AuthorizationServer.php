@@ -61,11 +61,11 @@ class AuthorizationServer {
         $client = $this->_storage->getClient($clientId);
 
         if(FALSE === $client) {
-            throw new OAuthException('client not registered');
+            error_log('new client_id seen: '.$_GET['client_id']);
         }
 
         if(NULL !== $redirectUri) {
-            if($client->redirect_uri !== $redirectUri) {
+            if($client && $client->redirect_uri !== $redirectUri) {
                 throw new OAuthException('specified redirect_uri not the same as registered redirect_uri');
             }
         }
@@ -76,7 +76,7 @@ class AuthorizationServer {
                 if(NULL !== $state) {
                     $error += array ( "state" => $state);
                 }
-                return array("action" => "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+                return array("action" => "error_redirect", "url" => $redirectUri . "#" . http_build_query($error));
             }
         }
 
@@ -89,15 +89,6 @@ class AuthorizationServer {
                 $error += array ( "state" => $state);
             }
             return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
-        } else {
-            if(FALSE === self::isSubsetScope($requestedScope, $this->_config['supportedScopes'])) {
-                // scope not supported
-                $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported");
-                if(NULL !== $state) {
-                    $error += array ( "state" => $state);
-                }
-                return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
-            }
         }
    
         $approvedScope = $this->_storage->getApprovedScope($clientId, $resourceOwner, $requestedScope);
@@ -116,7 +107,7 @@ class AuthorizationServer {
             if(NULL !== $state) {
                 $token += array ("state" => $state);
             }
-            return array("action" => "redirect", "url" => $client->redirect_uri . "#" . http_build_query($token));
+            return array("action" => "redirect", "url" => $redirectUri . "#" . http_build_query($token));
         }
     }
 

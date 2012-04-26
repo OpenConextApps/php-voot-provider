@@ -71,9 +71,9 @@ class SlimOAuth {
         if($result['action'] === 'ask_approval') { 
             $client = $this->_oauthStorage->getClient($this->_app->request()->get('client_id'));
             $this->_app->render('askAuthorization.php', array (
-                'clientId' => $client->id,
-                'clientName' => $client->name,
-                'redirectUri' => $client->redirect_uri,
+                'clientId' => ($client ? $client->id : 'unknown'),
+                'clientName' => ($client ? $client->name : 'unknown'),
+                'redirectUri' => $this->_app->request()->get('redirect_uri'),
                 'scope' => $this->_app->request()->get('scope'), 
                 'authorizeNonce' => $result['authorize_nonce'],
                 'protectedResourceDescription' => $this->_oauthConfig['OAuth']['protectedResourceDescription'],
@@ -156,7 +156,8 @@ class SlimOAuth {
                 break;
             case "ErrorException":
             default:
-                $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "Internal Server Error"), 500);
+                //$this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "Internal Server Error"), 500);
+                throw $e;
                 break;
         }
     }
