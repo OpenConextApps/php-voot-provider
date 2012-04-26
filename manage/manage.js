@@ -36,7 +36,7 @@ $(document).ready(function () {
             jso_allowia: true,
             dataType: 'json',
             success: function (data) {
-                $("#adminUserId").html(data.id);
+                $("#userId").html(data.id);
             }
         });
     }
