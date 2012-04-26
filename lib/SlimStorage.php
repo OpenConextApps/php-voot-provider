@@ -49,11 +49,11 @@ class SlimStorage {
     }
 
     public function getFile($uid, $category, $name) {
-error_log('storage getFile');
-
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
-
-        if($category !== "public") {    
+        $dirs = explode('/', $name);
+        if(count($dirs)>1 && $dirs[0] == "public") {
+            //anonymous GET allowed on 'public' subdir of each category
+        } else {
             $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
 
             // Apache Only!
@@ -67,27 +67,9 @@ error_log('storage getFile');
 
             $absPath = $this->_storageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
                     $result->resource_owner_id . DIRECTORY_SEPARATOR . 
+                    $uid . DIRECTORY_SEPARATOR . 
                     $category . DIRECTORY_SEPARATOR . 
                     $name;
-        } else {
-            $absPath = $this->_storageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
-                    $uid . DIRECTORY_SEPARATOR . 
-                    "public" . DIRECTORY_SEPARATOR . 
-                    $name;
-        }
-
-        // user directory
-        if(!file_exists(dirname(dirname($absPath)))) {
-            if (@mkdir(dirname(dirname($absPath)), 0775) === FALSE) {
-                $this->_app->halt(500, "Unable to create directory");
-            }
-        }
-
-        // category directory
-        if(!file_exists(dirname($absPath))) {
-            if (@mkdir(dirname($absPath), 0775) === FALSE) {
-                $this->_app->halt(500, "Unable to create directory");
-            }
         }
 
         if(!file_exists($absPath) || !is_file($absPath)) {
@@ -95,8 +77,14 @@ error_log('storage getFile');
         }
 //        $finfo = new finfo(FILEINFO_MIME_TYPE);
 //        $this->_app->response()->header("Content-Type", $finfo->file($absPath));
-	$this->_app->response()->header("Content-Type", "application/json");
-        echo file_get_contents($absPath);
+        //TODO: echo MIME type from PUT back in GET
+      	$this->_app->response()->header("Content-Type", "application/octet-stream");
+        if($absPath[strlen($absPath)-1]=='/') {
+            //TODO: report directory listing here
+            echo json_encode(array('foo', 'bar', 'baz'));
+        } else {
+            echo file_get_contents($absPath);
+        }
     }
 
     public function putFile($uid, $category, $name) {
