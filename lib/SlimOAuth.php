@@ -38,7 +38,6 @@ class SlimOAuth {
             $self->getApprovals();
         });
 
-        // FIXME: impl
         $this->_app->post('/oauth/approval', function () use ($self) {
             $self->addApproval();
         });
@@ -51,11 +50,6 @@ class SlimOAuth {
 	    $this->_app->get('/oauth/whoami', function () use ($self) {
             $self->whoAmI();
         });
-
-	    $this->_app->options('/oauth/whoami', function () use ($self) {
-            $self->optionsWhoAmI();
-        });
-
 
         $this->_app->get('/oauth/client/:client_id', function ($clientId) use ($self) {
             $self->getClient($clientId);
@@ -125,12 +119,6 @@ class SlimOAuth {
     }
 
     // REST API
-    public function optionsWhoAmi() {
-        $this->_app->response()->header('Access-Control-Allow-Origin', $this->_app->request()->headers('Origin'));
-        $this->_app->response()->header('Access-Control-Allow-Methods','GET');
-        $this->_app->response()->header('Access-Control-Allow-Headers','Authorization');
-    }
-
     public function whoAmI() {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);

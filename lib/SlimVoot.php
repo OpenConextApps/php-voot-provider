@@ -34,20 +34,9 @@ class SlimVoot {
         $this->_app->get('/people/:name/:groupId', function ($name, $groupId) use ($self) {
             $self->getGroupMembers($name, $groupId);
         });
-
-        $this->_app->options('/people/', function() use ($self) {
-            $self->optionsResponse();
-        });
-
-        $this->_app->options('/groups/', function() use ($self) {
-            $self->optionsResponse();
-        });
-
     }
 
     public function isMemberOf($name) {
-        // enable CORS (http://enable-cors.org)
-        $this->_app->response()->header("Access-Control-Allow-Origin", "*");
         $as = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $as->verify($authorizationHeader);
@@ -58,8 +47,6 @@ class SlimVoot {
     }
 
     public function getGroupMembers($name, $groupId) {
-        // enable CORS (http://enable-cors.org)
-        $this->_app->response()->header("Access-Control-Allow-Origin", "*");
         $as = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $as->verify($authorizationHeader);
@@ -67,12 +54,6 @@ class SlimVoot {
         $grp_array = $g->getGroupMembers($result->resource_owner_id, $groupId, $this->_app->request()->get('startIndex'), $this->_app->request()->get('count'));
         $this->_app->response()->header('Content-Type','application/json');
         echo json_encode($grp_array);
-    }
-
-    public function optionsResponse() {
-        $this->_app->response()->header('Access-Control-Allow-Origin', $this->_app->request()->headers('Origin'));
-        $this->_app->response()->header('Access-Control-Allow-Methods','GET, PUT, DELETE');
-        $this->_app->response()->header('Access-Control-Allow-Headers','Authorization');
     }
 
     private static function _getAuthorizationHeader() {
