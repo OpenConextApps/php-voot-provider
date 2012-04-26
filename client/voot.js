@@ -36,7 +36,6 @@ $(document).ready(function () {
             dataType: 'json',
             success: function (data) {
                 $("#memberList").html($("#memberListTemplate").render(data.entry));
-                //$("#memberListModal").show();
             }
         });
     }
@@ -63,7 +62,7 @@ $(document).ready(function () {
     function initPage() {
         $("#memberListModal").hide();
         renderGroupList();
-	    getUserId();
+        getUserId();
     }
     initPage();
 });

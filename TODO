@@ -19,9 +19,6 @@
     webinterface to make it impossible to lock yourself out.
   - implement a approval/token revoke dialog in the manage interface (next to 
     client administration, for normal users)
-  - make it impossible to modify the client_id of an existing registration, 
-    I guess it technically already is impossible, but not reflected in UI 
-    by making the client_id box unedittable
   - for confidential clients a secret is needed, for public clients not: hide
     it in the interface when switching the select box for client type to public
 

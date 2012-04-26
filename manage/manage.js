@@ -1,8 +1,7 @@
 $(document).ready(function () {
     var apiRoot = 'http://localhost/voot';
-    var apiScopes = ["oauth_admin","oauth_whoami"];
+    var apiScopes = ["oauth_admin", "oauth_whoami"];
     var apiClientId = 'manage';
-
     jso_configure({
         "admin": {
             client_id: apiClientId,
@@ -75,7 +74,6 @@ $(document).ready(function () {
                 jso_allowia: true,
                 success: function (data) {
                     $("#editModal").html($("#clientEditTemplate").render(data));
-                    $("#editModal").show();
                     addEditClientHandlers();
                 }
             });
@@ -83,7 +81,6 @@ $(document).ready(function () {
             // no client specified, we add
             var data = {};
             $("#editModal").html($("#clientEditTemplate").render(data));
-            $("#editModal").show();
             addEditClientHandlers();
         }
     }
@@ -97,11 +94,8 @@ $(document).ready(function () {
     }
 
     function addEditClientHandlers() {
-        $("#editModal a.close").click(function () {
-            $("#editModal").hide();
-        });
         $("#editModal a.editClose").click(function () {
-            $("#editModal").hide();
+            $("#editModal").modal('hide');
         });
         $("#editModal a.editSave").click(function () {
             // FIXME: not really a nice way to fetch form data...
@@ -126,7 +120,7 @@ $(document).ready(function () {
             dataType: 'json',
             data: clientData,
             success: function (data) {
-                $("#editModal").hide();
+                $("#editModal").modal('hide');
                 renderClientList();
             }
         });
@@ -142,7 +136,7 @@ $(document).ready(function () {
             dataType: 'json',
             data: clientData,
             success: function (data) {
-                $("#editModal").hide();
+                $("#editModal").modal('hide');
                 renderClientList();
             }
         });
@@ -154,7 +148,7 @@ $(document).ready(function () {
     function initPage() {
         $("#editModal").hide();
         renderClientList();
-	    getUserId();
+        getUserId();
     }
     initPage();
 });
