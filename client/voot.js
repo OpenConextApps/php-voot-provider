@@ -1,9 +1,10 @@
 $(document).ready(function () {
     var apiRoot = 'http://localhost/voot';
     var apiScopes = ["read", "oauth_whoami"];
+    var apiClientId = 'voot';
     jso_configure({
         "voot": {
-            client_id: "voot",
+            client_id: apiClientId,
             redirect_uri: apiRoot + "/client/index.html",
             authorization: apiRoot + "/oauth/authorize"
         }
