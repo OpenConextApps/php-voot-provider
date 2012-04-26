@@ -22,7 +22,21 @@ $(document).ready(function () {
             dataType: 'json',
             success: function (data) {
                 $("#groupList").html($("#groupListTemplate").render(data.entry));
-                addClientListHandlers();
+                addGroupListHandlers();
+            }
+        });
+    }
+
+    function getGroupMembers(groupId) {
+        $.oajax({
+            url: apiRoot + "/people/@me/" + groupId,
+            jso_provider: "voot",
+            jso_scopes: apiScopes,
+            jso_allowia: true,
+            dataType: 'json',
+            success: function (data) {
+                $("#memberList").html($("#memberListTemplate").render(data.entry));
+                //$("#memberListModal").show();
             }
         });
     }
@@ -40,18 +54,14 @@ $(document).ready(function () {
         });
     }
 
-    function addClientListHandlers() {
-        /*$("a.editClient").click(function () {
-            editClient($(this).data('clientId'));
+    function addGroupListHandlers() {
+        $("a.groupEntry").click(function () {
+            getGroupMembers($(this).data('groupId'));
         });
-        $("a.deleteClient").click(function () {
-            if (confirm("Are you sure you want to delete '" + $(this).data('clientName') + "'")) {
-                deleteClient($(this).data('clientId'));
-            }
-        });*/
     }
 
     function initPage() {
+        $("#memberListModal").hide();
         renderGroupList();
 	    getUserId();
     }

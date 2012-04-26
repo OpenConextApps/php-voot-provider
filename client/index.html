@@ -53,14 +53,33 @@
         	<tbody id="groupList"></tbody>
         </table>
 
+    <div id="memberListModal" class="modal">
+        <div class="modal-header">
+            <button class="close" data-dismiss="modal">×</button>
+            <h3>Group Members</h3>
+        </div>
+        <div class="modal-body">        
+            <table class="table table-striped">
+                <tr class="header"><th>User ID</th><th>Role</th></tr>
+            	<tbody id="memberList"></tbody>
+            </table>
+        </div>
+    </div>
+
     </div> <!-- /container -->
 
     <script id="groupListTemplate" type="text/x-jsrender">
         <tr>
-		    <td><a href="#" data-group-id="{{:id}}" title="{{:description}}">{{:title}}</a></td><td>{{:voot_membership_role}}</td>
+		    <td><a href="#memberListModal" data-toggle="modal" class="groupEntry" data-group-id="{{:id}}" title="{{:description}}">{{:title}}</a></td><td>{{:voot_membership_role}}</td>
         </tr>
     </script>
-   
+
+    <script id="memberListTemplate" type="text/x-jsrender">
+        <tr>
+		    <td>{{:id}}</td><td>{{:voot_membership_role}}</td>
+        </tr>
+    </script>
+
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
