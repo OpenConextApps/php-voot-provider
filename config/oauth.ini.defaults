@@ -6,22 +6,9 @@ storageBackend = "PdoOAuthStorage"
 adminResourceOwnerId[] = "fkooman"
 ;adminResourceOwnerId[] = "francois"
 
-authenticationMechanism = "DummyResourceOwner"
-;authenticationMechanism = "BrowserID"
+authenticationMechanism = "BrowserIDResourceOwner"
+;authenticationMechanism = "DummyResourceOwner"
 ;authenticationMechanism = "SspResourceOwner"
-
-; the scopes supported by the resource server
-supportedScopes[] = "read"
-supportedScopes[] = "write"
-supportedScopes[] = "public"
-supportedScopes[] = "tutorial"
-supportedScopes[] = "documents"
-supportedScopes[] = "contacts"
-supportedScopes[] = "tasks"
-
-; bug in OAuth in Unhosted/remoteStorage uses "," to separate scopes
-supportedScopes[] = "public,tutorial"
-supportedScopes[] = "documents,contacts,public"
 
 ; message to display on authorization dialog asking the user for permission
 ; to access the resources
@@ -35,7 +22,7 @@ allowResourceOwnerScopeFiltering = FALSE
 accessTokenExpiry = 3600
 
 [PdoOAuthStorage]
-dsn = "sqlite:/var/www/html/voot/data/oauth2.sqlite";
+dsn = "sqlite:/var/www/phpvoot/data/oauth2.sqlite";
 
 ; dummy configuration
 [DummyResourceOwner]
@@ -43,7 +30,7 @@ resourceOwnerId = "fkooman"
 resourceOwnerDisplayName = "François Kooman"
 
 ; BrowserID configuration
-[BrowserID]
+[BrowserIDResourceOwner]
 verifierAddress = "https://browserid.org/verify"
 userAddressIsRequiredEmail = true
 resourceOwnerIdAttributeName = "email"
