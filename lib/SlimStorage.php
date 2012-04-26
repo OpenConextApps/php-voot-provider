@@ -22,19 +22,19 @@ class SlimStorage {
         // in PHP 5.4 $this is possible inside anonymous functions.
         $self = &$this;
 
-        $this->_app->get('/:uid/:category/:name', function ($uid, $category, $name) use ($self) {
+        $this->_app->get('/storage/:uid/:category/:name', function ($uid, $category, $name) use ($self) {
             $self->getFile($uid, $category, $name);
         });
 
-        $this->_app->put('/:uid/:category/:name', function ($uid, $category, $name) use ($self) {
+        $this->_app->put('/storage/:uid/:category/:name', function ($uid, $category, $name) use ($self) {
             $self->putFile($uid, $category, $name);
         });
 
-        $this->_app->delete('/:uid/:category/:name', function ($uid, $category, $name) use ($self) {
+        $this->_app->delete('/storage/:uid/:category/:name', function ($uid, $category, $name) use ($self) {
             $self->deleteFile($uid, $category, $name);
         });
 
-        $this->_app->options('/:uid/:category/:name', function() use ($self) {
+        $this->_app->options('/storage/:uid/:category/:name', function() use ($self) {
             $self->options();
         });
 
@@ -49,6 +49,8 @@ class SlimStorage {
     }
 
     public function getFile($uid, $category, $name) {
+error_log('storage getFile');
+
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
 
         if($category !== "public") {    
