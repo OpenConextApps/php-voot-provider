@@ -107,7 +107,8 @@ class SlimOAuth {
             $this->_app->render('askAuthorization.php', array (
                 'clientId' => $client->id,
                 'clientName' => $client->name,
-                'redirectUri' => $client->redirect_uri,
+                'clientDescription' => $client->description,
+                'clientRedirectUri' => $client->redirect_uri,
                 'scope' => $this->_app->request()->get('scope'), 
                 'authorizeNonce' => $result['authorize_nonce'],
                 'protectedResourceDescription' => $this->_oauthConfig['OAuth']['protectedResourceDescription'],

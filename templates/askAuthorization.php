@@ -10,9 +10,7 @@
     <!-- Le styles -->
     <link href="../ext/bootstrap/css/bootstrap.css" rel="stylesheet">
     <style>
-      body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
-      }
+      span.unregistered { color: red; font-weight: bold; }
     </style>
     <link href="../ext/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
 
@@ -40,6 +38,18 @@
 
     <table class="table table-striped"> 
         <tr><th>Application</th><td><span title="<?php echo $clientId; ?>"><?php echo $clientName; ?></span></td></tr>
+        <tr><th>Description</th>
+            <td>
+                <?php if($clientName === "Unknown Client") { ?>
+                    <span class="unregistered"><?php echo $clientDescription; ?></span>
+                <?php } else { ?>
+                    <span><?php echo $clientDescription; ?></span>
+                <?php } ?>
+            </td>
+        </tr>
+        <?php if($clientName === "Unknown Client") { ?>
+            <tr><th>Redirect URI</th><td><?php echo $clientRedirectUri; ?></td></tr>
+        <?php } ?>
         <tr><th>Requested Permission(s)</th>
             <td>
             <?php if($allowFilter) { ?>
