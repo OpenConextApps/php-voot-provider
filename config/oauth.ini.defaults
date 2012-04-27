@@ -9,6 +9,9 @@ adminResourceOwnerId[] = "fkooman"
 authenticationMechanism = "DummyResourceOwner"
 ;authenticationMechanism = "SspResourceOwner"
 
+; whether to allow unregistered clients, this is NOT RECOMMENDED!
+allowUnregisteredClients = FALSE
+
 ; whether or not to allow clients to request whatever scope they wish, if FALSE
 ; the scopes need to be white listed below at "supportedScopes"
 allowAllScopes = FALSE
