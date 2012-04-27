@@ -53,26 +53,29 @@ class SlimStorage {
     }
     private function parseUriPath($uriPath) {
         $parts = explode('/', $uriPath);
-        $uid = $parts[0];
-        if(count($uriPath)>1) {
-            $category = $parts[1];
+        $uid = $parts[2];
+        if(count($parts) > 3) {
+            $category = $parts[3];
         } else {
             $category = '';
         }
-        if(count($uriPath) > 2) {
+        if(count($parts) > 3) {
             $path = implode('/', array_slice($parts, 2));
         } else {
             $path = '';
         }
         //reassembling on-disk path from parsed parts, in case there was a bug in the parsing, we don't want to diverge auth and access:
         $absPath = $this->_storageConfig['remoteStorage']['filesDirectory']
-            . DIRECTORY_SEPARATOR . $uid
-            . DIRECTORY_SEPARATOR . $category
-            . DIRECTORY_SEPARATOR . $path;
+            . DIRECTORY_SEPARATOR . $uid . DIRECTORY_SEPARATOR;
+        if(strlen($category)) {
+            $absPath .= $category . DIRECTORY_SEPARATOR;
+            if(strlen($path)) {
+                $absPath .= $path;
+            }
+        }
         return array($uid, $category, $path, $absPath);
     }
     public function handleStorageCall($method, $uriPath, $authorizationHeader=null, $data=null) {
-        var_dump($this->parseUriPath($uriPath));
         list($uid, $category, $path, $absPath) = $this->parseUriPath($uriPath);
         if($method == 'GET' && ($this->isPublic($path) || $this->clientHasReadAccess($uid, $category, $authorizationHeader))) {
             if($this->hasTrailingSlash($path)) {
@@ -94,12 +97,9 @@ class SlimStorage {
     public function listDir($absPath) {
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
 
-        if(!file_exists($absPath) || !is_dir($absPath)) {
-            $this->_app->halt(404, "File Not Found");
-        }
       	$this->_app->response()->header("Content-Type", "application/json");
         $entries = array();
-        if ($handle = opendir($absPath)) {
+        if(file_exists($absPath) && is_dir($absPath) && $handle = opendir($absPath)) {
             while (false !== ($entry = readdir($handle))) {
                 if ($entry != "." && $entry != "..") {
                     $entries[] = $entry;
