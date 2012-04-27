@@ -102,13 +102,15 @@ class AuthorizationServer {
             return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
         }
 
-        if(FALSE === self::isSubsetScope($requestedScope, $this->_config['supportedScopes'])) {
-            // scope not supported
-            $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported");
-            if(NULL !== $state) {
-                $error += array ( "state" => $state);
+        if(!$this->_config['allowAllScopes']) {
+            if(FALSE === self::isSubsetScope($requestedScope, $this->_config['supportedScopes'])) {
+                // scope not supported
+                $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported");
+                if(NULL !== $state) {
+                    $error += array ( "state" => $state);
+                }
+                return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
             }
-            return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
         }
 
         if(in_array('oauth_admin', self::getScopeArray($requestedScope))) {
