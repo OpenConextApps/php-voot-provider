@@ -72,6 +72,7 @@ class SlimStorage {
         return array($uid, $category, $path, $absPath);
     }
     public function handleStorageCall($method, $uriPath, $authorizationHeader=null, $data=null) {
+        var_dump($this->parseUriPath($uriPath));
         list($uid, $category, $path, $absPath) = $this->parseUriPath($uriPath);
         if($method == 'GET' && ($this->isPublic($path) || $this->clientHasReadAccess($uid, $category, $authorizationHeader))) {
             if($this->hasTrailingSlash($path)) {
@@ -97,7 +98,7 @@ class SlimStorage {
             $this->_app->halt(404, "File Not Found");
         }
       	$this->_app->response()->header("Content-Type", "application/json");
-        $entries=[];
+        $entries = array();
         if ($handle = opendir($absPath)) {
             while (false !== ($entry = readdir($handle))) {
                 if ($entry != "." && $entry != "..") {
