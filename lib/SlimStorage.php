@@ -44,10 +44,11 @@ class SlimStorage {
         $scopes = AuthorizationServer::getScopeArray($result->scope);
         return (in_array($category.':r', $scopes) || in_array($category.':rw', $scopes));
     }
-    private function clientHasWriteAccess() {
+    private function clientHasWriteAccess($uid, $category, $authorizationHeader) {
         $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
         $result = $o->verify($authorizationHeader);
         $scopes = AuthorizationServer::getScopeArray($result->scope);
+//var_dump($scopes);die();
         return (in_array($category.':rw', $scopes));
     }
     private function parseUriPath($uriPath) {
@@ -125,17 +126,13 @@ class SlimStorage {
     }
 
     public function putFile($absPath, $data, $mimeType) {
-        // user directory
-        if(!file_exists(dirname(dirname($absPath)))) {
-            if (@mkdir(dirname(dirname($absPath)), 0775) === FALSE) {
-                $this->_app->halt(500, "Unable to create directory");
-            }
-        }
-
-        // category directory
-        if(!file_exists(dirname($absPath))) {
-            if (@mkdir(dirname($absPath), 0775) === FALSE) {
-                $this->_app->halt(500, "Unable to create directory");
+        $pathParts = explode('/', $absPath);
+        for($i=2; $i < count($pathParts); $i++) {
+            $parentPath = '/'.implode('/', array_slice($pathParts, 0, $i)); 
+            if(!file_exists($parentPath)) {
+                if (@mkdir($parentPath, 0775) === FALSE) {
+                    die('Unable to create directory: '.$parentPath);
+                }
             }
         }
         file_put_contents($absPath, $data);
