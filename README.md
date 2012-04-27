@@ -18,7 +18,7 @@ The installation requirements on Fedora/CentOS can be installed like this:
 
 On Debian/Ubuntu:
 
-    $ sudo apt-get install php5-sqlite
+    $ sudo apt-get install git sqlite3 php5 php5-sqlite unzip
 
 # Installation
 The project includes an install script that downloads the required dependencies
@@ -30,6 +30,8 @@ permissions.
     $ cd /var/www/html/voot
     $ docs/install.sh
 
+On Ubuntu (Debian) you would typically install in `/var/www/voot`.
+
 # SELinux
 The install script already takes care of setting the file permissions of the
 `data/` directory to allow Apache to write to the directory. However, if you
@@ -39,12 +41,23 @@ the permission to access LDAP servers. This permission can be given by using
 
     $ sudo setsebool -P httpd_can_connect_ldap=on
 
+This is only for Red Hat based Linux distributions like RHEL, CentOS and 
+Fedora.
+
 # Apache
 Also make sure Apache can read and process the `.htaccess` file by giving it
 the appropriate permissions on the (in this case) `/var/www/html/voot` 
 directory:
 
     AllowOverride FileInfo
+
+On Ubuntu (Debian) you can modify `/etc/apache2/sites-enabled/000-default` in
+the `<Directory /var/www/>` section. Don't forget to enable the Apache Rewrite
+module
+    
+    $ sudo a2enmod rewrite
+
+Don't forget to restart Apache.
 
 # Configuration
 In the configuration file `config/voot.ini` and `config/oauth.ini` various 
