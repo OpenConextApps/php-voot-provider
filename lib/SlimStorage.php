@@ -35,7 +35,7 @@ class SlimStorage {
         return (substr($path, 0, 7) == 'public/');
     }
     private function hasTrailingSlash($path) {
-        return ($path[strlen($path)-1]);
+        return ($path[strlen($path)-1]=='/');
     }
     private function clientHasReadAccess($uid, $category, $authorizationHeader) {
 //            $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
@@ -53,30 +53,36 @@ class SlimStorage {
     }
     private function parseUriPath($uriPath) {
         $parts = explode('/', $uriPath);
-        $uid = $parts[2];
+        $userAddressParts = explode('@', $parts[2]);
+        if(count($userAddressParts) == 2) {
+            list($userName, $userHost) = $userAddressParts;
+        } else {
+            list($userName, $userHost) = array('unknown.user', 'unknown.host');
+        }
         if(count($parts) > 3) {
             $category = $parts[3];
         } else {
             $category = '';
         }
         if(count($parts) > 3) {
-            $path = implode('/', array_slice($parts, 2));
+            $path = implode('/', array_slice($parts, 4));
         } else {
             $path = '';
         }
         //reassembling on-disk path from parsed parts, in case there was a bug in the parsing, we don't want to diverge auth and access:
         $absPath = $this->_storageConfig['remoteStorage']['filesDirectory']
-            . DIRECTORY_SEPARATOR . $uid . DIRECTORY_SEPARATOR;
+            . DIRECTORY_SEPARATOR . $userHost . DIRECTORY_SEPARATOR . $userName . DIRECTORY_SEPARATOR;
         if(strlen($category)) {
             $absPath .= $category . DIRECTORY_SEPARATOR;
             if(strlen($path)) {
                 $absPath .= $path;
             }
         }
-        return array($uid, $category, $path, $absPath);
+        return array($userName.'@'.$userHost, $category, $path, $absPath);
     }
-    public function handleStorageCall($method, $uriPath, $authorizationHeader=null, $data=null) {
+    public function handleStorageCall($method, $uriPath, $origin='*', $authorizationHeader=null, $contentTypeHeader='application/octet-stream', $data=null) {
         list($uid, $category, $path, $absPath) = $this->parseUriPath($uriPath);
+        $this->options($origin);
         if($method == 'GET' && ($this->isPublic($path) || $this->clientHasReadAccess($uid, $category, $authorizationHeader))) {
             if($this->hasTrailingSlash($path)) {
                 $this->listDir($absPath);
@@ -84,20 +90,20 @@ class SlimStorage {
                 $this->getFile($absPath);
             }
         } else if($method == 'PUT' && ($this->clientHasWriteAccess($uid, $category, $authorizationHeader))) {
-            $this->putFile($absPath, $data);
+            $this->putFile($absPath, $data, $contentTypeHeader);
         } else if($method == 'DELETE') {
             $this->deleteFile($absPath);
         } else if($method == 'OPTIONS') {
-            $this->options();
+            //$this->options();
         } else {
             header('403 Access Denied');
             die('403 Access Denied');
         }
     }
     public function listDir($absPath) {
-        $this->_app->response()->header("Access-Control-Allow-Origin", "*");
+        header("Access-Control-Allow-Origin", "*");
 
-      	$this->_app->response()->header("Content-Type", "application/json");
+      	header("Content-Type", "application/json");
         $entries = array();
         if(file_exists($absPath) && is_dir($absPath) && $handle = opendir($absPath)) {
             while (false !== ($entry = readdir($handle))) {
@@ -110,25 +116,21 @@ class SlimStorage {
         echo json_encode($entries);
     }
     public function getFile($absPath) {
-        $this->_app->response()->header("Access-Control-Allow-Origin", "*");
-
         if(!file_exists($absPath) || !is_file($absPath)) {
-            $this->_app->halt(404, "File Not Found");
+            header('404 File Not Found');
+            die('404 File Not Found');
         }
-//        $finfo = new finfo(FILEINFO_MIME_TYPE);
-//        $this->_app->response()->header("Content-Type", $finfo->file($absPath));
-        //TODO: echo MIME type from PUT back in GET
-      	$this->_app->response()->header("Content-Type", "application/octet-stream");
+        //$finfo = new finfo(FILEINFO_MIME_TYPE);
+        //header("Content-Type", $finfo->file($absPath));
+      	header("Content-Type", "application/octet-stream");
         echo file_get_contents($absPath);
     }
 
-    public function putFile($absPath) {
-        $this->_app->response()->header("Access-Control-Allow-Origin", "*");
-
-
+    public function putFile($absPath, $data, $mimeType) {
         // user directory
         if(!file_exists(dirname(dirname($absPath)))) {
             if (@mkdir(dirname(dirname($absPath)), 0775) === FALSE) {
+ die($absPath);
                 $this->_app->halt(500, "Unable to create directory");
             }
         }
@@ -139,17 +141,17 @@ class SlimStorage {
                 $this->_app->halt(500, "Unable to create directory");
             }
         }
-        file_put_contents($absPath, $this->_app->request()->getBody());
+        file_put_contents($absPath, $data);
     }
 
     public function deleteFile($absPath) {
 
     }
 
-    public function options() {
-        $this->_app->response()->header('Access-Control-Allow-Origin', $this->_app->request()->headers('Origin'));
-        $this->_app->response()->header('Access-Control-Allow-Methods','GET, PUT, DELETE');
-        $this->_app->response()->header('Access-Control-Allow-Headers','content-length, authorization');
+    public function options($origin) {
+        header('Access-Control-Allow-Origin', $origin);
+        header('Access-Control-Allow-Methods','GET, PUT, DELETE');
+        header('Access-Control-Allow-Headers','content-length, authorization');
     }
 
     public function lrdd() {

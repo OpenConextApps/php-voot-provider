@@ -37,7 +37,18 @@ if(substr($_SERVER['REQUEST_URI'], 0, 8) == '/storage') {
     } else {
         $authorizationHeader = $httpHeaders['Authorization'];
     }
-    $t->handleStorageCall($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI'], $authorizationHeader);
+    if(!array_key_exists("Origin", $httpHeaders)) {
+        $originHeader = '';
+    } else {
+        $originHeader = $httpHeaders['Origin'];
+    }
+    if(!array_key_exists("Content-Type", $httpHeaders)) {
+        $contentTypeHeader = '';
+    } else {
+        $contentTypeHeader = $httpHeaders['Content-Type'];
+    }
+    $data = file_get_contents('php://input');
+    $t->handleStorageCall($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI'], $originHeader, $authorizationHeader, $contentTypeHeader, $data);
 } else {
   $app->run();
 }

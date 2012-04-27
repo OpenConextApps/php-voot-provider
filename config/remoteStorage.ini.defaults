@@ -2,5 +2,5 @@
 
 ; remoteStorage configuration
 [remoteStorage]
-filesDirectory = "/var/www/html/voot/data/files"
+filesDirectory = "/var/www/phpvoot/data/files"
 
