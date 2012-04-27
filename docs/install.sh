@@ -54,3 +54,17 @@ then
 	rm bootstrap.zip
 fi
 
+if [ ! -d ext/bootstrap ]
+then
+	cd ext/
+	wget -O bootstrap.zip http://twitter.github.com/bootstrap/assets/bootstrap.zip
+	unzip -o -q bootstrap.zip
+	rm bootstrap.zip
+    cd ../
+fi
+
+if [ ! -f ext/js/bootstrap-modal.js ]
+then
+    wget -O ext/js/bootstrap-modal.js http://twitter.github.com/bootstrap/assets/js/bootstrap-modal.js
+fi
+

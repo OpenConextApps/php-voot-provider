@@ -10,6 +10,15 @@ class PdoOAuthStorage implements IOAuthStorage {
         $this->_pdo = new PDO($this->_config['dsn']);
     }
 
+    public function getClients() {
+        $stmt = $this->_pdo->prepare("SELECT * FROM Client");
+        $result = $stmt->execute();
+        if (FALSE === $result) {
+            return FALSE;
+        }
+        return $stmt->fetchAll(PDO::FETCH_ASSOC); 
+    }
+
     public function getClient($clientId) {
         $stmt = $this->_pdo->prepare("SELECT * FROM Client WHERE id = :client_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
@@ -18,6 +27,62 @@ class PdoOAuthStorage implements IOAuthStorage {
             return FALSE;
         }
         return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
+    public function updateClient($clientId, $data) {
+        $stmt = $this->_pdo->prepare("UPDATE Client SET name = :name, description = :description, secret = :secret, redirect_uri = :redirect_uri, type = :type WHERE id = :client_id");
+        $stmt->bindValue(":name", $data['name'], PDO::PARAM_STR);
+        $stmt->bindValue(":description", $data['description'], PDO::PARAM_STR);
+        $stmt->bindValue(":secret", $data['secret'], PDO::PARAM_STR);
+        $stmt->bindValue(":redirect_uri", $data['redirect_uri'], PDO::PARAM_STR);
+        $stmt->bindValue(":type", $data['type'], PDO::PARAM_STR);
+        $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
+        if(FALSE === $stmt->execute()) {
+            return FALSE;
+        }
+        return 1 === $stmt->rowCount();
+    }
+
+    public function addClient($data) {
+        $stmt = $this->_pdo->prepare("INSERT INTO Client (id, name, description, secret, redirect_uri, type) VALUES(:client_id, :name, :description, :secret, :redirect_uri, :type)");
+
+        // if id is set, use it for the registration, if not generate one
+        if(array_key_exists('id', $data) && !empty($data['id'])) {
+            $clientId = $data['id'];
+        } else {
+            $clientId = $this->_randomHex(16);
+        }
+
+        // if confidential client and secret is set, use it, if confidential
+        // and secret is not set generate one
+        if(array_key_exists('type', $data) && $data['type'] === "confidential") {
+            if(array_key_exists('secret', $data) && !empty($data['secret'])) {
+                $secret = $data['secret'];
+            } else {
+                $secret = $this->_randomHex(16);
+            }
+        } else {
+            $secret = NULL;
+        }
+        $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
+        $stmt->bindValue(":name", $data['name'], PDO::PARAM_STR);
+        $stmt->bindValue(":description", $data['description'], PDO::PARAM_STR);
+        $stmt->bindValue(":secret", $secret, PDO::PARAM_STR|PDO::PARAM_NULL);
+        $stmt->bindValue(":redirect_uri", $data['redirect_uri'], PDO::PARAM_STR);
+        $stmt->bindValue(":type", $data['type'], PDO::PARAM_STR);
+        if(FALSE === $stmt->execute()) {
+            return FALSE;
+        }
+        return array("client_id" => $clientId, "secret" => $secret);
+    }
+
+    public function deleteClient($clientId) {
+        $stmt = $this->_pdo->prepare("DELETE FROM Client WHERE id = :client_id");
+        $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
+        if(FALSE === $stmt->execute()) {
+            return FALSE;
+        }
+        return 1 === $stmt->rowCount();
     }
 
     public function storeApprovedScope($clientId, $resourceOwner, $scope) {
@@ -108,15 +173,6 @@ class PdoOAuthStorage implements IOAuthStorage {
         $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
         $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
         return $stmt->execute();
-    }
-
-    public function getClients() {
-        $stmt = $this->_pdo->prepare("SELECT * FROM Client");
-        $result = $stmt->execute();
-        if (FALSE === $result) {
-            return FALSE;
-        }
-        return $stmt->fetchAll(PDO::FETCH_ASSOC); 
     }
 
     private function _randomHex($len = 16) {
