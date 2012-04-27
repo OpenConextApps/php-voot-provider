@@ -29,7 +29,15 @@ $s = new SlimOAuth($app, $oauthConfig);
 
 // Storage
 $t = new SlimStorage($app, $oauthConfig, $remoteStorageConfig, $s);
-
-$app->run();
-
+if(substr($_SERVER['REQUEST_URI'], 0, 8) == '/storage') {
+            // Apache Only!
+            $httpHeaders = apache_request_headers();
+            if(!array_key_exists("Authorization", $httpHeaders)) {
+                throw new VerifyException("invalid_request: authorization header missing");
+            }
+            $authorizationHeader = $httpHeaders['Authorization'];
+  $t->handleStorageCall();
+} else {
+  $app->run();
+}
 ?>

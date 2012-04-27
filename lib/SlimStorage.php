@@ -22,22 +22,6 @@ class SlimStorage {
         // in PHP 5.4 $this is possible inside anonymous functions.
         $self = &$this;
 
-        $this->_app->get('/storage/:uid/:category/:name', function ($uid, $category, $name) use ($self) {
-            $self->getFile($uid, $category, $name);
-        });
-
-        $this->_app->put('/storage/:uid/:category/:name', function ($uid, $category, $name) use ($self) {
-            $self->putFile($uid, $category, $name);
-        });
-
-        $this->_app->delete('/storage/:uid/:category/:name', function ($uid, $category, $name) use ($self) {
-            $self->deleteFile($uid, $category, $name);
-        });
-
-        $this->_app->options('/storage/:uid/:category/:name', function() use ($self) {
-            $self->options();
-        });
-
         $this->_app->get('/lrdd/', function() use ($self) {
             $self->lrdd();
         });
@@ -47,30 +31,85 @@ class SlimStorage {
         });
 
     }
-
-    public function getFile($uid, $category, $name) {
-        $this->_app->response()->header("Access-Control-Allow-Origin", "*");
-        $dirs = explode('/', $name);
-        if(count($dirs)>1 && $dirs[0] == "public") {
-            //anonymous GET allowed on 'public' subdir of each category
+    private function isPublic($path) {
+        return (substr($path, 0, 7) == 'public/');
+    }
+    private function hasTrailingSlash($path) {
+        return ($path[strlen($path)-1]);
+    }
+    private function clientHasReadAccess($uid, $category, $authorizationHeader) {
+//            $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
+//            $result = $o->verify($authorizationHeader);
+//
+//            $absPath = $this->_storageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
+//                    $result->resource_owner_id . DIRECTORY_SEPARATOR . 
+//                    $uid . DIRECTORY_SEPARATOR . 
+//                    $category . DIRECTORY_SEPARATOR . 
+//                    $name;
+        return true;
+    }
+    private function clientHasWriteAccess() {
+        return true;
+    }
+    private function parseUriPath($uriPath) {
+        $parts = explode('/', $uriPath);
+        $uid = $parts[0];
+        if(count($uriPath)>1) {
+            $category = $parts[1];
         } else {
-            $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
-
-            // Apache Only!
-            $httpHeaders = apache_request_headers();
-            if(!array_key_exists("Authorization", $httpHeaders)) {
-                throw new VerifyException("invalid_request: authorization header missing");
-            }
-            $authorizationHeader = $httpHeaders['Authorization'];
-
-            $result = $o->verify($authorizationHeader);
-
-            $absPath = $this->_storageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
-                    $result->resource_owner_id . DIRECTORY_SEPARATOR . 
-                    $uid . DIRECTORY_SEPARATOR . 
-                    $category . DIRECTORY_SEPARATOR . 
-                    $name;
+            $category = '';
         }
+        if(count($uriPath) > 2) {
+            $path = implode('/', array_slice($parts, 2));
+        } else {
+            $path = '';
+        }
+        //reassembling on-disk path from parsed parts, in case there was a bug in the parsing, we don't want to diverge auth and access:
+        $absPath = $this->_storageConfig['remoteStorage']['filesDirectory']
+            . DIRECTORY_SEPARATOR . $uid
+            . DIRECTORY_SEPARATOR . $category
+            . DIRECTORY_SEPARATOR . $path;
+        return array($uid, $category, $path, $absPath);
+    }
+    public function handleStorageCall($method, $uriPath, $authorizationHeader=null, $data=null) {
+        list($uid, $category, $path, $absPath) = $this->parseUriPath($uriPath);
+        if($method == 'GET' && ($this->isPublic($path) || $this->clientHasReadAccess($uid, $category, $authorizationHeader))) {
+            if($this->hasTrailingSlash($path)) {
+                $this->listDir($absPath);
+            } else {
+                $this->getFile($absPath);
+            }
+        } else if($method == 'PUT' && ($this->clientHasWriteAccess($uid, $category, $authorizationHeader))) {
+            $this->putFile($absPath, $data);
+        } else if($method == 'DELETE') {
+            $this->deleteFile($absPath);
+        } else if($method == 'OPTIONS') {
+            $this->options();
+        } else {
+            header('403 Access Denied');
+            die('403 Access Denied');
+        }
+    }
+    public function listDir($absPath) {
+        $this->_app->response()->header("Access-Control-Allow-Origin", "*");
+
+        if(!file_exists($absPath) || !is_dir($absPath)) {
+            $this->_app->halt(404, "File Not Found");
+        }
+      	$this->_app->response()->header("Content-Type", "application/json");
+        $entries=[];
+        if ($handle = opendir($absPath)) {
+            while (false !== ($entry = readdir($handle))) {
+                if ($entry != "." && $entry != "..") {
+                    $entries[] = $entry;
+                }
+            }
+            closedir($handle);
+        }
+        echo json_encode($entries);
+    }
+    public function getFile($absPath) {
+        $this->_app->response()->header("Access-Control-Allow-Origin", "*");
 
         if(!file_exists($absPath) || !is_file($absPath)) {
             $this->_app->halt(404, "File Not Found");
@@ -79,28 +118,12 @@ class SlimStorage {
 //        $this->_app->response()->header("Content-Type", $finfo->file($absPath));
         //TODO: echo MIME type from PUT back in GET
       	$this->_app->response()->header("Content-Type", "application/octet-stream");
-        if($absPath[strlen($absPath)-1]=='/') {
-            //TODO: report directory listing here
-            echo json_encode(array('foo', 'bar', 'baz'));
-        } else {
-            echo file_get_contents($absPath);
-        }
+        echo file_get_contents($absPath);
     }
 
-    public function putFile($uid, $category, $name) {
+    public function putFile($absPath) {
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
-        $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
 
-        // Apache Only!
-        $httpHeaders = apache_request_headers();
-        if(!array_key_exists("Authorization", $httpHeaders)) {
-            throw new VerifyException("invalid_request: authorization header missing");
-        }
-        $authorizationHeader = $httpHeaders['Authorization'];
-
-        $result = $o->verify($authorizationHeader);
-
-        $absPath = $this->_storageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . $result->resource_owner_id . DIRECTORY_SEPARATOR . $category . DIRECTORY_SEPARATOR . $name;
 
         // user directory
         if(!file_exists(dirname(dirname($absPath)))) {
@@ -118,7 +141,7 @@ class SlimStorage {
         file_put_contents($absPath, $this->_app->request()->getBody());
     }
 
-    public function deleteFile($uid, $category, $name) {
+    public function deleteFile($absPath) {
 
     }
 
