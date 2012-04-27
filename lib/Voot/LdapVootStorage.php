@@ -44,7 +44,13 @@ class LdapVootStorage implements IVootStorage {
         // get all members from the group specified by $groupId
         // get the uid from all members in the group
 
-        // this is NOT NICE! (expensive, n^2!)
+        // this is NOT NICE! (expensive, for every user we need to do a call to fetch the uid! n^2!)
+
+        // find the members of the group
+        //ldapsearch -x -H ldap://directory -b '<GROUP DN>' 'uniqueMember=<USER DN>'
+
+        // convert user DN to uid
+        //ldapsearch -x -H ldap://directory -b '<USER DN>' uid cn
 
         return FALSE;
     }
