@@ -301,13 +301,8 @@ class SlimOAuth {
                 break;
             case "ErrorException":
             default:
-<<<<<<< HEAD
-                //$this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "Internal Server Error"), 500);
-                throw $e;
-=======
                 $this->_app->getLog()->error($e->getMessage());
                 $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "Internal Server Error"), 500);
->>>>>>> e6e07be5f6c08c65e57015c49229db0aa979b3c0
                 break;
         }
     }
