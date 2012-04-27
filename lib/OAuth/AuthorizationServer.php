@@ -100,6 +100,7 @@ class AuthorizationServer {
                 $error += array ( "state" => $state);
             }
             return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+        }
 
         if(in_array('oauth_admin', self::getScopeArray($requestedScope))) {
             // administrator scope requested, need to be in admin list

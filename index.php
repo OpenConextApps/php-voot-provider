@@ -47,7 +47,7 @@ if(substr($_SERVER['REQUEST_URI'], 0, 8) == '/storage') {
     } else {
         $contentTypeHeader = $httpHeaders['Content-Type'];
     }
-    $data = $app->getRequest()->getBody();
+    $data = $app->request()->getBody();
 var_dump($data);die();
     $t->handleStorageCall($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI'], $originHeader, $authorizationHeader, $contentTypeHeader, $data);
 } else {
