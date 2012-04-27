@@ -9,7 +9,7 @@ class SlimStorage {
 
     private $_oauthStorage;
 
-    public function __construct(Slim $app, array $oauthConfig, array $storageConfig, SlimOAuth $s) {
+    public function __construct($app, array $oauthConfig, array $storageConfig, SlimOAuth $s) {
         $this->_app = $app;
         $this->_oauthConfig = $oauthConfig;
         $this->_storageConfig = $storageConfig;
@@ -19,17 +19,18 @@ class SlimStorage {
         require_once "lib/OAuth/$oauthStorageBackend.php";
         $this->_oauthStorage = new $oauthStorageBackend($this->_oauthConfig[$oauthStorageBackend]);
 
-        // in PHP 5.4 $this is possible inside anonymous functions.
-        $self = &$this;
+        if($this->_app) {
+            // in PHP 5.4 $this is possible inside anonymous functions.
+            $self = &$this;
 
-        $this->_app->get('/lrdd/', function() use ($self) {
-            $self->lrdd();
-        });
+            $this->_app->get('/lrdd/', function() use ($self) {
+                $self->lrdd();
+            });
 
-        $this->_app->get('/portal', function() use ($self) {
-            $self->showPortal();
-        });
-
+            $this->_app->get('/portal', function() use ($self) {
+                $self->showPortal();
+            });
+        }
     }
     private function isPublic($path) {
         return (substr($path, 0, 7) == 'public/');
@@ -81,8 +82,9 @@ class SlimStorage {
         return array($userName.'@'.$userHost, $category, $path, $absPath);
     }
     public function handleStorageCall($method, $uriPath, $origin='*', $authorizationHeader=null, $contentTypeHeader='application/octet-stream', $data=null) {
-        list($uid, $category, $path, $absPath) = $this->parseUriPath($uriPath);
+        //var_dump(array($method, $uriPath, $origin, $authorizationHeader, $contentTypeHeader, $data, $this->parseUriPath($uriPath)));
         $this->options($origin);
+        list($uid, $category, $path, $absPath) = $this->parseUriPath($uriPath);
         if($method == 'GET' && ($this->isPublic($path) || $this->clientHasReadAccess($uid, $category, $authorizationHeader))) {
             if($this->hasTrailingSlash($path)) {
                 $this->listDir($absPath);
@@ -96,14 +98,12 @@ class SlimStorage {
         } else if($method == 'OPTIONS') {
             //$this->options();
         } else {
-            header('403 Access Denied');
+            header('HTTP/1.0 403 Access Denied');
             die('403 Access Denied');
         }
     }
     public function listDir($absPath) {
-        header("Access-Control-Allow-Origin", "*");
-
-      	header("Content-Type", "application/json");
+      	header('Content-Type: application/json');
         $entries = array();
         if(file_exists($absPath) && is_dir($absPath) && $handle = opendir($absPath)) {
             while (false !== ($entry = readdir($handle))) {
@@ -117,12 +117,12 @@ class SlimStorage {
     }
     public function getFile($absPath) {
         if(!file_exists($absPath) || !is_file($absPath)) {
-            header('404 File Not Found');
+            header('HTTP/1.0 404 File Not Found');
             die('404 File Not Found');
         }
         //$finfo = new finfo(FILEINFO_MIME_TYPE);
-        //header("Content-Type", $finfo->file($absPath));
-      	header("Content-Type", "application/octet-stream");
+        //header('Content-Type: '.$finfo->file($absPath));
+      	header('Content-Type: application/octet-stream');
         echo file_get_contents($absPath);
     }
 
@@ -130,7 +130,6 @@ class SlimStorage {
         // user directory
         if(!file_exists(dirname(dirname($absPath)))) {
             if (@mkdir(dirname(dirname($absPath)), 0775) === FALSE) {
- die($absPath);
                 $this->_app->halt(500, "Unable to create directory");
             }
         }
@@ -149,9 +148,9 @@ class SlimStorage {
     }
 
     public function options($origin) {
-        header('Access-Control-Allow-Origin', $origin);
-        header('Access-Control-Allow-Methods','GET, PUT, DELETE');
-        header('Access-Control-Allow-Headers','content-length, authorization');
+        header('Access-Control-Allow-Methods: GET, PUT, DELETE');
+        header('Access-Control-Allow-Origin: '.$origin);
+        header('Access-Control-Allow-Headers: content-length, authorization');
     }
 
     public function lrdd() {

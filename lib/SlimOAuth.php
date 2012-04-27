@@ -12,7 +12,7 @@ class SlimOAuth {
     private $_resourceOwner;
     private $_as;
 
-    public function __construct(Slim $app, array $oauthConfig) {
+    public function __construct($app, array $oauthConfig) {
         $this->_app = $app;
         $this->_oauthConfig = $oauthConfig;
 
@@ -22,60 +22,62 @@ class SlimOAuth {
 
         $this->_as = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
 
-        // in PHP 5.4 $this is possible inside anonymous functions.
-        $self = &$this;
 
-        $this->_app->get('/oauth/authorize', function () use ($self) {
-            $self->authorize();
-        });
+        if($this->_app) {
+            // in PHP 5.4 $this is possible inside anonymous functions.
+            $self = &$this;
 
-        $this->_app->post('/oauth/authorize', function () use ($self) {
-            $self->approve();
-        });
+            $this->_app->get('/oauth/authorize', function () use ($self) {
+                $self->authorize();
+            });
 
-        // management
-        $this->_app->get('/oauth/approval', function () use ($self) {
-            $self->getApprovals();
-        });
+            $this->_app->post('/oauth/authorize', function () use ($self) {
+                $self->approve();
+            });
 
-        $this->_app->post('/oauth/approval', function () use ($self) {
-            $self->addApproval();
-        });
+            // management
+            $this->_app->get('/oauth/approval', function () use ($self) {
+                $self->getApprovals();
+            });
 
-        $this->_app->delete('/oauth/approval/:client_id', function ($clientId) use ($self) {
-            $self->deleteApproval($clientId);
-        });
+            $this->_app->post('/oauth/approval', function () use ($self) {
+                $self->addApproval();
+            });
+
+            $this->_app->delete('/oauth/approval/:client_id', function ($clientId) use ($self) {
+                $self->deleteApproval($clientId);
+            });
 
 
-	    $this->_app->get('/oauth/whoami', function () use ($self) {
-            $self->whoAmI();
-        });
+            $this->_app->get('/oauth/whoami', function () use ($self) {
+                $self->whoAmI();
+            });
 
-        $this->_app->get('/oauth/client/:client_id', function ($clientId) use ($self) {
-            $self->getClient($clientId);
-        });
+            $this->_app->get('/oauth/client/:client_id', function ($clientId) use ($self) {
+                $self->getClient($clientId);
+            });
 
-        $this->_app->put('/oauth/client/:client_id', function ($clientId) use ($self) {
-            $self->updateClient($clientId);
-        });
+            $this->_app->put('/oauth/client/:client_id', function ($clientId) use ($self) {
+                $self->updateClient($clientId);
+            });
 
-        $this->_app->delete('/oauth/client/:client_id', function ($clientId) use ($self) {
-            $self->deleteClient($clientId);
-        });
-        
-        $this->_app->post('/oauth/client', function () use ($self) {
-            $self->addClient();
-        });
+            $this->_app->delete('/oauth/client/:client_id', function ($clientId) use ($self) {
+                $self->deleteClient($clientId);
+            });
+            
+            $this->_app->post('/oauth/client', function () use ($self) {
+                $self->addClient();
+            });
 
-        $this->_app->get('/oauth/client', function () use ($self) {
-            $self->getClients();
-        });
+            $this->_app->get('/oauth/client', function () use ($self) {
+                $self->getClients();
+            });
 
-        // error
-        $this->_app->error(function(Exception $e) use ($self) {
-            $self->errorHandler($e);
-        });
-
+            // error
+            $this->_app->error(function(Exception $e) use ($self) {
+                $self->errorHandler($e);
+            });
+        }
     }
 
     private function _authenticate() {
