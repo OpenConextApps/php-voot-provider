@@ -1,27 +1,41 @@
 $(document).ready(function () {
     var apiRoot = 'http://localhost/voot';
-    var apiScopes = ["admin"];
+    var apiScopes = ["oauth_admin", "oauth_whoami"];
+    var apiClientId = 'manage';
     jso_configure({
-        "manage": {
-            client_id: "manage",
+        "admin": {
+            client_id: apiClientId,
             redirect_uri: apiRoot + "/manage/index.html",
             authorization: apiRoot + "/oauth/authorize"
         }
     });
     jso_ensureTokens({
-        "manage": apiScopes
+        "admin": apiScopes
     });
 
     function renderClientList() {
         $.oajax({
             url: apiRoot + "/oauth/client",
-            jso_provider: "manage",
+            jso_provider: "admin",
             jso_scopes: apiScopes,
             jso_allowia: true,
             dataType: 'json',
             success: function (data) {
                 $("#clientList").html($("#clientListTemplate").render(data));
                 addClientListHandlers();
+            }
+        });
+    }
+
+    function getUserId() {
+        $.oajax({
+            url: apiRoot + "/oauth/whoami",
+            jso_provider: "admin",
+            jso_scopes: apiScopes,
+            jso_allowia: true,
+            dataType: 'json',
+            success: function (data) {
+                $("#userId").append(data.id);
             }
         });
     }
@@ -40,7 +54,7 @@ $(document).ready(function () {
     function deleteClient(clientId) {
         $.oajax({
             url: apiRoot + "/oauth/client/" + clientId,
-            jso_provider: "manage",
+            jso_provider: "admin",
             jso_scopes: apiScopes,
             jso_allowia: true,
             type: "DELETE",
@@ -55,12 +69,11 @@ $(document).ready(function () {
             // client specified, we edit
             $.oajax({
                 url: apiRoot + "/oauth/client/" + clientId,
-                jso_provider: "manage",
+                jso_provider: "admin",
                 jso_scopes: apiScopes,
                 jso_allowia: true,
                 success: function (data) {
                     $("#editModal").html($("#clientEditTemplate").render(data));
-                    $("#editModal").show();
                     addEditClientHandlers();
                 }
             });
@@ -68,7 +81,6 @@ $(document).ready(function () {
             // no client specified, we add
             var data = {};
             $("#editModal").html($("#clientEditTemplate").render(data));
-            $("#editModal").show();
             addEditClientHandlers();
         }
     }
@@ -82,11 +94,8 @@ $(document).ready(function () {
     }
 
     function addEditClientHandlers() {
-        $("#editModal a.close").click(function () {
-            $("#editModal").hide();
-        });
         $("#editModal a.editClose").click(function () {
-            $("#editModal").hide();
+            $("#editModal").modal('hide');
         });
         $("#editModal a.editSave").click(function () {
             // FIXME: not really a nice way to fetch form data...
@@ -104,14 +113,14 @@ $(document).ready(function () {
     function updateClient(clientId, clientData) {
         $.oajax({
             url: apiRoot + "/oauth/client/" + clientId,
-            jso_provider: "manage",
+            jso_provider: "admin",
             jso_scopes: apiScopes,
             jso_allowia: true,
             type: "PUT",
             dataType: 'json',
             data: clientData,
             success: function (data) {
-                $("#editModal").hide();
+                $("#editModal").modal('hide');
                 renderClientList();
             }
         });
@@ -120,14 +129,14 @@ $(document).ready(function () {
     function addClient(clientData) {
         $.oajax({
             url: apiRoot + "/oauth/client",
-            jso_provider: "manage",
+            jso_provider: "admin",
             jso_scopes: apiScopes,
             jso_allowia: true,
             type: "POST",
             dataType: 'json',
             data: clientData,
             success: function (data) {
-                $("#editModal").hide();
+                $("#editModal").modal('hide');
                 renderClientList();
             }
         });
@@ -139,6 +148,7 @@ $(document).ready(function () {
     function initPage() {
         $("#editModal").hide();
         renderClientList();
+        getUserId();
     }
     initPage();
 });

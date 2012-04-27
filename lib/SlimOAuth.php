@@ -33,15 +33,24 @@ class SlimOAuth {
             $self->approve();
         });
 
-        $this->_app->get('/oauth/revoke', function () use ($self) {
-            $self->approvals();
-        });
-
-        $this->_app->post('/oauth/revoke', function () use ($self) {
-            $self->revoke();
-        });
-
         // management
+        $this->_app->get('/oauth/approval', function () use ($self) {
+            $self->getApprovals();
+        });
+
+        $this->_app->post('/oauth/approval', function () use ($self) {
+            $self->addApproval();
+        });
+
+        $this->_app->delete('/oauth/approval/:client_id', function ($clientId) use ($self) {
+            $self->deleteApproval($clientId);
+        });
+
+
+	    $this->_app->get('/oauth/whoami', function () use ($self) {
+            $self->whoAmI();
+        });
+
         $this->_app->get('/oauth/client/:client_id', function ($clientId) use ($self) {
             $self->getClient($clientId);
         });
@@ -109,113 +118,163 @@ class SlimOAuth {
         $this->_app->redirect($result['url']);
     }
 
-    // FIXME: this should be removed and use REST API instead with GET, POST and DELETE support
-    public function approvals() {
-        $this->_authenticate();
-        $approvals = $this->_oauthStorage->getApprovals($this->_resourceOwner);
-        $this->_app->render('listApprovals.php', array( 'approvals' => $approvals));
-    }
-
-    // FIXME: this should be removed and use REST API instead with GET, POST and DELETE support
-    public function revoke() {
-        $this->_authenticate();
-        // FIXME: there is no "CSRF" protection here. Everyone who knows a client_id and 
-        //        scope can remove an approval for any (authenticated) user by crafting
-        //        a POST call to this endpoint. IMPACT: low risk, denial of service.
-
-        // FIXME: we need to also remove the access tokens that are currently used
-        //        by this service if the user wants this. Maybe we should have a 
-        //        checkbox "terminate current access" or "keep current access
-        //        tokens available for at most 1h"
-        $this->_oauthStorage->deleteApproval($this->_app->request()->post('client_id'), $this->_resourceOwner);
-        $approvals = $this->_oauthStorage->getApprovals($this->_resourceOwner);
-        $this->_app->render('listApprovals.php', array( 'approvals' => $approvals));
-    }
-
     // REST API
+    public function whoAmI() {
+        $authorizationHeader = self::_getAuthorizationHeader();
+        $result = $this->_as->verify($authorizationHeader);
+
+        if(!in_array('oauth_whoami', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_whoami scope");
+        }
+
+        $response = $this->_app->response();
+        $response['Content-Type'] = 'application/json';
+        $response->body(json_encode(array ("id" => $result->resource_owner_id)));
+    }
+
     public function getClient($clientId) {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
 
-        if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
-            throw new VerifyException("insufficient_scope: need admin scope");
+        if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
-        $result = $this->_oauthStorage->getClient($clientId);
-        if(FALSE === $result) {
+        $data = $this->_oauthStorage->getClient($clientId);
+        if(FALSE === $data) {
+            // FIXME: better error handling
             $this->_app->halt(404);
         }
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode($result));
+        $response->body(json_encode($data));
     }
 
     public function deleteClient($clientId) {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
 
-        if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
-            throw new VerifyException("insufficient_scope: need admin scope");
+        if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
-        $result = $this->_oauthStorage->deleteClient($clientId);
-        if(FALSE === $result) {
+        $data = $this->_oauthStorage->deleteClient($clientId);
+        if(FALSE === $data) {
+            // FIXME: better error handling
             $this->_app->halt(404);
         }
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode($result));
+        $response->body(json_encode($data));
+
+        $this->_app->getLog()->info("oauth client '" . $clientId . "' deleted by '" . $result->resource_owner_id . "'");
     }
 
     public function updateClient($clientId) {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
 
-        if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
-            throw new VerifyException("insufficient_scope: need admin scope");
+        if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
-        $result = $this->_oauthStorage->updateClient($clientId, json_decode($this->_app->request()->getBody(), TRUE));
-        if(FALSE === $result) {
+        $data = $this->_oauthStorage->updateClient($clientId, json_decode($this->_app->request()->getBody(), TRUE));
+        if(FALSE === $data) {
+            // FIXME: better error handling
             $this->_app->halt(404);
         }
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode($result));
+        $response->body(json_encode($data));
+
+        $this->_app->getLog()->info("oauth client '" . $clientId . "' updated by '" . $result->resource_owner_id . "'");
     }
 
     public function addClient() {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
 
-        if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
-            throw new VerifyException("insufficient_scope: need admin scope");
+        if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
-        $result = $this->_oauthStorage->addClient(json_decode($this->_app->request()->getBody(), TRUE));
-        if(FALSE === $result) {
+        $data = $this->_oauthStorage->addClient(json_decode($this->_app->request()->getBody(), TRUE));
+        if(FALSE === $data) {
+            // FIXME: better error handling
             $this->_app->halt(500);
         }
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode($result));
+        $response->body(json_encode($data));
+
+        $this->_app->getLog()->info("oauth client '" . $data['client_id'] . "' added by '" . $result->resource_owner_id . "'");
     }
 
     public function getClients() {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
 
-        if(!in_array('admin', AuthorizationServer::getScopeArray($result->scope))) {
-            throw new VerifyException("insufficient_scope: need admin scope");
+        if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
-        $result = $this->_oauthStorage->getClients();
-        if(FALSE === $result) {
+        $data = $this->_oauthStorage->getClients();
+        if(FALSE === $data) {
+            // FIXME: better error handling
             $this->_app->halt(404);
         }
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode($result));
+        $response->body(json_encode($data));
+    }
+
+    public function getApprovals() {
+        $authorizationHeader = self::_getAuthorizationHeader();
+        $result = $this->_as->verify($authorizationHeader);
+
+        $data = $this->_oauthStorage->getApprovals($result->resource_owner_id);
+        if(FALSE === $data) {
+            // FIXME: better error handling
+            $this->_app->halt(404);
+        }
+        $response = $this->_app->response();
+        $response['Content-Type'] = 'application/json';
+        $response->body(json_encode($data));
+    }
+
+    public function deleteApproval($clientId) {
+        $authorizationHeader = self::_getAuthorizationHeader();
+        $result = $this->_as->verify($authorizationHeader);
+        $data = $this->_oauthStorage->deleteApproval($clientId, $result->resource_owner_id);
+        if(FALSE === $data) {
+            // FIXME: better error handling
+            $this->_app->halt(404);
+        }
+        $response = $this->_app->response();
+        $response['Content-Type'] = 'application/json';
+        $response->body(json_encode($data));
+    }
+
+    public function addApproval() {
+        $authorizationHeader = self::_getAuthorizationHeader();
+        $result = $this->_as->verify($authorizationHeader);
+
+        $data = json_decode($this->_app->request()->getBody(), TRUE);
+        // FIXME: we should verify the client exists
+        $clientId = $data['client_id'];
+        // FIXME: we should verify the scope is valid and normalize it before
+        //        storing it
+        $scope = $data['scope'];
+
+        $data = $this->_oauthStorage->storeApprovedScope($clientId, $result->resource_owner_id, $scope);
+        if(FALSE === $data) {
+            // FIXME: better error handling
+            $this->_app->halt(500);
+        }
+        $response = $this->_app->response();
+        $response['Content-Type'] = 'application/json';
+        $response->body(json_encode($data));
+
     }
 
     public function errorHandler(Exception $e) {
@@ -242,6 +301,7 @@ class SlimOAuth {
                 break;
             case "ErrorException":
             default:
+                $this->_app->getLog()->error($e->getMessage());
                 $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "Internal Server Error"), 500);
                 break;
         }

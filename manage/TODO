@@ -1,7 +1,0 @@
-- make it impossible to remove/edit the management client through the
-  webinterface as to make it impossible to deny access to the management
-  interface
-
-- implement better error checking, also fix server to not give HTTP
-  500s
-

@@ -6,10 +6,14 @@ interface IResourceOwner {
 }
 
 interface IOAuthStorage {
+
+    // FIXME: the next three should probably be renamed to
+    //        addApproval, updateApproval, getApproval
+    //        to make them more in line with the getApprovals, deleteApproval
     public function storeApprovedScope    ($clientId, $resourceOwner, $scope);
     public function updateApprovedScope   ($clientId, $resourceOwner, $scope);
-
     public function getApprovedScope      ($clientId, $resourceOwner);
+
     public function generateAccessToken   ($clientId, $resourceOwner, $scope, $expiry);
     public function getAccessToken        ($accessToken);
     public function generateAuthorizeNonce($clientId, $resourceOwner, $scope);
@@ -107,7 +111,7 @@ class AuthorizationServer {
             return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
         }
 
-        if(in_array('admin', self::getScopeArray($requestedScope))) {
+        if(in_array('oauth_admin', self::getScopeArray($requestedScope))) {
             // administrator scope requested, need to be in admin list
             if(!in_array($resourceOwner, $this->_config['adminResourceOwnerId'])) {
                 $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported resource owner is not an administrator");
