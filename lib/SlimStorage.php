@@ -39,18 +39,16 @@ class SlimStorage {
         return ($path[strlen($path)-1]=='/');
     }
     private function clientHasReadAccess($uid, $category, $authorizationHeader) {
-//            $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
-//            $result = $o->verify($authorizationHeader);
-//
-//            $absPath = $this->_storageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
-//                    $result->resource_owner_id . DIRECTORY_SEPARATOR . 
-//                    $uid . DIRECTORY_SEPARATOR . 
-//                    $category . DIRECTORY_SEPARATOR . 
-//                    $name;
-        return true;
+        $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
+        $result = $o->verify($authorizationHeader);
+        $scopes = AuthorizationServer::getScopeArray($result->scope);
+        return (in_array($category.':r', $scopes) || in_array($category.':rw', $scopes));
     }
     private function clientHasWriteAccess() {
-        return true;
+        $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
+        $result = $o->verify($authorizationHeader);
+        $scopes = AuthorizationServer::getScopeArray($result->scope);
+        return (in_array($category.':rw', $scopes));
     }
     private function parseUriPath($uriPath) {
         $parts = explode('/', $uriPath);
