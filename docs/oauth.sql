@@ -33,6 +33,5 @@ CREATE TABLE `AuthorizeNonce` (
   FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`)
 );
 
-INSERT INTO "Client" VALUES('http://tutorial.unhosted.5apps.com/receive_token.html','5apps','The 5app Developer Tutorial',NULL,'http://tutorial.unhosted.5apps.com/receive_token.html','public');
-INSERT INTO "Client" VALUES('http://libredocs.org/closeDialog.html','Libre Docs','Document editing and collaboration',NULL,'http://libredocs.org/closeDialog.html','public');
-INSERT INTO "Client" VALUES('http://todomvc.unhosted.5apps.com/syncer/dialog.html','Todos','Manage your TODO list',NULL,'http://todomvc.unhosted.5apps.com/syncer/dialog.html','public');
+INSERT INTO `Client` VALUES ('manage', 'Management Client', 'Web application to manage OAuth client registrations.', NULL, 'http://localhost/voot/manage/index.html', 'public');
+INSERT INTO `Client` VALUES ('voot','VOOT Demo Client', 'Simple web application to demonstrate the VOOT API.', NULL,'http://localhost/voot/client/index.html','public');

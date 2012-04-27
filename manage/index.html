@@ -37,6 +37,9 @@
             <ul class="nav">
               <li class="active"><a href="#">Home</a></li>
             </ul>
+            <div class="btn-group pull-right">
+                <a href="#" id="userId" class="btn"><i class="icon-user"></i> </a>
+            </div>
           </div><!--/.nav-collapse -->
         </div>
       </div>
@@ -45,7 +48,7 @@
     <div class="container">
         <h1>Registered Clients</h1>
 
-        <a class="btn btn-success pull-right addClient" href="#">Add New Client</a>
+        <a class="btn btn-success pull-right addClient" data-toggle="modal" href="#editModal">Add New Client</a>
 
         <table class="table table-striped">
         	<tbody id="clientList"></tbody>
@@ -60,7 +63,7 @@
         <tr>
             <td><span title="{{:description}}">{{:name}}</span></td>
             <td>
-                <a class="btn btn-primary editClient" data-client-id="{{:id}}" href="#">Edit</a>
+                <a class="btn btn-primary editClient" data-client-id="{{:id}}" data-toggle="modal" href="#editModal">Edit</a>
                 <a class="btn btn-inverse deleteClient" data-client-name="{{:name}}" data-client-id="{{:id}}" href="#">Delete</a>
             </td>
         </tr>
@@ -78,7 +81,11 @@
                 <div class="control-group">
                     <label class="control-label" for="form_id">Client Identifier</label>
                     <div class="controls">
-                        <input type="text" class="input-xlarge" id="form_id" name="id" value="{{:id}}" >
+                        {{if id}}
+                            <input type="text" class="input-xlarge uneditable-input" id="form_id" name="id" value="{{:id}}" >
+                        {{else}}
+                            <input type="text" class="input-xlarge" id="form_id" name="id" value="{{:id}}" >
+                        {{/if}}
                         <p class="help-block">A unique identifier for the OAuth client. If this field is left empty a client identifier will be generated.</p>
                     </div>
 

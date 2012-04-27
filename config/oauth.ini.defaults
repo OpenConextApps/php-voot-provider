@@ -10,6 +10,13 @@ authenticationMechanism = "BrowserIDResourceOwner"
 ;authenticationMechanism = "DummyResourceOwner"
 ;authenticationMechanism = "SspResourceOwner"
 
+; *ONLY* users in the list adminResourceOwnerId can request the admin scope
+supportedScopes[] = "oauth_admin"
+
+; When this permission is given the client can request information about the
+; authenticated user
+supportedScopes[] = "oauth_whoami"
+
 ; message to display on authorization dialog asking the user for permission
 ; to access the resources
 protectedResourceDescription = "An application wants to access your data."

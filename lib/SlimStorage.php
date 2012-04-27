@@ -176,6 +176,15 @@ class SlimStorage {
         $this->_app->render('portalPage.php', array ('resourceOwnerApprovals' => $resourceOwnerApprovals, 'registeredClients' => $registeredClients, 'appLaunchFragment' => $appLaunchFragment, 'resourceOwner' => $resourceOwner));
     }
 
+    private static function _getAuthorizationHeader() {
+        // Apache Only!
+        $httpHeaders = apache_request_headers();
+        if(!array_key_exists("Authorization", $httpHeaders)) {
+            throw new VerifyException("invalid_request: authorization header missing");
+        }
+        return $httpHeaders['Authorization'];
+    }
+
 }
 
 ?>
