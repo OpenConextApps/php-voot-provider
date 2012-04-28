@@ -107,7 +107,7 @@ class SlimStorage {
         if(file_exists($absPath) && is_dir($absPath) && $handle = opendir($absPath)) {
             while (false !== ($entry = readdir($handle))) {
                 if ($entry != "." && $entry != "..") {
-                    $entries[$entry] = filemtime($entry);
+                    $entries[$entry . (is_dir($absPath.'/'.$entry) ? '/' : '')] = filemtime($absPath.'/'.$entry);
                 }
             }
             closedir($handle);
