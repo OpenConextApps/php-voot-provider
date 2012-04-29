@@ -40,13 +40,21 @@ class SlimStorage {
     }
     private function clientHasReadAccess($uid, $category, $authorizationHeader) {
         $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
-        $result = $o->verify($authorizationHeader);
+        try {
+          $result = $o->verify($authorizationHeader);
+        } catch (VerifyException $e) {
+          return false;
+        }
         $scopes = AuthorizationServer::getScopeArray($result->scope);
         return (in_array($category.':r', $scopes) || in_array($category.':rw', $scopes));
     }
     private function clientHasWriteAccess($uid, $category, $authorizationHeader) {
         $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
-        $result = $o->verify($authorizationHeader);
+        try {
+          $result = $o->verify($authorizationHeader);
+        } catch (VerifyException $e) {
+          return false;
+        }
         $scopes = AuthorizationServer::getScopeArray($result->scope);
 //var_dump($scopes);die();
         return (in_array($category.':rw', $scopes));
