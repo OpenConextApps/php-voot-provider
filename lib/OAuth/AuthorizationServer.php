@@ -99,7 +99,7 @@ class AuthorizationServer {
             if(NULL !== $state) {
                 $error += array ( "state" => $state);
             }
-            return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+            return array("action"=> "error_redirect", "url" => $redirectUri . "#" . http_build_query($error));
         }
 
         if(in_array('oauth_admin', self::getScopeArray($requestedScope))) {
@@ -109,7 +109,7 @@ class AuthorizationServer {
                 if(NULL !== $state) {
                     $error += array ( "state" => $state);
                 }
-                return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+                return array("action"=> "error_redirect", "url" => $redirectUri . "#" . http_build_query($error));
             }
         }
    
