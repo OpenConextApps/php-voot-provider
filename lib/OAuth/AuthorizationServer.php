@@ -75,6 +75,7 @@ class AuthorizationServer {
             if(!$this->_config['allowUnregisteredClients']) {
                 throw new OAuthException('client not registered');
             }
+            error_log('new client_id seen: '.$_GET['client_id']);
             // this client is unregistered and unregistered clients are allowed,
             // check for the client using its redirect_uri as client_id
             $client = $this->_storage->getClientByRedirectUri($redirectUri);
@@ -92,7 +93,7 @@ class AuthorizationServer {
         }
 
         if(NULL !== $redirectUri) {
-            if($client->redirect_uri !== $redirectUri) {
+            if($client && $client->redirect_uri !== $redirectUri) {
                 throw new OAuthException('specified redirect_uri not the same as registered redirect_uri');
             }
         }
@@ -103,7 +104,7 @@ class AuthorizationServer {
                 if(NULL !== $state) {
                     $error += array ( "state" => $state);
                 }
-                return array("action" => "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+                return array("action" => "error_redirect", "url" => $redirectUri . "#" . http_build_query($error));
             }
         }
 
@@ -136,7 +137,7 @@ class AuthorizationServer {
                 if(NULL !== $state) {
                     $error += array ( "state" => $state);
                 }
-                return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+                return array("action"=> "error_redirect", "url" => $redirectUri . "#" . http_build_query($error));
             }
         }
    
@@ -156,7 +157,7 @@ class AuthorizationServer {
             if(NULL !== $state) {
                 $token += array ("state" => $state);
             }
-            return array("action" => "redirect", "url" => $client->redirect_uri . "#" . http_build_query($token));
+            return array("action" => "redirect", "url" => $redirectUri . "#" . http_build_query($token));
         }
     }
 

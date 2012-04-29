@@ -6,7 +6,8 @@ storageBackend = "PdoOAuthStorage"
 adminResourceOwnerId[] = "fkooman"
 ;adminResourceOwnerId[] = "francois"
 
-authenticationMechanism = "DummyResourceOwner"
+authenticationMechanism = "BrowserIDResourceOwner"
+;authenticationMechanism = "DummyResourceOwner"
 ;authenticationMechanism = "SspResourceOwner"
 
 ; whether to allow unregistered clients, this is NOT RECOMMENDED!
@@ -48,12 +49,19 @@ allowResourceOwnerScopeFiltering = FALSE
 accessTokenExpiry = 3600
 
 [PdoOAuthStorage]
-dsn = "sqlite:/var/www/html/voot/data/oauth2.sqlite";
+dsn = "sqlite:/var/www/phpvoot/data/oauth2.sqlite";
 
 ; dummy configuration
 [DummyResourceOwner]
 resourceOwnerId = "fkooman"
 resourceOwnerDisplayName = "François Kooman"
+
+; BrowserID configuration
+[BrowserIDResourceOwner]
+verifierAddress = "https://browserid.org/verify"
+userAddressIsRequiredEmail = true
+resourceOwnerIdAttributeName = "email"
+resourceOwnerDisplayNameAttributeName = "email"
 
 ; simpleSAMLphp configuration
 [SspResourceOwner]
