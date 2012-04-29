@@ -10,6 +10,26 @@ authenticationMechanism = "BrowserIDResourceOwner"
 ;authenticationMechanism = "DummyResourceOwner"
 ;authenticationMechanism = "SspResourceOwner"
 
+; whether to allow unregistered clients, this is NOT RECOMMENDED!
+allowUnregisteredClients = FALSE
+
+; whether or not to allow clients to request whatever scope they wish, if FALSE
+; the scopes need to be white listed below at "supportedScopes"
+allowAllScopes = FALSE
+
+; the scopes supported by the resource server
+supportedScopes[] = "read"
+supportedScopes[] = "write"
+supportedScopes[] = "public"
+supportedScopes[] = "tutorial"
+supportedScopes[] = "documents"
+supportedScopes[] = "contacts"
+supportedScopes[] = "tasks"
+
+; bug in OAuth in Unhosted/remoteStorage uses "," to separate scopes
+supportedScopes[] = "public,tutorial"
+supportedScopes[] = "documents,contacts,public"
+
 ; *ONLY* users in the list adminResourceOwnerId can request the admin scope
 supportedScopes[] = "oauth_admin"
 

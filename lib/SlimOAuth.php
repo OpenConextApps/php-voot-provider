@@ -101,6 +101,11 @@ class SlimOAuth {
         // Do something with case where no scope is requested!
         if($result['action'] === 'ask_approval') { 
             $client = $this->_oauthStorage->getClient($this->_app->request()->get('client_id'));
+            if(FALSE === $client) {
+                if($this->_oauthConfig['OAuth']['allowUnregisteredClients']) {
+                    $client = $this->_oauthStorage->getClientByRedirectUri($this->_app->request()->get('redirect_uri'));
+                }   
+            }
             $this->_app->render('askAuthorization.php', array (
                 'clientId' => ($client ? $client->id : 'unknown'),
                 'clientName' => ($client ? $client->name : 'unknown'),

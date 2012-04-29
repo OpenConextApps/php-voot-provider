@@ -20,6 +20,7 @@ interface IOAuthStorage {
     public function getAuthorizeNonce     ($clientId, $resourceOwner, $scope, $authorizeNonce);
 
     public function getClient             ($clientId);
+    public function getClientByRedirectUri($redirectUri);
 
     // management interface
     public function getClients            ();
@@ -70,9 +71,25 @@ class AuthorizationServer {
         }
 
         $client = $this->_storage->getClient($clientId);
-
         if(FALSE === $client) {
+            if(!$this->_config['allowUnregisteredClients']) {
+                throw new OAuthException('client not registered');
+            }
             error_log('new client_id seen: '.$_GET['client_id']);
+            // this client is unregistered and unregistered clients are allowed,
+            // check for the client using its redirect_uri as client_id
+            $client = $this->_storage->getClientByRedirectUri($redirectUri);
+            if(FALSE === $client) { 
+                // create a new one
+                $newClient = array ( 'name' => 'Unknown Client',
+                                     'description' => 'This is a dynamically created OAuth client -- USE WITH CAUTION!',
+                                     'redirect_uri' => $redirectUri,
+                                     'type' => 'public');
+                if(FALSE === $this->_storage->addClient($newClient)) {
+                    throw new OAuthException('unable to dynamically register client');
+                }
+                $client = $this->_storage->getClientByRedirectUri($redirectUri);
+            }
         }
 
         if(NULL !== $redirectUri) {
@@ -99,7 +116,18 @@ class AuthorizationServer {
             if(NULL !== $state) {
                 $error += array ( "state" => $state);
             }
-            return array("action"=> "error_redirect", "url" => $redirectUri . "#" . http_build_query($error));
+            return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+        }
+
+        if(!$this->_config['allowAllScopes']) {
+            if(FALSE === self::isSubsetScope($requestedScope, $this->_config['supportedScopes'])) {
+                // scope not supported
+                $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported");
+                if(NULL !== $state) {
+                    $error += array ( "state" => $state);
+                }
+                return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+            }
         }
 
         if(in_array('oauth_admin', self::getScopeArray($requestedScope))) {
@@ -153,6 +181,17 @@ class AuthorizationServer {
         }
 
         $client = $this->_storage->getClient($clientId);
+        if(FALSE === $client) {
+            if(!$this->_config['allowUnregisteredClients']) {
+                throw new OAuthException('client not registered');
+            }
+            // this client is unregistered and unregistered clients are allowed,
+            // check for the client using its redirect_uri as client_id
+            $client = $this->_storage->getClientByRedirectUri($redirectUri);
+            if(FALSE === $client) { 
+                throw new OAuthException('client not registered');
+            }
+        }
 
         if("Approve" === $approval) {
             if(FALSE === self::isSubsetScope($postScope, $scope)) {
