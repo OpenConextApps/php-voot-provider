@@ -288,7 +288,7 @@ class SlimOAuth {
             case "VerifyException":
                 // the request for the resource was not valid, tell client
                 list($error, $description) = explode(":", $e->getMessage());
-                $this->_app->response()->header('WWW-Authenticate', 'realm="VOOT API",error="' . $error . '",error_description="' . $description . '"');
+                $this->_app->response()->header('WWW-Authenticate', 'Bearer realm="VOOT API",error="' . $error . '",error_description="' . $description . '"');
                 $code = 400;
                 if($error === 'invalid_request') {
                     $code = 400;
