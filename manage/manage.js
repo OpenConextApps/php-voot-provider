@@ -1,6 +1,6 @@
 $(document).ready(function () {
     var apiRoot = 'http://localhost/voot';
-    var apiScopes = ["oauth_admin", "oauth_whoami"];
+    var apiScopes = ["oauth_admin", "oauth_approval", "oauth_whoami"];
     var apiClientId = 'manage';
     jso_configure({
         "admin": {
@@ -23,6 +23,20 @@ $(document).ready(function () {
             success: function (data) {
                 $("#clientList").html($("#clientListTemplate").render(data));
                 addClientListHandlers();
+            }
+        });
+    }
+
+    function renderApprovalList() {
+        $.oajax({
+            url: apiRoot + "/oauth/approval",
+            jso_provider: "admin",
+            jso_scopes: apiScopes,
+            jso_allowia: true,
+            dataType: 'json',
+            success: function (data) {
+                $("#approvalList").html($("#approvalListTemplate").render(data));
+                addApprovalListHandlers();
             }
         });
     }
@@ -51,6 +65,14 @@ $(document).ready(function () {
         });
     }
 
+    function addApprovalListHandlers() {
+        $("a.deleteApproval").click(function () {
+            if (confirm("Are you sure you want to delete '" + $(this).data('clientName') + "'")) {
+                deleteApproval($(this).data('clientId'));
+            }
+        });
+    }
+
     function deleteClient(clientId) {
         $.oajax({
             url: apiRoot + "/oauth/client/" + clientId,
@@ -60,6 +82,19 @@ $(document).ready(function () {
             type: "DELETE",
             success: function (data) {
                 renderClientList();
+            }
+        });
+    }
+
+    function deleteApproval(clientId) {
+        $.oajax({
+            url: apiRoot + "/oauth/approval/" + clientId,
+            jso_provider: "admin",
+            jso_scopes: apiScopes,
+            jso_allowia: true,
+            type: "DELETE",
+            success: function (data) {
+                renderApprovalList();
             }
         });
     }
@@ -148,6 +183,7 @@ $(document).ready(function () {
     function initPage() {
         $("#editModal").hide();
         renderClientList();
+        renderApprovalList();
         getUserId();
     }
     initPage();

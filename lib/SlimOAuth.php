@@ -238,6 +238,10 @@ class SlimOAuth {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
 
+        if(!in_array('oauth_approval', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_approval scope");
+        }
+
         $data = $this->_oauthStorage->getApprovals($result->resource_owner_id);
         if(FALSE === $data) {
             // FIXME: better error handling
@@ -251,6 +255,11 @@ class SlimOAuth {
     public function deleteApproval($clientId) {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
+
+        if(!in_array('oauth_approval', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_approval scope");
+        }
+
         $data = $this->_oauthStorage->deleteApproval($clientId, $result->resource_owner_id);
         if(FALSE === $data) {
             // FIXME: better error handling
@@ -264,6 +273,10 @@ class SlimOAuth {
     public function addApproval() {
         $authorizationHeader = self::_getAuthorizationHeader();
         $result = $this->_as->verify($authorizationHeader);
+
+        if(!in_array('oauth_approval', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_approval scope");
+        }
 
         $data = json_decode($this->_app->request()->getBody(), TRUE);
         // FIXME: we should verify the client exists

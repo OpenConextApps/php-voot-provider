@@ -27,6 +27,10 @@ supportedScopes[] = "oauth_admin"
 ; authenticated user
 supportedScopes[] = "oauth_whoami"
 
+; When this permission is given the client can request information about the
+; approved application and register approvals or delete them
+supportedScopes[] = "oauth_approval"
+
 ; message to display on authorization dialog asking the user for permission
 ; to access the resources
 protectedResourceDescription = "An application wants to access your data."
