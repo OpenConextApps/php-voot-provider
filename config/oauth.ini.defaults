@@ -33,7 +33,7 @@ supportedScopes[] = "oauth_approval"
 
 ; message to display on authorization dialog asking the user for permission
 ; to access the resources
-protectedResourceDescription = "An application wants to access your data."
+serviceName = "group membership details"
 
 ; makes it possible for resource owners to deselect some of the 
 ; scope fields requested by the client
