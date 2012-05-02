@@ -6,7 +6,7 @@ mkdir -p ext
 mkdir -p ext/js
 mkdir -p data/files
 docs/reset_oauth.sh
-chmod -R o+w data/files
+chmod -R o+w data
 chcon -R -t httpd_sys_rw_content_t data
 
 # configure

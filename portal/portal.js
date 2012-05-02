@@ -1,22 +1,22 @@
 $(document).ready(function () {
     var apiRoot = 'http://localhost/storage';
     var apiScopes = ["oauth_admin", "oauth_approval", "oauth_whoami"];
-    var apiClientId = 'manage';
+    var apiClientId = 'portal';
     jso_configure({
-        "admin": {
+        "portal": {
             client_id: apiClientId,
-            redirect_uri: apiRoot + "/manage/index.html",
+            redirect_uri: apiRoot + "/portal/index.html",
             authorization: apiRoot + "/oauth/authorize"
         }
     });
     jso_ensureTokens({
-        "admin": apiScopes
+        "portal": apiScopes
     });
 
     function renderClientList() {
         $.oajax({
             url: apiRoot + "/oauth/client",
-            jso_provider: "admin",
+            jso_provider: "portal",
             jso_scopes: apiScopes,
             jso_allowia: true,
             dataType: 'json',
@@ -30,7 +30,7 @@ $(document).ready(function () {
     function renderApprovalList() {
         $.oajax({
             url: apiRoot + "/oauth/approval",
-            jso_provider: "admin",
+            jso_provider: "portal",
             jso_scopes: apiScopes,
             jso_allowia: true,
             dataType: 'json',
@@ -44,7 +44,7 @@ $(document).ready(function () {
     function getResourceOwner() {
         $.oajax({
             url: apiRoot + "/oauth/whoami",
-            jso_provider: "admin",
+            jso_provider: "portal",
             jso_scopes: apiScopes,
             jso_allowia: true,
             dataType: 'json',
@@ -77,7 +77,7 @@ $(document).ready(function () {
     function deleteClient(clientId) {
         $.oajax({
             url: apiRoot + "/oauth/client/" + clientId,
-            jso_provider: "admin",
+            jso_provider: "portal",
             jso_scopes: apiScopes,
             jso_allowia: true,
             type: "DELETE",
@@ -90,7 +90,7 @@ $(document).ready(function () {
     function deleteApproval(clientId) {
         $.oajax({
             url: apiRoot + "/oauth/approval/" + clientId,
-            jso_provider: "admin",
+            jso_provider: "portal",
             jso_scopes: apiScopes,
             jso_allowia: true,
             type: "DELETE",
@@ -105,7 +105,7 @@ $(document).ready(function () {
             // client specified, we edit
             $.oajax({
                 url: apiRoot + "/oauth/client/" + clientId,
-                jso_provider: "admin",
+                jso_provider: "portal",
                 jso_scopes: apiScopes,
                 jso_allowia: true,
                 success: function (data) {
@@ -149,7 +149,7 @@ $(document).ready(function () {
     function updateClient(clientId, clientData) {
         $.oajax({
             url: apiRoot + "/oauth/client/" + clientId,
-            jso_provider: "admin",
+            jso_provider: "portal",
             jso_scopes: apiScopes,
             jso_allowia: true,
             type: "PUT",
@@ -165,7 +165,7 @@ $(document).ready(function () {
     function addClient(clientData) {
         $.oajax({
             url: apiRoot + "/oauth/client",
-            jso_provider: "admin",
+            jso_provider: "portal",
             jso_scopes: apiScopes,
             jso_allowia: true,
             type: "POST",
