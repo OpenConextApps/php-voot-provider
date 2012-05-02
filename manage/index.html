@@ -35,7 +35,8 @@
           <a class="brand" href="#">OAuth Management Interface</a>
           <div class="nav-collapse">
             <ul class="nav">
-              <li class="active"><a href="#">Home</a></li>
+              <li class="active"><a href="#">Clients</a></li>
+              <li><a href="#">Approvals</a></li>
             </ul>
             <div class="btn-group pull-right">
                 <a href="#" id="userId" class="btn"><i class="icon-user"></i> </a>
@@ -54,10 +55,25 @@
         	<tbody id="clientList"></tbody>
         </table>
 
+        <h1>Approved Clients</h1>
+
+        <table class="table table-striped">
+        	<tbody id="approvalList"></tbody>
+        </table>
+
         <div class="modal" id="editModal">
          </div>
 
     </div> <!-- /container -->
+
+    <script id="approvalListTemplate" type="text/x-jsrender">
+        <tr>
+            <td><span title="{{:description}}">{{:name}}</span></td>
+            <td>
+                <a class="btn btn-primary deleteApproval" data-client-name="{{:name}}" data-client-id="{{:id}}" href="#">Delete</a>
+            </td>
+        </tr>
+    </script>
 
     <script id="clientListTemplate" type="text/x-jsrender">
         <tr>

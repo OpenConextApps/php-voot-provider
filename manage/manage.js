@@ -1,6 +1,6 @@
 $(document).ready(function () {
-    var apiRoot = 'http://localhost/storage';
-    var apiScopes = ["oauth_admin", "oauth_whoami"];
+    var apiRoot = 'http://localhost/phpvoot';
+    var apiScopes = ["oauth_admin", "oauth_approval", "oauth_whoami"];
     var apiClientId = 'manage';
     jso_configure({
         "admin": {
@@ -27,7 +27,21 @@ $(document).ready(function () {
         });
     }
 
-    function getUserId() {
+    function renderApprovalList() {
+        $.oajax({
+            url: apiRoot + "/oauth/approval",
+            jso_provider: "admin",
+            jso_scopes: apiScopes,
+            jso_allowia: true,
+            dataType: 'json',
+            success: function (data) {
+                $("#approvalList").html($("#approvalListTemplate").render(data));
+                addApprovalListHandlers();
+            }
+        });
+    }
+
+    function getResourceOwner() {
         $.oajax({
             url: apiRoot + "/oauth/whoami",
             jso_provider: "admin",
@@ -35,7 +49,8 @@ $(document).ready(function () {
             jso_allowia: true,
             dataType: 'json',
             success: function (data) {
-                $("#userId").append(data.id);
+                $("#userId").append(data.displayName);
+                $("#userId").attr('title', data.id);
             }
         });
     }
@@ -51,6 +66,14 @@ $(document).ready(function () {
         });
     }
 
+    function addApprovalListHandlers() {
+        $("a.deleteApproval").click(function () {
+            if (confirm("Are you sure you want to delete '" + $(this).data('clientName') + "'")) {
+                deleteApproval($(this).data('clientId'));
+            }
+        });
+    }
+
     function deleteClient(clientId) {
         $.oajax({
             url: apiRoot + "/oauth/client/" + clientId,
@@ -60,6 +83,19 @@ $(document).ready(function () {
             type: "DELETE",
             success: function (data) {
                 renderClientList();
+            }
+        });
+    }
+
+    function deleteApproval(clientId) {
+        $.oajax({
+            url: apiRoot + "/oauth/approval/" + clientId,
+            jso_provider: "admin",
+            jso_scopes: apiScopes,
+            jso_allowia: true,
+            type: "DELETE",
+            success: function (data) {
+                renderApprovalList();
             }
         });
     }
@@ -148,7 +184,8 @@ $(document).ready(function () {
     function initPage() {
         $("#editModal").hide();
         renderClientList();
-        getUserId();
+        renderApprovalList();
+        getResourceOwner();
     }
     initPage();
 });

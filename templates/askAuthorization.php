@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>OAuth Management Interface</title>
+    <title>Authorization</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -11,6 +11,7 @@
     <link href="../ext/bootstrap/css/bootstrap.css" rel="stylesheet">
     <style>
       span.unregistered { color: red; font-weight: bold; }
+      form { margin-bottom: 0; }
     </style>
     <link href="../ext/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
 
@@ -24,20 +25,20 @@
 
     <div class="container">
 
-
     <div class="modal"> 
   <form method="post" class="form-horizontal">
 
    <div class="modal-header">
-                <h3>Authorization Request</h3>
-            </div>
-            <div class="modal-body">
+     <h3><?php echo $serviceName; ?></h3>
+   </div>
+   <div class="modal-body">
 
-  <p><?php echo $protectedResourceDescription; ?></p>
+  <p><strong><?php echo $clientName; ?></strong> wants to access your <strong><?php echo $serviceResources; ?></strong>.</p>
 
+    <a class="btn btn-mini btn-info infoButton" href="#">Details...</a>
 
-    <table class="table table-striped"> 
-        <tr><th>Application</th><td><span title="<?php echo $clientId; ?>"><?php echo $clientName; ?></span></td></tr>
+    <table class="table table-striped detailsTable" > 
+        <tr><th>Application Identifier</th><td><?php echo $clientId; ?></td></tr>
         <tr><th>Description</th>
             <td>
                 <?php if($clientName === "Unknown Client") { ?>
@@ -47,15 +48,18 @@
                 <?php } ?>
             </td>
         </tr>
-        <?php if($clientName === "Unknown Client") { ?>
-            <tr><th>Redirect URI</th><td><?php echo $clientRedirectUri; ?></td></tr>
-        <?php } ?>
         <tr><th>Requested Permission(s)</th>
             <td>
             <?php if($allowFilter) { ?>
 
                 <?php foreach(AuthorizationServer::normalizeScope($scope, TRUE) as $s) { ?>
                     <label><input type="checkbox" checked="checked" name="scope[]" value="<?php echo $s; ?>"> <?php echo $s; ?></label>
+                <?php } ?>
+
+                <?php if($allowFilter) { ?>
+                    <p><div class="alert alert-info">
+                        By removing permissions, the application may not work as expected!
+                    </div></p>
                 <?php } ?>
 
             <?php } else { ?>
@@ -69,18 +73,15 @@
             <?php } ?>
             </td>
         </tr>
+        <tr><th>Redirect URI</th><td><?php echo $clientRedirectUri; ?></td></tr>
     </table>
 
-    <?php if($allowFilter) { ?>
-        <p>You can either approve or reject this request and deselect some of the requested permissions. <strong>Please note by removing permissions the application may not work as expected</strong>.</p>
-    <?php } else { ?>
-        <p>You can either approve or reject this request.</p>
-    <?php } ?>
+      <!--  <p>You can either approve or reject this request.</p> -->
 
      </div>
-            <div class="modal-footer">
-    <input type="hidden" name="authorize_nonce" value="<?php echo $authorizeNonce; ?>" />
+            <input type="hidden" name="authorize_nonce" value="<?php echo $authorizeNonce; ?>" />
 
+            <div class="modal-footer">
                 <input type="submit" name="approval" class="btn" value="Reject">
                 <input type="submit" name="approval" class="btn btn-primary" value="Approve">
             </div>
@@ -88,6 +89,13 @@
 
 </div>
     </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../ext/js/jquery.js"></script>
+    <script src="../templates/askAuthorization.js"></script>
+
 
 </body>
 </html>

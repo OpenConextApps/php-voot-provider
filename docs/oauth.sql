@@ -11,6 +11,7 @@ CREATE TABLE `AccessToken` (
   `access_token` varchar(64) NOT NULL,
   `client_id` varchar(64) NOT NULL,
   `resource_owner_id` text NOT NULL,
+  `resource_owner_display_name` text NOT NULL,
   `issue_time` int(11) DEFAULT NULL,
   `expires_in` int(11) DEFAULT NULL,
   `scope` text NOT NULL,
@@ -33,5 +34,5 @@ CREATE TABLE `AuthorizeNonce` (
   FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`)
 );
 
-INSERT INTO `Client` VALUES ('manage', 'Management Client', 'Web application to manage OAuth client registrations.', NULL, 'http://localhost/voot/manage/index.html', 'public');
-INSERT INTO `Client` VALUES ('voot','VOOT Demo Client', 'Simple web application to demonstrate the VOOT API.', NULL,'http://localhost/voot/client/index.html','public');
+INSERT INTO `Client` VALUES ('manage', 'Management Client', 'Web application to manage OAuth client registrations.', NULL, 'http://localhost/phpvoot/manage/index.html', 'public');
+INSERT INTO `Client` VALUES ('voot','VOOT Demo Client', 'Simple web application to demonstrate the VOOT API.', NULL,'http://localhost/phpvoot/client/index.html','public');

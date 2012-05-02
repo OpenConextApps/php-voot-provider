@@ -81,14 +81,7 @@ class SlimOAuth {
     private function _authenticate() {
         $authMech = $this->_oauthConfig['OAuth']['authenticationMechanism'];
         require_once "lib/OAuth/$authMech.php";
-        $ro = new $authMech($this->_oauthConfig[$authMech]);
-        $this->_resourceOwner = $ro->getResourceOwnerId();
-    }
-
-    // FIXME: this should probably not be here!
-    public function getResourceOwner() {
-        $this->_authenticate();
-        return $this->_resourceOwner;
+        $this->_resourceOwner = new $authMech($this->_oauthConfig[$authMech]);
     }
 
     public function authorize() {
@@ -111,7 +104,8 @@ class SlimOAuth {
                 'clientRedirectUri' => $client->redirect_uri,
                 'scope' => $this->_app->request()->get('scope'), 
                 'authorizeNonce' => $result['authorize_nonce'],
-                'protectedResourceDescription' => $this->_oauthConfig['OAuth']['protectedResourceDescription'],
+                'serviceName' => $this->_oauthConfig['OAuth']['serviceName'],
+                'serviceResources' => $this->_oauthConfig['OAuth']['serviceResources'],
                 'allowFilter' => $this->_oauthConfig['OAuth']['allowResourceOwnerScopeFiltering']));
         } else {
             $this->_app->redirect($result['url']);
@@ -126,8 +120,7 @@ class SlimOAuth {
 
     // REST API
     public function whoAmI() {
-        $authorizationHeader = self::_getAuthorizationHeader();
-        $result = $this->_as->verify($authorizationHeader);
+        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
 
         if(!in_array('oauth_whoami', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need oauth_whoami scope");
@@ -135,12 +128,11 @@ class SlimOAuth {
 
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode(array ("id" => $result->resource_owner_id)));
+        $response->body(json_encode(array ("id" => $result->resource_owner_id, "displayName" => $result->resource_owner_display_name)));
     }
 
     public function getClient($clientId) {
-        $authorizationHeader = self::_getAuthorizationHeader();
-        $result = $this->_as->verify($authorizationHeader);
+        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
 
         if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
@@ -157,8 +149,7 @@ class SlimOAuth {
     }
 
     public function deleteClient($clientId) {
-        $authorizationHeader = self::_getAuthorizationHeader();
-        $result = $this->_as->verify($authorizationHeader);
+        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
 
         if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
@@ -177,8 +168,7 @@ class SlimOAuth {
     }
 
     public function updateClient($clientId) {
-        $authorizationHeader = self::_getAuthorizationHeader();
-        $result = $this->_as->verify($authorizationHeader);
+        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
 
         if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
@@ -197,8 +187,7 @@ class SlimOAuth {
     }
 
     public function addClient() {
-        $authorizationHeader = self::_getAuthorizationHeader();
-        $result = $this->_as->verify($authorizationHeader);
+        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
 
         if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
@@ -217,8 +206,7 @@ class SlimOAuth {
     }
 
     public function getClients() {
-        $authorizationHeader = self::_getAuthorizationHeader();
-        $result = $this->_as->verify($authorizationHeader);
+        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
 
         if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
@@ -235,8 +223,11 @@ class SlimOAuth {
     }
 
     public function getApprovals() {
-        $authorizationHeader = self::_getAuthorizationHeader();
-        $result = $this->_as->verify($authorizationHeader);
+        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
+
+        if(!in_array('oauth_approval', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_approval scope");
+        }
 
         $data = $this->_oauthStorage->getApprovals($result->resource_owner_id);
         if(FALSE === $data) {
@@ -249,8 +240,12 @@ class SlimOAuth {
     }
 
     public function deleteApproval($clientId) {
-        $authorizationHeader = self::_getAuthorizationHeader();
-        $result = $this->_as->verify($authorizationHeader);
+        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
+
+        if(!in_array('oauth_approval', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_approval scope");
+        }
+
         $data = $this->_oauthStorage->deleteApproval($clientId, $result->resource_owner_id);
         if(FALSE === $data) {
             // FIXME: better error handling
@@ -262,8 +257,11 @@ class SlimOAuth {
     }
 
     public function addApproval() {
-        $authorizationHeader = self::_getAuthorizationHeader();
-        $result = $this->_as->verify($authorizationHeader);
+        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
+
+        if(!in_array('oauth_approval', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_approval scope");
+        }
 
         $data = json_decode($this->_app->request()->getBody(), TRUE);
         // FIXME: we should verify the client exists
@@ -288,7 +286,7 @@ class SlimOAuth {
             case "VerifyException":
                 // the request for the resource was not valid, tell client
                 list($error, $description) = explode(":", $e->getMessage());
-                $this->_app->response()->header('WWW-Authenticate', 'realm="VOOT API",error="' . $error . '",error_description="' . $description . '"');
+                $this->_app->response()->header('WWW-Authenticate', 'Bearer realm="VOOT API",error="' . $error . '",error_description="' . $description . '"');
                 $code = 400;
                 if($error === 'invalid_request') {
                     $code = 400;
@@ -311,15 +309,6 @@ class SlimOAuth {
                 $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "Internal Server Error"), 500);
                 break;
         }
-    }
-
-    private static function _getAuthorizationHeader() {
-        // Apache Only!
-        $httpHeaders = apache_request_headers();
-        if(!array_key_exists("Authorization", $httpHeaders)) {
-            throw new VerifyException("invalid_request: authorization header missing");
-        }
-        return $httpHeaders['Authorization'];
     }
 
 }
