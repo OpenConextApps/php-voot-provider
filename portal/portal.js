@@ -72,6 +72,9 @@ $(document).ready(function () {
                 deleteApproval($(this).data('clientId'));
             }
         });
+        $("a.launchApp").click(function() {
+            alert("Launch!");
+        });
     }
 
     function deleteClient(clientId) {

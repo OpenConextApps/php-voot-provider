@@ -37,7 +37,6 @@
             <ul class="nav">
               <li class="active"><a href="#">My Applications</a></li>
               <li><a href="#">All Applications</a></li>
-              <li><a href="#">Application Registration</a></li>
             </ul>
             <div class="btn-group pull-right">
                 <a href="#" id="userId" class="btn"><i class="icon-user"></i> </a>
@@ -48,18 +47,18 @@
     </div>
 
     <div class="container">
-        <h1>All Applications</h1>
-
-        <a class="btn btn-success pull-right addClient" data-toggle="modal" href="#editModal">Add New Client</a>
-
-        <table class="table table-striped">
-        	<tbody id="clientList"></tbody>
-        </table>
-
         <h1>My Applications</h1>
 
         <table class="table table-striped">
         	<tbody id="approvalList"></tbody>
+        </table>
+
+        <h1>All Applications</h1>
+
+        <a class="btn btn-success pull-right addClient" data-toggle="modal" href="#editModal">Add New Application</a>
+
+        <table class="table table-striped">
+        	<tbody id="clientList"></tbody>
         </table>
 
         <div class="modal" id="editModal">
@@ -71,7 +70,8 @@
         <tr>
             <td><span title="{{:description}}">{{:name}}</span></td>
             <td>
-                <a class="btn btn-primary deleteApproval" data-client-name="{{:name}}" data-client-id="{{:id}}" href="#">Delete</a>
+                <a class="btn btn-success launchApp" data-client-name="{{:name}}" data-client-id="{{:id}}" href="#">Launch</a> 
+                <a class="btn deleteApproval" data-client-name="{{:name}}" data-client-id="{{:id}}" href="#">Remove</a>
             </td>
         </tr>
     </script>
@@ -80,8 +80,7 @@
         <tr>
             <td><span title="{{:description}}">{{:name}}</span></td>
             <td>
-                <a class="btn btn-primary editClient" data-client-id="{{:id}}" data-toggle="modal" href="#editModal">Edit</a>
-                <a class="btn btn-inverse deleteClient" data-client-name="{{:name}}" data-client-id="{{:id}}" href="#">Delete</a>
+                <a class="btn btn-primary installApp" data-client-id="{{:id}}" href="#">Install</a>
             </td>
         </tr>
     </script>
