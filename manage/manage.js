@@ -41,7 +41,7 @@ $(document).ready(function () {
         });
     }
 
-    function getUserId() {
+    function getResourceOwner() {
         $.oajax({
             url: apiRoot + "/oauth/whoami",
             jso_provider: "admin",
@@ -49,7 +49,8 @@ $(document).ready(function () {
             jso_allowia: true,
             dataType: 'json',
             success: function (data) {
-                $("#userId").append(data.id);
+                $("#userId").append(data.displayName);
+                $("#userId").attr('title', data.id);
             }
         });
     }
@@ -184,7 +185,7 @@ $(document).ready(function () {
         $("#editModal").hide();
         renderClientList();
         renderApprovalList();
-        getUserId();
+        getResourceOwner();
     }
     initPage();
 });

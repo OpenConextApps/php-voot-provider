@@ -40,7 +40,7 @@ $(document).ready(function () {
         });
     }
 
-    function getUserId() {
+    function getResourceOwner() {
         $.oajax({
             url: apiRoot + "/oauth/whoami",
             jso_provider: "voot",
@@ -48,7 +48,8 @@ $(document).ready(function () {
             jso_allowia: true,
             dataType: 'json',
             success: function (data) {
-                $("#userId").append(data.id);
+                $("#userId").append(data.displayName);
+                $("#userId").attr('title', data.id);
             }
         });
     }
@@ -62,7 +63,7 @@ $(document).ready(function () {
     function initPage() {
         $("#memberListModal").hide();
         renderGroupList();
-        getUserId();
+        getResourceOwner();
     }
     initPage();
 });

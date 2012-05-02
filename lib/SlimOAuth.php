@@ -81,14 +81,7 @@ class SlimOAuth {
     private function _authenticate() {
         $authMech = $this->_oauthConfig['OAuth']['authenticationMechanism'];
         require_once "lib/OAuth/$authMech.php";
-        $ro = new $authMech($this->_oauthConfig[$authMech]);
-        $this->_resourceOwner = $ro->getResourceOwnerId();
-    }
-
-    // FIXME: this should probably not be here!
-    public function getResourceOwner() {
-        $this->_authenticate();
-        return $this->_resourceOwner;
+        $this->_resourceOwner = new $authMech($this->_oauthConfig[$authMech]);
     }
 
     public function authorize() {
@@ -136,7 +129,7 @@ class SlimOAuth {
 
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode(array ("id" => $result->resource_owner_id)));
+        $response->body(json_encode(array ("id" => $result->resource_owner_id, "displayName" => $result->resource_owner_display_name)));
     }
 
     public function getClient($clientId) {

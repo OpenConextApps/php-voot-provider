@@ -97,26 +97,26 @@ class PdoOAuthStorage implements IOAuthStorage {
         return 1 === $stmt->rowCount();
     }
 
-    public function storeApprovedScope($clientId, $resourceOwner, $scope) {
+    public function storeApprovedScope($clientId, $resourceOwnerId, $scope) {
         $stmt = $this->_pdo->prepare("INSERT INTO Approval (client_id, resource_owner_id, scope) VALUES(:client_id, :resource_owner_id, :scope)");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
-        $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
+        $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
         $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
         return $stmt->execute();
     }
 
-    public function updateApprovedScope($clientId, $resourceOwner, $scope) {
+    public function updateApprovedScope($clientId, $resourceOwnerId, $scope) {
         $stmt = $this->_pdo->prepare("UPDATE Approval SET scope = :scope WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
-        $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
+        $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
         $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
         return $stmt->execute();
     }
 
-    public function getApprovedScope($clientId, $resourceOwner) {
+    public function getApprovedScope($clientId, $resourceOwnerId) {
         $stmt = $this->_pdo->prepare("SELECT * FROM Approval WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
-        $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
+        $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
         $result = $stmt->execute();
         if (FALSE === $result) {
             return FALSE;
@@ -124,11 +124,12 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->fetch(PDO::FETCH_OBJ);
     }
 
-    public function generateAccessToken($clientId, $resourceOwner, $scope, $expiry) {
+    public function generateAccessToken($clientId, $resourceOwnerId, $resourceOwnerDisplayName, $scope, $expiry) {
         $accessToken = $this->_randomHex(16);
-        $stmt = $this->_pdo->prepare("INSERT INTO AccessToken (client_id, resource_owner_id, issue_time, expires_in, scope, access_token) VALUES(:client_id, :resource_owner_id, :issue_time, :expires_in, :scope, :access_token)");
+        $stmt = $this->_pdo->prepare("INSERT INTO AccessToken (client_id, resource_owner_id, resource_owner_display_name, issue_time, expires_in, scope, access_token) VALUES(:client_id, :resource_owner_id, :resource_owner_display_name, :issue_time, :expires_in, :scope, :access_token)");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
-        $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
+        $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
+        $stmt->bindValue(":resource_owner_display_name", $resourceOwnerDisplayName, PDO::PARAM_STR);
         $stmt->bindValue(":issue_time", time(), PDO::PARAM_INT);
         $stmt->bindValue(":expires_in", $expiry, PDO::PARAM_INT);
         $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
@@ -146,20 +147,20 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->fetch(PDO::FETCH_OBJ);        
     }
 
-    public function generateAuthorizeNonce($clientId, $resourceOwner, $scope) {
+    public function generateAuthorizeNonce($clientId, $resourceOwnerId, $scope) {
         $authorizeNonce = $this->_randomHex(16);
         $stmt = $this->_pdo->prepare("INSERT INTO AuthorizeNonce (client_id, resource_owner_id, scope, authorize_nonce) VALUES(:client_id, :resource_owner_id, :scope, :authorize_nonce)");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
-        $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
+        $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
         $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
         $stmt->bindValue(":authorize_nonce", $authorizeNonce, PDO::PARAM_STR);
         return ($stmt->execute()) ? $authorizeNonce : FALSE;
     }
 
-    public function getAuthorizeNonce($clientId, $resourceOwner, $scope, $authorizeNonce) {
+    public function getAuthorizeNonce($clientId, $resourceOwnerId, $scope, $authorizeNonce) {
         $stmt = $this->_pdo->prepare("DELETE FROM AuthorizeNonce WHERE client_id = :client_id AND scope = :scope AND authorize_nonce = :authorize_nonce AND resource_owner_id = :resource_owner_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
-        $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
+        $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
         $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
         $stmt->bindValue(":authorize_nonce", $authorizeNonce, PDO::PARAM_STR);
         $result = $stmt->execute();
@@ -169,9 +170,9 @@ class PdoOAuthStorage implements IOAuthStorage {
         return 1 === $stmt->rowCount();
     }
 
-    public function getApprovals($resourceOwner) {
+    public function getApprovals($resourceOwnerId) {
         $stmt = $this->_pdo->prepare("SELECT c.id, a.scope, c.name, c.description, c.redirect_uri FROM Approval a, Client c WHERE resource_owner_id = :resource_owner_id AND a.client_id = c.id");
-        $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
+        $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
         $result = $stmt->execute();
         if (FALSE === $result) {
             return FALSE;
@@ -179,10 +180,10 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->fetchAll(PDO::FETCH_ASSOC); 
     }
 
-    public function deleteApproval($clientId, $resourceOwner) {
+    public function deleteApproval($clientId, $resourceOwnerId) {
         $stmt = $this->_pdo->prepare("DELETE FROM Approval WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
-        $stmt->bindValue(":resource_owner_id", $resourceOwner, PDO::PARAM_STR);
+        $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
         return $stmt->execute();
     }
 

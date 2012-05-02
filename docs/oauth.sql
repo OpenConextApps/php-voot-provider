@@ -11,6 +11,7 @@ CREATE TABLE `AccessToken` (
   `access_token` varchar(64) NOT NULL,
   `client_id` varchar(64) NOT NULL,
   `resource_owner_id` text NOT NULL,
+  `resource_owner_display_name` text NOT NULL,
   `issue_time` int(11) DEFAULT NULL,
   `expires_in` int(11) DEFAULT NULL,
   `scope` text NOT NULL,
