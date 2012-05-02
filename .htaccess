@@ -2,3 +2,8 @@ RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.*)$ index.php [QSA,L]
 
+# This rule makes the "Authorization" header available as
+# X_AUTHORIZATION because PHP decided only "Basic" and "Digest"
+# and then take the out of $_SERVER which is unfortunate for 
+# OAuth "Bearer" support...
+RewriteRule .* - [E=X_AUTHORIZATION:%{HTTP:Authorization}]
