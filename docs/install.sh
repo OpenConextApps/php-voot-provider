@@ -14,14 +14,14 @@ if [ ! -f config/oauth.ini ]
 then
         cp config/oauth.ini.defaults config/oauth.ini
         BASE_DIR=`pwd`
-        sed -i "s|/var/www/html/voot|${BASE_DIR}|g" config/oauth.ini
+        sed -i "s|/var/www/html/phpvoot|${BASE_DIR}|g" config/oauth.ini
 fi
 
 if [ ! -f config/voot.ini ]
 then
 	cp config/voot.ini.defaults config/voot.ini
 	BASE_DIR=`pwd`
-	sed -i "s|/var/www/html/voot|${BASE_DIR}|g" config/voot.ini
+	sed -i "s|/var/www/html/phpvoot|${BASE_DIR}|g" config/voot.ini
 fi
 
 # slim

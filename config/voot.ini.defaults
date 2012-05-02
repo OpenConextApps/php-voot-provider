@@ -6,7 +6,7 @@ storageBackend = "PdoVootStorage"
 ;storageBackend = "LdapVootStorage"
 
 [PdoVootStorage]
-dsn = "sqlite:/var/www/html/voot/data/voot.sqlite";
+dsn = "sqlite:/var/www/html/phpvoot/data/voot.sqlite";
 
 [LdapVootStorage]
 ; OpenLDAP / Fedora Directory Server

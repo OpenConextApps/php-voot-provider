@@ -48,7 +48,7 @@ allowUnregisteredClients = FALSE
 allowAllScopes = FALSE
 
 [PdoOAuthStorage]
-dsn = "sqlite:/var/www/html/voot/data/oauth2.sqlite";
+dsn = "sqlite:/var/www/html/phpvoot/data/oauth2.sqlite";
 
 ; Dummy Configuration
 [DummyResourceOwner]

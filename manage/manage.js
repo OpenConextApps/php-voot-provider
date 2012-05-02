@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    var apiRoot = 'http://localhost/voot';
+    var apiRoot = 'http://localhost/phpvoot';
     var apiScopes = ["oauth_admin", "oauth_approval", "oauth_whoami"];
     var apiClientId = 'manage';
     jso_configure({

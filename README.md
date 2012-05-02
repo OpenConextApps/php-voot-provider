@@ -25,12 +25,12 @@ The project includes an install script that downloads the required dependencies
 and sets the permissions for the directories to write to and fixes SELinux 
 permissions.
 
-    $ mkdir /var/www/html/voot
-    $ git clone git://github.com/fkooman/phpvoot.git /var/www/html/voot
-    $ cd /var/www/html/voot
+    $ cd /var/www/html
+    $ git clone git://github.com/fkooman/phpvoot.git
+    $ cd phpvoot
     $ docs/install.sh
 
-On Ubuntu (Debian) you would typically install in `/var/www/voot`.
+On Ubuntu (Debian) you would typically install in `/var/www/phpvoot`.
 
 # SELinux
 The install script already takes care of setting the file permissions of the
@@ -46,7 +46,7 @@ Fedora.
 
 # Apache
 Also make sure Apache can read and process the `.htaccess` file by giving it
-the appropriate permissions on the (in this case) `/var/www/html/voot` 
+the appropriate permissions on the (in this case) `/var/www/html/phpvoot` 
 directory:
 
     AllowOverride FileInfo
@@ -114,27 +114,27 @@ demo VOOT client (`client/index.html` and one for the management environment
 (`manage/index.html`). You may need to update the `redirect_uri` to have them
 point to your actual server if you don't run the code on `localhost`:
 
-    http://localhost/voot/manage/index.html
+    http://localhost/phpvoot/manage/index.html
 
 Modify it to the actual location where the files were installed, for example:
 
-    https://www.example.org/voot/manage/index.html
+    https://www.example.org/phpvoot/manage/index.html
 
 To update the client registration:
 
-    $ echo "UPDATE Client SET redirect_uri='https://www.example.org/voot/client/index.html' WHERE id='voot';" | sqlite3 data/oauth2.sqlite
-    $ echo "UPDATE Client SET redirect_uri='https://www.example.org/voot/manage/index.html' WHERE id='manage';" | sqlite3 data/oauth2.sqlite
+    $ echo "UPDATE Client SET redirect_uri='https://www.example.org/phpvoot/client/index.html' WHERE id='voot';" | sqlite3 data/oauth2.sqlite
+    $ echo "UPDATE Client SET redirect_uri='https://www.example.org/phpvoot/manage/index.html' WHERE id='manage';" | sqlite3 data/oauth2.sqlite
 
 You also need to modify the API endpoint in `manage/manage.js`:
 
-    var apiRoot = 'http://localhost/voot';
+    var apiRoot = 'http://localhost/phpvoot';
 
 To (in this example):
 
-    var apiRoot = 'https://www.example.org/voot';
+    var apiRoot = 'https://www.example.org/phpvoot';
 
 Once this is done you can manage the OAuth client registrations by going to the
-URL configured above at `https://www.example.org/voot/manage/index.html`. Make
+URL configured above at `https://www.example.org/phpvoot/manage/index.html`. Make
 sure the user identifiers you want to allow `admin` permissions are listed in 
 the `adminResourceOwnerId[]` list in `config/oauth.ini`.
 
