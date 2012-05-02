@@ -38,8 +38,7 @@ class SlimVoot {
 
     public function isMemberOf($name) {
         $as = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
-        $authorizationHeader = self::_getAuthorizationHeader();
-        $result = $as->verify($authorizationHeader);
+        $result = $as->verify($this->_app->request()->headers("X-Authorization"));
         $g = new Provider($this->_vootStorage);
         $grp_array = $g->isMemberOf($result->resource_owner_id, $this->_app->request()->get('startIndex'), $this->_app->request()->get('count'));
         $this->_app->response()->header('Content-Type','application/json');
@@ -48,22 +47,13 @@ class SlimVoot {
 
     public function getGroupMembers($name, $groupId) {
         $as = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
-        $authorizationHeader = self::_getAuthorizationHeader();
-        $result = $as->verify($authorizationHeader);
+        $result = $as->verify($this->_app->request()->headers("X-Authorization"));
         $g = new Provider($this->_vootStorage);
         $grp_array = $g->getGroupMembers($result->resource_owner_id, $groupId, $this->_app->request()->get('startIndex'), $this->_app->request()->get('count'));
         $this->_app->response()->header('Content-Type','application/json');
         echo json_encode($grp_array);
     }
 
-    private static function _getAuthorizationHeader() {
-        // Apache Only!
-        $httpHeaders = apache_request_headers();
-        if(!array_key_exists("Authorization", $httpHeaders)) {
-            throw new VerifyException("invalid_request: authorization header missing");
-        }
-        return $httpHeaders['Authorization'];
-    }
 }
 
 ?>
