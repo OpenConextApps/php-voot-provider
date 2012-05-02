@@ -4,9 +4,9 @@
 mkdir -p data
 mkdir -p ext
 mkdir -p ext/js
+mkdir -p data/files
 docs/reset_oauth.sh
-docs/reset_voot.sh
-chmod -R o+w data/
+chmod -R o+w data/files
 chcon -R -t httpd_sys_rw_content_t data
 
 # configure
@@ -17,11 +17,11 @@ then
         sed -i "s|/var/www/html/phpvoot|${BASE_DIR}|g" config/oauth.ini
 fi
 
-if [ ! -f config/voot.ini ]
+if [ ! -f config/remoteStorage.ini ]
 then
-	cp config/voot.ini.defaults config/voot.ini
+	cp config/remoteStorage.ini.defaults config/remoteStorage.ini
 	BASE_DIR=`pwd`
-	sed -i "s|/var/www/html/phpvoot|${BASE_DIR}|g" config/voot.ini
+	sed -i "s|/var/www/html/phpvoot|${BASE_DIR}|g" config/remoteStorage.ini
 fi
 
 # slim
