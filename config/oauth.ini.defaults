@@ -59,8 +59,9 @@ resourceOwnerDisplayName = "François Kooman"
 [SspResourceOwner]
 sspPath = "/var/simplesamlphp/lib"
 authSource = "default-sp"
+
 resourceOwnerIdAttributeName = "uid"
+resourceOwnerDisplayNameAttributeName = "cn"
 ;resourceOwnerIdAttributeName = "urn:mace:dir:attribute-def:uid"
-resourceOwnerDisplayNameAttributeName = "dn"
-;resourceOwnerIdAttributeName = "urn:mace:dir:attribute-def:cn"
+;resourceOwnerDisplayNameAttributeName = "urn:mace:dir:attribute-def:cn"
 
