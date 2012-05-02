@@ -1,5 +1,12 @@
-; This is the default OAuth Authorization Server configuration
+; This is the OAuth Authorization Server configuration
+
 [OAuth]
+; name of service
+serviceName = "Group Provider"
+; type of resources you get access too
+serviceResources = "group membership details"
+
+; the storage backend, currently only PDO is supported
 storageBackend = "PdoOAuthStorage"
 
 ; these resourceOwnerIds can manage client registrations
@@ -8,13 +15,6 @@ adminResourceOwnerId[] = "fkooman"
 
 authenticationMechanism = "DummyResourceOwner"
 ;authenticationMechanism = "SspResourceOwner"
-
-; whether to allow unregistered clients, this is NOT RECOMMENDED!
-allowUnregisteredClients = FALSE
-
-; whether or not to allow clients to request whatever scope they wish, if FALSE
-; the scopes need to be white listed below at "supportedScopes"
-allowAllScopes = FALSE
 
 ; the scopes supported by the resource server
 supportedScopes[] = "read"
@@ -31,12 +31,6 @@ supportedScopes[] = "oauth_whoami"
 ; approved application and register approvals or delete them
 supportedScopes[] = "oauth_approval"
 
-; name of service
-serviceName = "Group Provider"
-
-; type of resources you get access too
-serviceResources = "group membership details"
-
 ; makes it possible for resource owners to deselect some of the 
 ; scope fields requested by the client
 allowResourceOwnerScopeFiltering = FALSE
@@ -44,10 +38,19 @@ allowResourceOwnerScopeFiltering = FALSE
 ; the access token expiry time (in seconds)
 accessTokenExpiry = 3600
 
+; whether to allow unregistered clients
+; NOT RECOMMENDED
+allowUnregisteredClients = FALSE
+
+; whether or not to allow clients to request any scope, also not scopes not 
+; listed in "supportedScopes"
+; NOT RECOMMENDED
+allowAllScopes = FALSE
+
 [PdoOAuthStorage]
 dsn = "sqlite:/var/www/html/voot/data/oauth2.sqlite";
 
-; dummy configuration
+; Dummy Configuration
 [DummyResourceOwner]
 resourceOwnerId = "fkooman"
 resourceOwnerDisplayName = "François Kooman"
