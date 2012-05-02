@@ -29,11 +29,11 @@
   <form method="post" class="form-horizontal">
 
    <div class="modal-header">
-                <h3>Authorization Request</h3>
-            </div>
-            <div class="modal-body">
+     <h3><?php echo $serviceName; ?></h3>
+   </div>
+   <div class="modal-body">
 
-  <p><strong><?php echo $clientName; ?></strong> wants to access your <em><?php echo $serviceName; ?></em>.</p>
+  <p><strong><?php echo $clientName; ?></strong> wants to access your <strong><?php echo $serviceResources; ?></strong>.</p>
 
     <a class="btn btn-mini btn-info infoButton" href="#">Details...</a>
 

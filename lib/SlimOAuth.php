@@ -112,6 +112,7 @@ class SlimOAuth {
                 'scope' => $this->_app->request()->get('scope'), 
                 'authorizeNonce' => $result['authorize_nonce'],
                 'serviceName' => $this->_oauthConfig['OAuth']['serviceName'],
+                'serviceResources' => $this->_oauthConfig['OAuth']['serviceResources'],
                 'allowFilter' => $this->_oauthConfig['OAuth']['allowResourceOwnerScopeFiltering']));
         } else {
             $this->_app->redirect($result['url']);
