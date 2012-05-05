@@ -53,10 +53,7 @@ class SlimStorage {
 
         if($category !== "public") {    
             $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
-
-            $authorizationHeader = self::_getAuthorizationHeader();
-
-            $result = $o->verify($authorizationHeader);
+            $result = $o->verify($this->_app->request()->headers("X-Authorization"));
 
             $absPath = $this->_storageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
                     $result->resource_owner_id . DIRECTORY_SEPARATOR . 
@@ -88,17 +85,14 @@ class SlimStorage {
         }
 //        $finfo = new finfo(FILEINFO_MIME_TYPE);
 //        $this->_app->response()->header("Content-Type", $finfo->file($absPath));
-	$this->_app->response()->header("Content-Type", "application/json");
+        $this->_app->response()->header("Content-Type", "application/json");
         echo file_get_contents($absPath);
     }
 
     public function putFile($uid, $category, $name) {
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
         $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
-
-        $authorizationHeader = self::_getAuthorizationHeader();
-
-        $result = $o->verify($authorizationHeader);
+        $result = $o->verify($this->_app->request()->headers("X-Authorization"));
 
         $absPath = $this->_storageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . $result->resource_owner_id . DIRECTORY_SEPARATOR . $category . DIRECTORY_SEPARATOR . $name;
 
@@ -139,24 +133,6 @@ class SlimStorage {
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
         $this->_app->response()->header("Content-Type", "application/xrd+xml; charset=UTF-8");
         $this->_app->render('webFinger.php', array ( 'subject' => $subject, 'templateUri' => $templateUri, 'authUri' => $authUri));
-    }
-
-    public function showPortal() {
-        $registeredClients = $this->_oauthStorage->getClients();
-        $resourceOwner = $this->_slimOAuth->getResourceOwner();
-        $resourceOwnerApprovals = $this->_oauthStorage->getApprovals($resourceOwner);
-        $baseUri = $this->_app->request()->getUrl() . $this->_app->request()->getRootUri();
-        $appLaunchFragment = "#remote_storage_uri=$baseUri&remote_storage_uid=$resourceOwner";
-        $this->_app->render('portalPage.php', array ('resourceOwnerApprovals' => $resourceOwnerApprovals, 'registeredClients' => $registeredClients, 'appLaunchFragment' => $appLaunchFragment, 'resourceOwner' => $resourceOwner));
-    }
-
-    private static function _getAuthorizationHeader() {
-        // Apache Only!
-        $httpHeaders = apache_request_headers();
-        if(!array_key_exists("Authorization", $httpHeaders)) {
-            throw new VerifyException("invalid_request: authorization header missing");
-        }
-        return $httpHeaders['Authorization'];
     }
 
 }

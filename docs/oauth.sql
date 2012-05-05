@@ -34,5 +34,5 @@ CREATE TABLE `AuthorizeNonce` (
   FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`)
 );
 
-INSERT INTO `Client` VALUES ('manage', 'Management Client', 'Web application to manage OAuth client registrations.', NULL, 'http://localhost/phpvoot/manage/index.html', 'public');
-INSERT INTO `Client` VALUES ('voot','VOOT Demo Client', 'Simple web application to demonstrate the VOOT API.', NULL,'http://localhost/phpvoot/client/index.html','public');
+INSERT INTO `Client` VALUES ('manage', 'Management Client', 'Web application to manage OAuth client registrations.', NULL, 'http://localhost/storage/manage/index.html', 'public');
+INSERT INTO `Client` VALUES ('portal','Demo Portal', 'Demo Web Portal demonstrating Unhosted Applications.', NULL,'http://localhost/storage/portal/index.html','public');
