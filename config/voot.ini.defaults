@@ -4,7 +4,7 @@ storageBackend = "PdoVootStorage"
 ;storageBackend = "LdapVootStorage"
 
 [PdoVootStorage]
-dsn = "sqlite:/var/www/html/phpvoot/data/voot.sqlite";
+dsn = "sqlite:/PATH/TO/APP/data/voot.sqlite";
 ;dsn = "mysql:host=localhost;dbname=voot"
 ;username = "voot"
 ;password = "s3cr3t"
