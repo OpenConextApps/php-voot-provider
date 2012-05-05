@@ -2,18 +2,18 @@
 
 class DummyResourceOwner implements IResourceOwner {
 
-    private $_config;
+    private $_c;
 
-    public function __construct(array $config) {
-        $this->_config = $config;
+    public function __construct(Config $c) {
+        $this->_c = $c;
     }
 
     public function getResourceOwnerId() {
-        return $this->_config['resourceOwnerId'];
+        return $this->_c->getSectionValue('DummyResourceOwner', 'resourceOwnerId');
     }
 
     public function getResourceOwnerDisplayName() {
-        return $this->_config['resourceOwnerDisplayName'];
+        return $this->_c->getSectionValue('DummyResourceOwner', 'resourceOwnerDisplayName');
     }
 
 }

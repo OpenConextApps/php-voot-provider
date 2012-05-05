@@ -48,11 +48,11 @@ class AdminException extends Exception {
 class AuthorizationServer {
 
     private $_storage;
-    private $_config;
+    private $_c;
 
-    public function __construct(IOAuthStorage $storage, array $config) {
+    public function __construct(IOAuthStorage $storage, Config $c) {
         $this->_storage = $storage;
-        $this->_config = $config;
+        $this->_c = $c;
     }
  
     public function authorize(IResourceOwner $resourceOwner, array $get) {
@@ -72,7 +72,7 @@ class AuthorizationServer {
 
         $client = $this->_storage->getClient($clientId);
         if(FALSE === $client) {
-            if(!$this->_config['allowUnregisteredClients']) {
+            if(!$this->_c->getValue('allowUnregisteredClients')) {
                 throw new OAuthException('client not registered');
             }
             // this client is unregistered and unregistered clients are allowed,
@@ -118,8 +118,8 @@ class AuthorizationServer {
             return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
         }
 
-        if(!$this->_config['allowAllScopes']) {
-            if(FALSE === self::isSubsetScope($requestedScope, $this->_config['supportedScopes'])) {
+        if(!$this->_c->getValue('allowAllScopes')) {
+            if(FALSE === self::isSubsetScope($requestedScope, $this->_c->getValue('supportedScopes'))) {
                 // scope not supported
                 $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported");
                 if(NULL !== $state) {
@@ -131,7 +131,7 @@ class AuthorizationServer {
 
         if(in_array('oauth_admin', self::getScopeArray($requestedScope))) {
             // administrator scope requested, need to be in admin list
-            if(!in_array($resourceOwner->getResourceOwnerId(), $this->_config['adminResourceOwnerId'])) {
+            if(!in_array($resourceOwner->getResourceOwnerId(), $this->_c->getValue('adminResourceOwnerId'))) {
                 $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported resource owner is not an administrator");
                 if(NULL !== $state) {
                     $error += array ( "state" => $state);
@@ -148,9 +148,9 @@ class AuthorizationServer {
             return array ("action" => "ask_approval", "authorize_nonce" => $authorizeNonce);
         } else {
             // approval already exists for this scope
-            $accessToken = $this->_storage->generateAccessToken($clientId, $resourceOwner->getResourceOwnerId(), $resourceOwner->getResourceOwnerDisplayName(), $requestedScope, $this->_config['accessTokenExpiry']);
+            $accessToken = $this->_storage->generateAccessToken($clientId, $resourceOwner->getResourceOwnerId(), $resourceOwner->getResourceOwnerDisplayName(), $requestedScope, $this->_c->getValue('accessTokenExpiry'));
             $token = array("access_token" => $accessToken, 
-                           "expires_in" => $this->_config['accessTokenExpiry'], 
+                           "expires_in" => $this->_c->getValue('accessTokenExpiry'), 
                            "token_type" => "bearer", 
                            "scope" => $requestedScope);
             if(NULL !== $state) {
@@ -181,7 +181,7 @@ class AuthorizationServer {
 
         $client = $this->_storage->getClient($clientId);
         if(FALSE === $client) {
-            if(!$this->_config['allowUnregisteredClients']) {
+            if(!$this->_c->getValue('allowUnregisteredClients')) {
                 throw new OAuthException('client not registered');
             }
             // this client is unregistered and unregistered clients are allowed,

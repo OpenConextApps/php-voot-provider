@@ -5,22 +5,22 @@ require_once 'lib/OAuth/AuthorizationServer.php';
 class SlimOAuth {
 
     private $_app;
-    private $_oauthConfig;
+    private $_c;
     
     private $_oauthStorage;
 
     private $_resourceOwner;
     private $_as;
 
-    public function __construct(Slim $app, array $oauthConfig) {
+    public function __construct(Slim $app, Config $c) {
         $this->_app = $app;
-        $this->_oauthConfig = $oauthConfig;
+        $this->_c = $c;
 
-        $oauthStorageBackend = $this->_oauthConfig['OAuth']['storageBackend'];
+        $oauthStorageBackend = $this->_c->getValue('storageBackend');
         require_once "lib/OAuth/$oauthStorageBackend.php";
-        $this->_oauthStorage = new $oauthStorageBackend($this->_oauthConfig[$oauthStorageBackend]);
+        $this->_oauthStorage = new $oauthStorageBackend($this->_c);
 
-        $this->_as = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
+        $this->_as = new AuthorizationServer($this->_oauthStorage, $this->_c);
 
         // in PHP 5.4 $this is possible inside anonymous functions.
         $self = &$this;
@@ -79,9 +79,9 @@ class SlimOAuth {
     }
 
     private function _authenticate() {
-        $authMech = $this->_oauthConfig['OAuth']['authenticationMechanism'];
+        $authMech = $this->_c->getValue('authenticationMechanism');
         require_once "lib/OAuth/$authMech.php";
-        $this->_resourceOwner = new $authMech($this->_oauthConfig[$authMech]);
+        $this->_resourceOwner = new $authMech($this->_c);
     }
 
     public function authorize() {
@@ -93,7 +93,7 @@ class SlimOAuth {
         if($result['action'] === 'ask_approval') { 
             $client = $this->_oauthStorage->getClient($this->_app->request()->get('client_id'));
             if(FALSE === $client) {
-                if($this->_oauthConfig['OAuth']['allowUnregisteredClients']) {
+                if($this->_c->getValue('allowUnregisteredClients')) {
                     $client = $this->_oauthStorage->getClientByRedirectUri($this->_app->request()->get('redirect_uri'));
                 }   
             }
@@ -104,9 +104,9 @@ class SlimOAuth {
                 'clientRedirectUri' => $client->redirect_uri,
                 'scope' => $this->_app->request()->get('scope'), 
                 'authorizeNonce' => $result['authorize_nonce'],
-                'serviceName' => $this->_oauthConfig['OAuth']['serviceName'],
-                'serviceResources' => $this->_oauthConfig['OAuth']['serviceResources'],
-                'allowFilter' => $this->_oauthConfig['OAuth']['allowResourceOwnerScopeFiltering']));
+                'serviceName' => $this->_c->getValue('serviceName'),
+                'serviceResources' => $this->_c->getValue('serviceResources'),
+                'allowFilter' => $this->_c->getValue('allowResourceOwnerScopeFiltering')));
         } else {
             $this->_app->redirect($result['url']);
         }

@@ -1,6 +1,5 @@
 ; This is the OAuth Authorization Server configuration
 
-[OAuth]
 ; name of service
 serviceName = "Group Provider"
 ; type of resources you get access too
@@ -58,6 +57,9 @@ allowAllScopes = FALSE
 
 [PdoOAuthStorage]
 dsn = "sqlite:/var/www/html/phpvoot/data/oauth2.sqlite";
+;dsn = "mysql:host=localhost;dbname=oauth"
+;username = "oauth"
+;password = "s3cr3t"
 
 ; Dummy Configuration
 [DummyResourceOwner]
@@ -72,5 +74,5 @@ authSource = "default-sp"
 resourceOwnerIdAttributeName = "uid"
 resourceOwnerDisplayNameAttributeName = "cn"
 ;resourceOwnerIdAttributeName = "urn:mace:dir:attribute-def:uid"
-;resourceOwnerDisplayNameAttributeName = "urn:mace:dir:attribute-def:cn"
+;resourceOwnerDisplayNameAttributeName = "urn:mace:dir:attribute-def:displayName"
 

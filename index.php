@@ -1,5 +1,6 @@
 <?php
 require_once 'ext/Slim/Slim/Slim.php';
+require_once 'lib/Config.php';
 require_once 'lib/SlimOAuth.php';
 require_once 'lib/SlimStorage.php';
 
@@ -10,19 +11,8 @@ $app = new Slim(array(
     'debug' => false
 ));
 
-$oauthConfig = parse_ini_file("config" . DIRECTORY_SEPARATOR . "oauth.ini", TRUE);
-$remoteStorageConfig = parse_ini_file("config" . DIRECTORY_SEPARATOR . "remoteStorage.ini", TRUE);
-
-//$app->get('/oauth/:uid/authorize', function ($uid) use ($app, $oauthStorage, $oauthConfig) {
-//    if($resourceOwner !== $uid) {
-//        throw new OAuthException("$uid does not match $resourceOwner");
-//    }
-
-//$app->post('/oauth/:uid/authorize', function ($uid) use ($app, $oauthStorage, $oauthConfig) {
-//    if($resourceOwner !== $uid) {
-//        throw new OAuthException("$uid does not match $resourceOwner");
-//    }
-
+$oauthConfig = new Config("oauth");
+$remoteStorageConfig = new Config("remoteStorage");
 
 // OAuth
 $s = new SlimOAuth($app, $oauthConfig);
