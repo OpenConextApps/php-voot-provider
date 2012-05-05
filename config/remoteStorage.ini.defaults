@@ -1,6 +1,4 @@
 ; This is the default configuration for the remoteStorage provider
 
-; remoteStorage configuration
-[remoteStorage]
 filesDirectory = "/var/www/html/voot/data/files"
 

@@ -3,21 +3,18 @@
 class SlimStorage {
 
     private $_app;
-    private $_oauthConfig;
-    private $_storageConfig;
-    private $_slimOAuth;
-
+    private $_c;
+    private $_s;
     private $_oauthStorage;
 
-    public function __construct(Slim $app, array $oauthConfig, array $storageConfig, SlimOAuth $s) {
+    public function __construct(Slim $app, Config $c, Config $s) {
         $this->_app = $app;
-        $this->_oauthConfig = $oauthConfig;
-        $this->_storageConfig = $storageConfig;
-        $this->_slimOAuth = $s;
+        $this->_c = $c;
+        $this->_s = $s;
 
-        $oauthStorageBackend = $this->_oauthConfig['OAuth']['storageBackend'];
+        $oauthStorageBackend = $this->_c->getValue('storageBackend');
         require_once "lib/OAuth/$oauthStorageBackend.php";
-        $this->_oauthStorage = new $oauthStorageBackend($this->_oauthConfig[$oauthStorageBackend]);
+        $this->_oauthStorage = new $oauthStorageBackend($this->_c);
 
         // in PHP 5.4 $this is possible inside anonymous functions.
         $self = &$this;
@@ -52,15 +49,15 @@ class SlimStorage {
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
 
         if($category !== "public") {    
-            $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
+            $o = new AuthorizationServer($this->_oauthStorage, $this->_c);
             $result = $o->verify($this->_app->request()->headers("X-Authorization"));
 
-            $absPath = $this->_storageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
+            $absPath = $this->_s->getValue('filesDirectory') . DIRECTORY_SEPARATOR . 
                     $result->resource_owner_id . DIRECTORY_SEPARATOR . 
                     $category . DIRECTORY_SEPARATOR . 
                     $name;
         } else {
-            $absPath = $this->_storageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . 
+            $absPath = $this->_s->getValue('filesDirectory') . DIRECTORY_SEPARATOR . 
                     $uid . DIRECTORY_SEPARATOR . 
                     "public" . DIRECTORY_SEPARATOR . 
                     $name;
@@ -91,10 +88,10 @@ class SlimStorage {
 
     public function putFile($uid, $category, $name) {
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
-        $o = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
+        $o = new AuthorizationServer($this->_oauthStorage, $this->_c);
         $result = $o->verify($this->_app->request()->headers("X-Authorization"));
 
-        $absPath = $this->_storageConfig['remoteStorage']['filesDirectory'] . DIRECTORY_SEPARATOR . $result->resource_owner_id . DIRECTORY_SEPARATOR . $category . DIRECTORY_SEPARATOR . $name;
+        $absPath = $this->_s->getValue('filesDirectory') . DIRECTORY_SEPARATOR . $result->resource_owner_id . DIRECTORY_SEPARATOR . $category . DIRECTORY_SEPARATOR . $name;
 
         // user directory
         if(!file_exists(dirname(dirname($absPath)))) {
