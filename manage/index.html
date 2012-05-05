@@ -49,7 +49,7 @@
     <div class="container">
         <h1>Registered Clients</h1>
 
-        <a class="btn btn-success pull-right addClient" data-toggle="modal" href="#editModal">Add New Client</a>
+        <a class="btn btn-success pull-right addClient" data-toggle="modal" href="#editModal"><i class="icon-plus-sign icon-white"></i> Add New Client</a>
 
         <table class="table table-striped">
         	<tbody id="clientList"></tbody>
@@ -70,7 +70,7 @@
         <tr>
             <td><span title="{{:description}}">{{:name}}</span></td>
             <td>
-                <a class="btn btn-primary deleteApproval" data-client-name="{{:name}}" data-client-id="{{:id}}" href="#">Delete</a>
+                <a class="btn btn-danger deleteApproval" data-client-name="{{:name}}" data-client-id="{{:id}}" href="#"><i class="icon-trash icon-white"></i> Delete</a>
             </td>
         </tr>
     </script>
@@ -79,8 +79,8 @@
         <tr>
             <td><span title="{{:description}}">{{:name}}</span></td>
             <td>
-                <a class="btn btn-primary editClient" data-client-id="{{:id}}" data-toggle="modal" href="#editModal">Edit</a>
-                <a class="btn btn-inverse deleteClient" data-client-name="{{:name}}" data-client-id="{{:id}}" href="#">Delete</a>
+                <a class="btn btn-primary editClient" data-client-id="{{:id}}" data-toggle="modal" href="#editModal"><i class="icon-edit icon-white"></i> Edit</a>
+                <a class="btn btn-danger deleteClient" data-client-name="{{:name}}" data-client-id="{{:id}}" href="#"><i class="icon-trash icon-white"></i>  Delete</a>
             </td>
         </tr>
     </script>
