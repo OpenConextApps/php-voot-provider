@@ -1,22 +1,47 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Error</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <title>Error</title>
-  <style>
-    body { font-size: 90%; font-family: sans-serif; width: 400px; margin: 20px auto; border: 1px solid #000; padding: 10px; border-radius: 10px; }
-    h2 { text-align: center; color: red; }
-    p.error { background-color: #ddd; color: red; padding: 10px; border: 1px solid #000; border-radius: 10px; }
-  </style>
-</head>
+    <!-- Le styles -->
+    <link href="../ext/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <style>
+      span.unregistered { color: red; font-weight: bold; }
+      form { margin-bottom: 0; }
+    </style>
+    <link href="../ext/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
 
-<body>
-  <h2>Error</h2>
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
 
-  <p><?php echo $description; ?></p>
+  <body>
 
-  <p class="error"><?php echo $error; ?></p>
+    <div class="container">
+
+    <div class="modal"> 
+
+   <div class="modal-header">
+     <h3>Error</h3>
+   </div>
+
+   <div class="modal-body">
+        <p><?php echo $description; ?></p>
+
+        <div class="alert alert-error">
+            <?php echo $error; ?>
+        </div>
+
+    </div>
+   </div>
+
+</div>
 
 </body>
 </html>
