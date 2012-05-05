@@ -7,7 +7,7 @@ class SspResourceOwner implements IResourceOwner {
 
     public function __construct(Config $c) {
         $this->_c = $c;
-        $sspPath = this->_c->getSectionValue('SspResourceOwner', 'sspPath') . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . '_autoload.php';
+        $sspPath = $this->_c->getSectionValue('SspResourceOwner', 'sspPath') . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . '_autoload.php';
         if(!file_exists($sspPath) || !is_file($sspPath) || !is_readable($sspPath)) {
             throw new Exception("invalid path to simpleSAMLphp");
         }
