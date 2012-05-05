@@ -65,5 +65,5 @@ authSource = "default-sp"
 resourceOwnerIdAttributeName = "uid"
 resourceOwnerDisplayNameAttributeName = "cn"
 ;resourceOwnerIdAttributeName = "urn:mace:dir:attribute-def:uid"
-;resourceOwnerDisplayNameAttributeName = "urn:mace:dir:attribute-def:mail:displayName"
+;resourceOwnerDisplayNameAttributeName = "urn:mace:dir:attribute-def:displayName"
 
