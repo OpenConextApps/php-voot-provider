@@ -7,7 +7,7 @@ class PdoOAuthStorage implements IOAuthStorage {
 
     public function __construct(array $config) {
         $this->_config = $config;
-        $this->_pdo = new PDO($this->_config['dsn']);
+        $this->_pdo = new PDO($this->_config['dsn'], $this->_config['username'], $this->_config['password']);
     }
 
     public function getClients() {

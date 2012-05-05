@@ -49,6 +49,9 @@ allowAllScopes = FALSE
 
 [PdoOAuthStorage]
 dsn = "sqlite:/var/www/html/phpvoot/data/oauth2.sqlite";
+;dsn = "mysql:host=localhost;dbname=voot"
+username = "voot"
+password = "v00t"
 
 ; Dummy Configuration
 [DummyResourceOwner]
