@@ -85,10 +85,11 @@ class AuthorizationServer {
             if(FALSE === $u) {
                 throw new OAuthException("redirect_uri is malformed");
             }
-            // redirectUri MUST NOT contain fragment
+            // redirectUri MUST NOT contain fragment (should not be possible to
+            // introduce this using the browser...)
             $uriParts = parse_url($redirectUri);
             if(array_key_exists("fragment", $uriParts)) {
-                throw new OAuthException("redirect_uri cannot contain fragment");
+                throw new OAuthException("redirect_uri must not contain fragment");
             }
 
             // this client is unregistered and unregistered clients are allowed,
