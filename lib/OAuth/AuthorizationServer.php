@@ -74,14 +74,30 @@ class AuthorizationServer {
         if(FALSE === $client) {
             if(!$this->_c->getValue('allowUnregisteredClients')) {
                 throw new OAuthException('client not registered');
+            }      
+
+            // we need a redirectUri for unregistered clients
+            if(NULL === $redirectUri) {
+                throw new OAuthException('redirect_uri required for unregistered clients');
             }
+            // validate the redirectUri
+            $u = filter_var($redirectUri, FILTER_VALIDATE_URL);
+            if(FALSE === $u) {
+                throw new OAuthException("redirect_uri is malformed");
+            }
+            // redirectUri MUST NOT contain fragment
+            $uriParts = parse_url($redirectUri);
+            if(array_key_exists("fragment", $uriParts)) {
+                throw new OAuthException("redirect_uri cannot contain fragment");
+            }
+
             // this client is unregistered and unregistered clients are allowed,
             // check for the client using its redirect_uri as client_id
             $client = $this->_storage->getClientByRedirectUri($redirectUri);
             if(FALSE === $client) { 
                 // create a new one
-                $newClient = array ( 'name' => 'Unknown Client',
-                                     'description' => 'This is a dynamically created OAuth client -- USE WITH CAUTION!',
+                $newClient = array ( 'name' => $uriParts['host'],
+                                     'description' => "UNREGISTERED (" . $uriParts['host'] . ")",
                                      'redirect_uri' => $redirectUri,
                                      'type' => 'public');
                 if(FALSE === $this->_storage->addClient($newClient)) {
