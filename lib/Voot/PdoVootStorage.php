@@ -2,12 +2,12 @@
 
 class PdoVootStorage implements IVootStorage {
 
-    private $_config;
+    private $_c;
     private $_pdo;
 
-    public function __construct(array $config) {
-        $this->_config = $config;
-        $this->_pdo = new PDO($this->_config['dsn']);
+    public function __construct(Config $c) {
+        $this->_c = $c;
+        $this->_pdo = new PDO($this->_c->getSectionValue('PdoVootStorage', 'dsn'), $this->_c->getSectionValue('PdoVootStorage', 'username', FALSE), $this->_c->getSectionValue('PdoVootStorage', 'password', FALSE));
     	$this->_pdo->exec("PRAGMA foreign_keys = ON");
     }
 

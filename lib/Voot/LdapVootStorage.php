@@ -2,17 +2,18 @@
 
 class LdapVootStorage implements IVootStorage {
 
-    private $_config;
+    private $_c;
     private $_ldapConnection;
 
-    public function __construct(array $config) {
-        $this->_config = $config;
-        $this->_ldapConnection = @ldap_connect($this->_config['uri']);
+    public function __construct(Config $c) {
+        $this->_c = $c;
+        $this->_ldapConnection = @ldap_connect($this->_c->getSectionValue('LdapVootStorage', 'uri'));
         if(FALSE === $this->_ldapConnection) {
             throw new Exception("unable to connect to ldap server");
         }
-        if(array_key_exists('bindDn', $this->_config) && array_key_exists('bindPass', $this->_config)) {
-            if(FALSE === @ldap_bind($this->_ldapConnection, $this->_config['bindDn'], $this->_config['bindPass'])) {
+
+        if(NULL !== $this->_c->getSectionValue('LdapVootStorage', 'bindDn', FALSE)) {
+            if(FALSE === @ldap_bind($this->_ldapConnection, $this->_c->getSectionValue('LdapVootStorage', 'bindDn'), $this->_c->getSectionValue('LdapVootStorage', 'bindPass', FALSE))) {
                 throw new Exception("unable to bind to ldap server, possibly invalid credentials");
             }
         }
@@ -20,8 +21,8 @@ class LdapVootStorage implements IVootStorage {
 
     private function _getUserDn($resourceOwnerId) {
         /* get the user distinguishedName */
-        $filter = '(' . $this->_config['userIdAttribute'] . '=' . $resourceOwnerId . ')';
-        $query = ldap_search($this->_ldapConnection, $this->_config['peopleDn'], $filter);
+        $filter = '(' . $this->_c->getSectionValue('LdapVootStorage', 'userIdAttribute') . '=' . $resourceOwnerId . ')';
+        $query = ldap_search($this->_ldapConnection, $this->_c->getSectionValue('LdapVootStorage', 'peopleDn'), $filter);
         if(FALSE === $query) {
             throw new Exception("directory query for user failed");
         }
@@ -60,8 +61,8 @@ class LdapVootStorage implements IVootStorage {
 
         $userGroups = array();
         /* get the groups the user is a member of */
-        $filter = '(' . $this->_config['memberAttribute'] . '=' . $userDn . ')';
-        $query = ldap_search($this->_ldapConnection, $this->_config['groupDn'], $filter);
+        $filter = '(' . $this->_c->getSectionValue('LdapVootStorage', 'memberAttribute') . '=' . $userDn . ')';
+        $query = ldap_search($this->_ldapConnection, $this->_c->getSectionValue('LdapVootStorage', 'groupDn'), $filter);
         if(FALSE === $query) {
             throw new Exception("directory query for groups failed");
         }

@@ -5,24 +5,24 @@ require_once 'lib/Voot/Provider.php';
 class SlimVoot {
 
     private $_app;
-    private $_oauthConfig;
-    private $_vootConfig;
+    private $_c;
+    private $_v;
 
     private $_oauthStorage;
     private $_vootStorage;
 
-    public function __construct(Slim $app, array $oauthConfig, array $vootConfig) {
+    public function __construct(Slim $app, Config $c, Config $v) {
         $this->_app = $app;
-        $this->_oauthConfig = $oauthConfig;
-        $this->_vootConfig = $vootConfig;
+        $this->_c = $c;
+        $this->_v = $v;
 
-        $oauthStorageBackend = $this->_oauthConfig['OAuth']['storageBackend'];
+        $oauthStorageBackend = $this->_c->getValue('storageBackend');
         require_once "lib/OAuth/$oauthStorageBackend.php";
-        $this->_oauthStorage = new $oauthStorageBackend($this->_oauthConfig[$oauthStorageBackend]);
+        $this->_oauthStorage = new $oauthStorageBackend($this->_c);
 
-        $vootStorageBackend = $this->_vootConfig['voot']['storageBackend'];
+        $vootStorageBackend = $this->_v->getValue('storageBackend');
         require_once "lib/Voot/$vootStorageBackend.php";
-        $this->_vootStorage = new $vootStorageBackend($this->_vootConfig[$vootStorageBackend]);
+        $this->_vootStorage = new $vootStorageBackend($this->_v);
 
         // in PHP 5.4 $this is possible inside anonymous functions.
         $self = &$this;
@@ -37,7 +37,7 @@ class SlimVoot {
     }
 
     public function isMemberOf($name) {
-        $as = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
+        $as = new AuthorizationServer($this->_oauthStorage, $this->_c);
         $result = $as->verify($this->_app->request()->headers("X-Authorization"));
         $g = new Provider($this->_vootStorage);
         $grp_array = $g->isMemberOf($result->resource_owner_id, $this->_app->request()->get('startIndex'), $this->_app->request()->get('count'));
@@ -46,7 +46,7 @@ class SlimVoot {
     }
 
     public function getGroupMembers($name, $groupId) {
-        $as = new AuthorizationServer($this->_oauthStorage, $this->_oauthConfig['OAuth']);
+        $as = new AuthorizationServer($this->_oauthStorage, $this->_c);
         $result = $as->verify($this->_app->request()->headers("X-Authorization"));
         $g = new Provider($this->_vootStorage);
         $grp_array = $g->getGroupMembers($result->resource_owner_id, $groupId, $this->_app->request()->get('startIndex'), $this->_app->request()->get('count'));

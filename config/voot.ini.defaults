@@ -1,12 +1,13 @@
 ; This is the configuration for the PHP VOOT implementation
 
-; VOOT configuration
-[voot]
 storageBackend = "PdoVootStorage"
 ;storageBackend = "LdapVootStorage"
 
 [PdoVootStorage]
 dsn = "sqlite:/var/www/html/phpvoot/data/voot.sqlite";
+;dsn = "mysql:host=localhost;dbname=voot"
+;username = "voot"
+;password = "s3cr3t"
 
 [LdapVootStorage]
 ; OpenLDAP / Fedora Directory Server

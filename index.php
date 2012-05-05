@@ -1,5 +1,6 @@
 <?php
 require_once 'ext/Slim/Slim/Slim.php';
+require_once 'lib/Config.php';
 require_once 'lib/SlimOAuth.php';
 require_once 'lib/SlimVoot.php';
 
@@ -10,8 +11,8 @@ $app = new Slim(array(
     'debug' => false
 ));
 
-$oauthConfig = parse_ini_file("config" . DIRECTORY_SEPARATOR . "oauth.ini", TRUE);
-$vootConfig = parse_ini_file("config" . DIRECTORY_SEPARATOR . "voot.ini", TRUE);
+$oauthConfig = new Config("oauth");
+$vootConfig = new Config("voot");
 
 // OAuth
 $s = new SlimOAuth($app, $oauthConfig);
