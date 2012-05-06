@@ -56,7 +56,7 @@ allowUnregisteredClients = FALSE
 allowAllScopes = FALSE
 
 [PdoOAuthStorage]
-dsn = "sqlite:/var/www/html/phpvoot/data/oauth2.sqlite";
+dsn = "sqlite:/PATH/TO/APP/data/oauth2.sqlite";
 ;dsn = "mysql:host=localhost;dbname=oauth"
 ;username = "oauth"
 ;password = "s3cr3t"

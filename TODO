@@ -1,6 +1,4 @@
 - better error handling in server side
-  - create a configuration class that does something helpful when a config
-    option is missing or malformed
 
 - implement logging infrastructure, seems Slim has some functionality for that
   already so we can just use that
