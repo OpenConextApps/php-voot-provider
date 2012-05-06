@@ -73,7 +73,7 @@ $(document).ready(function () {
             }
         });
         $("a.launchApp").click(function() {
-            alert("Launch!");
+            window.location = $(this).data('redirectUri') + "#remote_storage_uri=" + apiRoot;
         });
     }
 
