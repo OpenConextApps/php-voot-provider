@@ -181,11 +181,27 @@ $(document).ready(function () {
         editClient();
     });
 
+    $("a#clientsButton").click(function() {
+        $(this).parent().siblings().removeClass("active");
+        $(this).parent().addClass("active");
+        $("#approvedClientsList").hide();
+        $("#registeredClientsList").show();
+        renderClientList();
+    });
+
+    $("a#approvalsButton").click(function() {
+        $(this).parent().siblings().removeClass("active");
+        $(this).parent().addClass("active");
+        $("#registeredClientsList").hide();
+        $("#approvedClientsList").show();
+        renderApprovalList();
+    });
+
     function initPage() {
         $("#editModal").hide();
-        renderClientList();
-        renderApprovalList();
+        $("#approvedClientsList").hide();
         getResourceOwner();
+        renderClientList();
     }
     initPage();
 });

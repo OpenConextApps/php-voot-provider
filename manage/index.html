@@ -35,8 +35,8 @@
           <a class="brand" href="#">OAuth Management Interface</a>
           <div class="nav-collapse">
             <ul class="nav">
-              <li class="active"><a href="#">Clients</a></li>
-              <li><a href="#">Approvals</a></li>
+              <li class="active"><a id="clientsButton" href="#">Registered Applications</a></li>
+              <li><a id="approvalsButton" href="#">My Authorized Applications</a></li>
             </ul>
             <div class="btn-group pull-right">
                 <a href="#" id="userId" class="btn"><i class="icon-user"></i> </a>
@@ -47,20 +47,24 @@
     </div>
 
     <div class="container">
-        <h1>Registered Clients</h1>
+
+    <div id="registeredClientsList">
+        <h1>Registered Applications</h1>
 
         <a class="btn btn-success pull-right addClient" data-toggle="modal" href="#editModal"><i class="icon-plus-sign icon-white"></i> Add New Client</a>
 
         <table class="table table-striped">
         	<tbody id="clientList"></tbody>
         </table>
-
-        <h1>Approved Clients</h1>
+    </div>
+    <div id="approvedClientsList">
+        <h1>My Authorized Applications</h1>
 
         <table class="table table-striped">
         	<tbody id="approvalList"></tbody>
         </table>
-
+    </div>
+    
         <div class="modal" id="editModal">
          </div>
 
