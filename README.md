@@ -14,11 +14,11 @@ This project is a stand-alone VOOT group provider. The
 # Requirements
 The installation requirements on Fedora/CentOS can be installed like this:
 
-    $ su -c 'yum install php-pdo php httpd'
+    $ su -c 'yum install php-pdo php php-ldap httpd mod_xsendfile'
 
 On Debian/Ubuntu:
 
-    $ sudo apt-get install git sqlite3 php5 php5-sqlite unzip
+    $ sudo apt-get install git sqlite3 php5 php5-sqlite unzip libapache2-mod-xsendfile php5-ldap
 
 # Installation
 The project includes an install script that downloads the required dependencies
