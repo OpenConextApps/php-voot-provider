@@ -2,6 +2,8 @@ $(document).ready(function () {
     var apiRoot = 'http://localhost/storage';
     var apiScopes = ["oauth_admin", "oauth_approval", "oauth_whoami"];
     var apiClientId = 'portal';
+    var userId;
+
     jso_configure({
         "portal": {
             client_id: apiClientId,
@@ -46,9 +48,11 @@ $(document).ready(function () {
             url: apiRoot + "/oauth/whoami",
             jso_provider: "portal",
             jso_scopes: apiScopes,
+            async: false,
             jso_allowia: true,
             dataType: 'json',
             success: function (data) {
+                userId = data.id;
                 $("#userId").append(data.displayName);
                 $("#userId").attr('title', data.id);
             }
@@ -73,7 +77,7 @@ $(document).ready(function () {
             }
         });
         $("a.launchApp").click(function() {
-            window.location = $(this).data('redirectUri') + "#remote_storage_uri=" + apiRoot;
+            window.location = $(this).data('redirectUri') + "#remote_storage_uri=" + apiRoot + "&remote_storage_uid=" + userId ;
         });
     }
 
@@ -186,9 +190,9 @@ $(document).ready(function () {
 
     function initPage() {
         $("#editModal").hide();
+        getResourceOwner();
         renderClientList();
         renderApprovalList();
-        getResourceOwner();
     }
     initPage();
 });
