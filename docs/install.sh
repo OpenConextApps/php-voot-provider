@@ -120,3 +120,12 @@ if [ ! -f ext/js/bootstrap-modal.js ]
 then
     wget -O ext/js/bootstrap-modal.js http://twitter.github.com/bootstrap/assets/js/bootstrap-modal.js
 fi
+
+# Apache Configuration File
+echo "************************"
+echo "* Apache Configuration *"
+echo "************************"
+echo "---- cut ----"
+cat docs/apache.conf | sed "s|/PATH/TO/APP|${INSTALL_DIR}|g"
+echo "---- cut ----"
+
