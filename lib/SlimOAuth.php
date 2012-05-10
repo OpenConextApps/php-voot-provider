@@ -183,7 +183,7 @@ class SlimOAuth {
         $response['Content-Type'] = 'application/json';
         $response->body(json_encode($data));
 
-        $this->_app->getLog()->info("oauth client '" . $clientId . "' updated by '" . $result->resource_owner_id . "'");
+        $this->_app->getLog()->info("oauth client '" . $clientId . "' updated to '" . $this->_app->request()->getBody() . "' by '" . $result->resource_owner_id . "'");
     }
 
     public function addClient() {
@@ -202,7 +202,7 @@ class SlimOAuth {
         $response['Content-Type'] = 'application/json';
         $response->body(json_encode($data));
 
-        $this->_app->getLog()->info("oauth client '" . $data['client_id'] . "' added by '" . $result->resource_owner_id . "'");
+        $this->_app->getLog()->info("oauth client '" . $data['client_id'] . "' added '" . $this->_app->request()->getBody() . "' by '" . $result->resource_owner_id . "'");
     }
 
     public function getClients() {
