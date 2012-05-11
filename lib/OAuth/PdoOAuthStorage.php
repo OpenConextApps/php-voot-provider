@@ -148,13 +148,16 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->fetch(PDO::FETCH_OBJ);        
     }
 
-    public function generateAuthorizeNonce($clientId, $resourceOwnerId, $scope) {
+    public function generateAuthorizeNonce($clientId, $resourceOwnerId, $responseType, $redirectUri, $scope, $state) {
         $authorizeNonce = $this->_randomHex(16);
-        $stmt = $this->_pdo->prepare("INSERT INTO AuthorizeNonce (client_id, resource_owner_id, scope, authorize_nonce) VALUES(:client_id, :resource_owner_id, :scope, :authorize_nonce)");
-        $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
+        $stmt = $this->_pdo->prepare("INSERT INTO AuthorizeNonce (authorize_nonce, resource_owner_id, client_id, response_type, redirect_uri, scope, state) VALUES(:authorize_nonce, :resource_owner_id, :client_id, :response_type, :redirect_uri, :scope, :state)");
+        $stmt->bindValue(":authorize_nonce", $authorizeNonce, PDO::PARAM_STR);        
         $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
+        $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
+        $stmt->bindValue(":response_type", $responseType, PDO::PARAM_STR);
+        $stmt->bindValue(":redirect_uri", $redirectUri, PDO::PARAM_STR);
         $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
-        $stmt->bindValue(":authorize_nonce", $authorizeNonce, PDO::PARAM_STR);
+        $stmt->bindValue(":state", $state, PDO::PARAM_STR);
         return ($stmt->execute()) ? $authorizeNonce : FALSE;
     }
 

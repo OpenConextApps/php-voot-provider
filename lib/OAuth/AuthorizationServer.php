@@ -16,7 +16,8 @@ interface IOAuthStorage {
 
     public function generateAccessToken   ($clientId, $resourceOwnerId, $resourceOwnerDisplayName, $scope, $expiry);
     public function getAccessToken        ($accessToken);
-    public function generateAuthorizeNonce($clientId, $resourceOwnerId, $scope);
+    public function generateAuthorizeNonce($clientId, $resourceOwnerId, $responseType, $redirectUri, $scope, $state);
+
     public function getAuthorizeNonce     ($clientId, $resourceOwnerId, $scope, $authorizeNonce);
 
     public function getClient             ($clientId);
@@ -161,7 +162,7 @@ class AuthorizationServer {
 
         if(FALSE === $approvedScope || FALSE === self::isSubsetScope($requestedScope, $approvedScope->scope)) {
             // need to ask user, scope not yet approved
-            $authorizeNonce = $this->_storage->generateAuthorizeNonce($clientId, $resourceOwner->getResourceOwnerId(), $requestedScope);
+            $authorizeNonce = $this->_storage->generateAuthorizeNonce($clientId, $resourceOwner->getResourceOwnerId(), $responseType, $redirectUri, $scope, $state);
             return array ("action" => "ask_approval", "authorize_nonce" => $authorizeNonce);
         } else {
             // approval already exists for this scope
