@@ -6,10 +6,9 @@ This project is a stand-alone VOOT group provider. The
 # Features
 * PDO storage backend for VOOT data and OAuth tokens
 * LDAP backend for VOOT
-* OAuth 2 support (implicit grant only for now)
+* Only OAuth 2 support
 * SAML authentication support ([simpleSAMLphp](http://www.simplesamlphp.org)) 
 * BrowserID support (almost)
-
 
 # Requirements
 The installation requirements on Fedora/CentOS can be installed like this:
@@ -47,19 +46,11 @@ This is only for Red Hat based Linux distributions like RHEL, CentOS and
 Fedora.
 
 # Apache
-Also make sure Apache can read and process the `.htaccess` file by giving it
-the appropriate permissions on the (in this case) `/var/www/html/phpvoot` 
-directory:
-
-    AllowOverride FileInfo
-
-On Ubuntu (Debian) you can modify `/etc/apache2/sites-enabled/000-default` in
-the `<Directory /var/www/>` section. Don't forget to enable the Apache Rewrite
-module
-    
-    $ sudo a2enmod rewrite
-
-Don't forget to restart Apache.
+There is an example configuration file in `docs/apache.conf`. On Red Hat based
+distributions the file can be placed in `/etc/httpd/conf.d/phpvoot.conf`. Be
+sure to modify it to suit your environment and do not forget to restart Apache. 
+The install script from the previous section outputs a config for your system
+by replacing the `/PATH/TO/APP` with the actual directory.
 
 # Configuration
 In the configuration file `config/voot.ini` and `config/oauth.ini` various 
@@ -72,8 +63,11 @@ make sure the following settings are correct:
     [SspResourceOwner]
     sspPath = "/var/simplesamlphp/lib"
     authSource = "default-sp"
+
     resourceOwnerIdAttributeName = "uid"
+    resourceOwnerDisplayNameAttributeName = "cn"
     ;resourceOwnerIdAttributeName = "urn:mace:dir:attribute-def:uid"
+    ;resourceOwnerDisplayNameAttributeName = "urn:mace:dir:attribute-def:displayName"
 
 ## LDAP 
 It is possible to use an LDAP server as backend to retrieve group membership.
