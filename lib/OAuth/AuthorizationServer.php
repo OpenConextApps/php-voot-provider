@@ -6,13 +6,13 @@ interface IResourceOwner {
 }
 
 interface IOAuthStorage {
-    public function storeAccessToken      ($accessToken, $clientId, $resourceOwnerId, $resourceOwnerDisplayName, $scope, $expiry);
+    public function storeAccessToken      ($accessToken, $issueTime, $clientId, $resourceOwnerId, $resourceOwnerDisplayName, $scope, $expiry);
     public function getAccessToken        ($accessToken);
 
     public function storeAuthorizeNonce   ($authorizeNonce, $clientId, $resourceOwnerId, $responseType, $redirectUri, $scope, $state);
     public function getAuthorizeNonce     ($clientId, $resourceOwnerId, $scope, $authorizeNonce);
 
-    public function storeAuthorizationCode($authorizationCode, $clientId, $redirectUri, $accessToken);
+    public function storeAuthorizationCode($authorizationCode, $issueTime, $clientId, $redirectUri, $accessToken);
     public function getAuthorizationCode  ($authorizationCode, $redirectUri);
     public function deleteAuthorizationCode($authorizationCode, $redirectUri);
 
@@ -188,7 +188,7 @@ class AuthorizationServer {
         } else {
             // approval already exists for this scope
             $accessToken = self::randomHex(16);
-            $this->_storage->storeAccessToken($accessToken, $clientId, $resourceOwner->getResourceOwnerId(), $resourceOwner->getResourceOwnerDisplayName(), $requestedScope, $this->_c->getValue('accessTokenExpiry'));
+            $this->_storage->storeAccessToken($accessToken, time(), $clientId, $resourceOwner->getResourceOwnerId(), $resourceOwner->getResourceOwnerDisplayName(), $requestedScope, $this->_c->getValue('accessTokenExpiry'));
 
             if("token" === $responseType) {
                 // implicit grant
@@ -205,7 +205,7 @@ class AuthorizationServer {
 
                 // we already generated an access_token, and we register this together with the authorization code
                 $authorizationCode = self::randomHex(16);
-                $this->_storage->storeAuthorizationCode($authorizationCode, $clientId, $redirectUri, $accessToken);
+                $this->_storage->storeAuthorizationCode($authorizationCode, time(), $clientId, $redirectUri, $accessToken);
                 $token = array("code" => $authorizationCode);
                 if(NULL !== $state) {
                     $token += array ("state" => $state);
@@ -296,7 +296,7 @@ class AuthorizationServer {
         }
         $result = $this->_storage->getAuthorizationCode($code, $redirectUri);
         if(FALSE === $result) {
-            throw new TokenException("invalid_grant: the authorization code was not found with this redirectUri");
+            throw new TokenException("invalid_grant: the authorization code was not found");
         }
         if(time() > $result->issue_time + 600) {
             throw new TokenException("invalid_grant: the authorization code expired");
