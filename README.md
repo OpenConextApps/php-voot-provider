@@ -36,10 +36,12 @@ On Ubuntu (Debian) you would typically install in `/var/www/phpvoot`.
 The install script already takes care of setting the file permissions of the
 `data/` directory to allow Apache to write to the directory. However, if you
 want to use the LDAP backend to retrieve group information Apache also needs
-the permission to access LDAP servers. This permission can be given by using
-`setsebool` as root:
+the permission to access LDAP servers. If you want to use the BrowserID 
+authentication plugin you also need to give Apache permission to access the 
+network. These permissions can be given by using `setsebool` as root:
 
     $ sudo setsebool -P httpd_can_connect_ldap=on
+    $ sudo setsebool -P httpd_can_network_connect=on
 
 This is only for Red Hat based Linux distributions like RHEL, CentOS and 
 Fedora.

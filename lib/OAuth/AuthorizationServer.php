@@ -14,6 +14,7 @@ interface IOAuthStorage {
 
     public function storeAuthorizationCode($authorizationCode, $clientId, $redirectUri, $accessToken);
     public function getAuthorizationCode  ($authorizationCode, $redirectUri);
+    public function deleteAuthorizationCode($authorizationCode, $redirectUri);
 
     public function getClients            ();
     public function getClient             ($clientId);
@@ -122,6 +123,9 @@ class AuthorizationServer {
                     throw new OAuthException('unable to dynamically register client');
                 }
                 $client = $this->_storage->getClientByRedirectUri($redirectUri);
+                if(FALSE === $client) {
+                    throw new OAuthException('unable to get client by redirect_uri');
+                }
             }
         }
 
@@ -176,7 +180,6 @@ class AuthorizationServer {
         }
    
         $approvedScope = $this->_storage->getApproval($clientId, $resourceOwner->getResourceOwnerId(), $requestedScope);
-
         if(FALSE === $approvedScope || FALSE === self::isSubsetScope($requestedScope, $approvedScope->scope)) {
             // need to ask user, scope not yet approved
             $authorizeNonce = self::randomHex(16);
@@ -293,9 +296,16 @@ class AuthorizationServer {
         }
         $result = $this->_storage->getAuthorizationCode($code, $redirectUri);
         if(FALSE === $result) {
-            throw new TokenException("invalid_request: some as of yet undetermined error occurred");
+            throw new TokenException("invalid_grant: the authorization code was not found with this redirectUri");
         }
-        return $result;
+        if(time() > $result->issue_time + 600) {
+            throw new TokenException("invalid_grant: the authorization code expired");
+        }
+        // we need to be able to delete, otherwise someone else was first!
+        if(FALSE === $this->_storage->deleteAuthorizationCode($code, $redirectUri)) {
+            throw new TokenException("invalid_grant: this grant was already used");
+        }
+        return $this->_storage->getAccessToken($result->access_token);
     }
 
     public function verify($authorizationHeader) {
