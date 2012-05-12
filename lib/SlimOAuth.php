@@ -205,16 +205,32 @@ class SlimOAuth {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
-        $data = $this->_oauthStorage->addClient(json_decode($this->_app->request()->getBody(), TRUE));
+        $requestData = json_decode($this->_app->request()->getBody(), TRUE);
+
+        // if id is set, use it for the registration, if not generate one
+        if(!array_key_exists('id', $requestData) || empty($requestData['id'])) {
+            $requestData['id'] = AuthorizationServer::randomHex(16);
+        }
+
+        // if profile is web application and secret is set, use it, if web application
+        // and secret is not set generate one
+        if(!array_key_exists('secret', $requestData) || empty($requestData['secret'])) {
+            if("web_application" === $requestData['type']) {
+                $requestData['secret'] = AuthorizationServer::randomHex(16);
+            } else {
+                $requestData['secret'] = NULL;
+            }
+        }
+
+        $data = $this->_oauthStorage->addClient($requestData);
         if(FALSE === $data) {
             // FIXME: better error handling
             $this->_app->halt(500);
         }
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode($data));
-
-        $this->_app->getLog()->info("oauth client '" . $data['client_id'] . "' added '" . $this->_app->request()->getBody() . "' by '" . $result->resource_owner_id . "'");
+        $response->body(json_encode($requestData));
+        $this->_app->getLog()->info("oauth client added '" . json_encode($requestData) . "' by '" . $result->resource_owner_id . "'");
     }
 
     public function getClients() {

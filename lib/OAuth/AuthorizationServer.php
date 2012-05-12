@@ -60,6 +60,14 @@ class TokenException extends Exception {
 
 }
 
+/**
+ * When something went wrong with storing or retrieving 
+ * something storage
+ */
+class StorageException extends Exception {
+
+}
+
 class AuthorizationServer {
 
     private $_storage;
@@ -363,6 +371,17 @@ class AuthorizationServer {
         $v = self::normalizeScope($t, TRUE);
         return self::normalizeScope(array_merge($u, $v));
     }
+
+   public static function randomHex($len = 16) {
+        $randomString = bin2hex(openssl_random_pseudo_bytes($len, $strong));
+        // @codeCoverageIgnoreStart
+        if (FALSE === $strong) {
+            throw new Exception("unable to securely generate random string");
+        }
+        // @codeCoverageIgnoreEnd
+        return $randomString;
+    }
+
 }
 
 ?>
