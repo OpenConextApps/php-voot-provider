@@ -315,6 +315,15 @@ class SlimOAuth {
                 // we cannot establish the identity of the client, tell user
                 $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "The identity of the application that tried to access this resource could not be established. Therefore we stopped processing this request. The message below may be of interest to the application developer."));
                 break;
+            case "TokenException":
+                // we need to inform the client interacting with the token endpoint
+                list($error, $description) = explode(":", $e->getMessage());
+                $code = 400;
+                $response = $this->_app->response();
+                $response->status($code);
+                $response['Content-Type'] = 'application/json';
+                $response->body(json_encode(array("error" => $error, "error_description" => $description)));
+                break;
             case "ErrorException":
             default:
                 $this->_app->getLog()->error($e->getMessage());

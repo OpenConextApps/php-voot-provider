@@ -36,15 +36,27 @@ interface IOAuthStorage {
 
 }
 
+/**
+ * Exception thrown when the user instead of the client needs to be informed
+ * of an error, i.e.: when the client identity cannot be confirmed or is not
+ * valid
+ */
 class OAuthException extends Exception {
 
 }
 
+/**
+ * Exception thrown when the verification of the access token fails
+ */
 class VerifyException extends Exception {
 
 }
 
-class AdminException extends Exception {
+/**
+ * When interaction with the token endpoint fails
+ * https://tools.ietf.org/html/draft-ietf-oauth-v2-26#section-5.2
+ */
+class TokenException extends Exception {
 
 }
 
@@ -265,7 +277,20 @@ class AuthorizationServer {
         $code        = self::getParameter($post, 'code');
         $redirectUri = self::getParameter($post, 'redirect_uri');
 
-       return $this->_storage->getAuthorizationCode($code, $redirectUri);
+        if(NULL === $grantType) {
+            throw new TokenException("invalid_request: the grant_type parameter is missing");
+        }
+        if("code" !== $grantType) {
+            throw new TokenException("unsupported_grant_type: the requested grant type is not supported");
+        }
+        if(NULL === $code) {
+            throw new TokenException("invalid_request: the code parameter is missing");
+        }
+        $result = $this->_storage->getAuthorizationCode($code, $redirectUri);
+        if(FALSE === $result) {
+            throw new TokenException("invalid_request: some as of yet undetermined error occurred");
+        }
+        return $result;
     }
 
     public function verify($authorizationHeader) {
