@@ -10,27 +10,29 @@ interface IOAuthStorage {
     // FIXME: the next three should probably be renamed to
     //        addApproval, updateApproval, getApproval
     //        to make them more in line with the getApprovals, deleteApproval
-    public function storeApprovedScope    ($clientId, $resourceOwnerId, $scope);
-    public function updateApprovedScope   ($clientId, $resourceOwnerId, $scope);
-    public function getApprovedScope      ($clientId, $resourceOwnerId);
+    public function storeApprovedScope       ($clientId, $resourceOwnerId, $scope);
+    public function updateApprovedScope      ($clientId, $resourceOwnerId, $scope);
+    public function getApprovedScope         ($clientId, $resourceOwnerId);
 
-    public function generateAccessToken   ($clientId, $resourceOwnerId, $resourceOwnerDisplayName, $scope, $expiry);
-    public function getAccessToken        ($accessToken);
-    public function generateAuthorizeNonce($clientId, $resourceOwnerId, $responseType, $redirectUri, $scope, $state);
+    public function generateAccessToken      ($clientId, $resourceOwnerId, $resourceOwnerDisplayName, $scope, $expiry);
+    public function getAccessToken           ($accessToken);
+    public function generateAuthorizeNonce   ($clientId, $resourceOwnerId, $responseType, $redirectUri, $scope, $state);
+    public function generateAuthorizationCode($clientId, $redirectUri, $accessToken);
 
-    public function getAuthorizeNonce     ($clientId, $resourceOwnerId, $scope, $authorizeNonce);
+    public function getAuthorizeNonce        ($clientId, $resourceOwnerId, $scope, $authorizeNonce);
+    public function getAuthorizationCode     ($authorizationCode, $redirectUri);
 
-    public function getClient             ($clientId);
-    public function getClientByRedirectUri($redirectUri);
+    public function getClient                ($clientId);
+    public function getClientByRedirectUri   ($redirectUri);
 
     // management interface
-    public function getClients            ();
-    public function addClient             ($data);
-    public function updateClient          ($clientId, $data);
-    public function deleteClient          ($clientId);
+    public function getClients               ();
+    public function addClient                ($data);
+    public function updateClient             ($clientId, $data);
+    public function deleteClient             ($clientId);
 
-    public function getApprovals          ($resourceOwnerId);
-    public function deleteApproval        ($clientId, $resourceOwnerId);
+    public function getApprovals             ($resourceOwnerId);
+    public function deleteApproval           ($clientId, $resourceOwnerId);
 
 }
 
@@ -116,11 +118,12 @@ class AuthorizationServer {
         }
 
         if(NULL !== $responseType) {
-            if("token" !== $responseType) {
+            if("token" !== $responseType && "code" !== $responseType) {
                 $error = array ( "error" => "unsupported_response_type", "error_description" => "response_type not supported");
                 if(NULL !== $state) {
                     $error += array ( "state" => $state);
                 }
+                // FIXME: how to know how to return the error? either token or code type?
                 return array("action" => "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
             }
         }
@@ -167,14 +170,28 @@ class AuthorizationServer {
         } else {
             // approval already exists for this scope
             $accessToken = $this->_storage->generateAccessToken($clientId, $resourceOwner->getResourceOwnerId(), $resourceOwner->getResourceOwnerDisplayName(), $requestedScope, $this->_c->getValue('accessTokenExpiry'));
-            $token = array("access_token" => $accessToken, 
-                           "expires_in" => $this->_c->getValue('accessTokenExpiry'), 
-                           "token_type" => "bearer", 
-                           "scope" => $requestedScope);
-            if(NULL !== $state) {
-                $token += array ("state" => $state);
+
+            if("token" === $responseType) {
+                // implicit grant
+                $token = array("access_token" => $accessToken, 
+                               "expires_in" => $this->_c->getValue('accessTokenExpiry'), 
+                               "token_type" => "bearer", 
+                               "scope" => $requestedScope);
+                if(NULL !== $state) {
+                    $token += array ("state" => $state);
+                }
+                return array("action" => "redirect", "url" => $client->redirect_uri . "#" . http_build_query($token));
+            } else {
+                // authorization code grant
+
+                // we already generated an access_token, and we register this together with the authorization code
+                $authorizationCode = $this->_storage->generateAuthorizationCode($clientId, $redirectUri, $accessToken);
+                $token = array("code" => $authorizationCode);
+                if(NULL !== $state) {
+                    $token += array ("state" => $state);
+                }
+                return array("action" => "redirect", "url" => $client->redirect_uri . "?" . http_build_query($token));
             }
-            return array("action" => "redirect", "url" => $client->redirect_uri . "#" . http_build_query($token));
         }
     }
 
@@ -240,6 +257,15 @@ class AuthorizationServer {
             }
             return array("action" => "redirect_error", "url" => $client->redirect_uri . "#" . http_build_query($error));
         }
+    }
+
+    public function token(array $post) {
+        // exchange authorization code for access token
+        $grantType   = self::getParameter($post, 'grant_type');
+        $code        = self::getParameter($post, 'code');
+        $redirectUri = self::getParameter($post, 'redirect_uri');
+
+       return $this->_storage->getAuthorizationCode($code, $redirectUri);
     }
 
     public function verify($authorizationHeader) {

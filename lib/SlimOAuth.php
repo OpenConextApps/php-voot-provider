@@ -33,6 +33,10 @@ class SlimOAuth {
             $self->approve();
         });
 
+        $this->_app->post('/oauth/token', function () use ($self) {
+            $self->token();
+        });
+
         // management
         $this->_app->get('/oauth/approval', function () use ($self) {
             $self->getApprovals();
@@ -116,6 +120,14 @@ class SlimOAuth {
         $this->_authenticate();
         $result = $this->_as->approve($this->_resourceOwner, $this->_app->request()->get(), $this->_app->request()->post());
         $this->_app->redirect($result['url']);
+    }
+
+    public function token() {
+        // FIXME: still need to do client authentication for confidential clients
+        $result = $this->_as->token(json_decode($this->_app->request()->getBody(), TRUE));
+        $response = $this->_app->response();
+        $response['Content-Type'] = 'application/json';
+        $response->body(json_encode($result));
     }
 
     // REST API

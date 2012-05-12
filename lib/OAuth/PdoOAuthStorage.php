@@ -138,6 +138,53 @@ class PdoOAuthStorage implements IOAuthStorage {
         return ($stmt->execute()) ? $accessToken : FALSE;
     }
 
+    public function generateAuthorizationCode($clientId, $redirectUri, $accessToken) {
+        $authorizationCode = $this->_randomHex(16);
+        $stmt = $this->_pdo->prepare("INSERT INTO AuthorizationCode (client_id, authorization_code, redirect_uri, issue_time, access_token) VALUES(:client_id, :authorization_code, :redirect_uri, :issue_time, :access_token)");
+        $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
+        $stmt->bindValue(":authorization_code", $authorizationCode, PDO::PARAM_STR);
+        $stmt->bindValue(":redirect_uri", $redirectUri, PDO::PARAM_STR);
+        $stmt->bindValue(":access_token", $accessToken, PDO::PARAM_STR);
+        $stmt->bindValue(":issue_time", time(), PDO::PARAM_INT);
+        return ($stmt->execute()) ? $authorizationCode : FALSE;
+    }
+
+    public function getAuthorizationCode($authorizationCode, $redirectUri) {
+        //error_log(var_export($authorizationCode, TRUE));
+        //error_log(var_export($redirectUri, TRUE));
+        $stmt = $this->_pdo->prepare("SELECT * FROM AuthorizationCode WHERE authorization_code IS :authorization_code AND redirect_uri IS :redirect_uri");
+        $stmt->bindValue(":authorization_code", $authorizationCode, PDO::PARAM_STR);
+        $stmt->bindValue(":redirect_uri", $redirectUri, PDO::PARAM_STR | PDO::PARAM_NULL);
+        $result = $stmt->execute();
+        if (FALSE === $result) {
+            //error_log("SELECT result === FALSE");
+            return FALSE;
+        }
+        $data = $stmt->fetch(PDO::FETCH_OBJ);
+        if(FALSE === $data) {
+            //error_log("SELECT no data");
+            return FALSE;
+        }
+        $accessToken = $data->access_token;
+
+        // authorization code expired
+        if(time() > $data->issue_time + 600) {
+            //error_log("authorization_code expired");
+            return FALSE;
+        }
+
+        // delete authorization code
+        $stmt = $this->_pdo->prepare("DELETE FROM AuthorizationCode WHERE authorization_code IS :authorization_code AND redirect_uri IS :redirect_uri");
+        $stmt->bindValue(":authorization_code", $authorizationCode, PDO::PARAM_STR);
+        $stmt->bindValue(":redirect_uri", $redirectUri, PDO::PARAM_STR | PDO::PARAM_NULL);
+        $result = $stmt->execute();
+        if (FALSE === $result) {
+            //error_log("DELETE result === FALSE");
+            return FALSE;
+        }
+        return (1 === $stmt->rowCount()) ? $this->getAccessToken($accessToken) : FALSE; 
+    }
+
     public function getAccessToken($accessToken) {
         $stmt = $this->_pdo->prepare("SELECT * FROM AccessToken WHERE access_token = :access_token");
         $stmt->bindValue(":access_token", $accessToken, PDO::PARAM_STR);
