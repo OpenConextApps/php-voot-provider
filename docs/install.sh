@@ -121,6 +121,18 @@ then
     wget -O ext/js/bootstrap-modal.js http://twitter.github.com/bootstrap/assets/js/bootstrap-modal.js
 fi
 
+# Bootstrap Tooltip
+if [ ! -f ext/js/bootstrap-tooltip.js ]
+then
+    wget -O ext/js/bootstrap-tooltip.js http://twitter.github.com/bootstrap/assets/js/bootstrap-tooltip.js
+fi
+
+# Bootstrap Popover
+if [ ! -f ext/js/bootstrap-popover.js ]
+then
+	wget -O ext/js/bootstrap-popover.js http://twitter.github.com/bootstrap/assets/js/bootstrap-popover.js
+fi
+
 # Apache Configuration File
 echo "************************"
 echo "* Apache Configuration *"

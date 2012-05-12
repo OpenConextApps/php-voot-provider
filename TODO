@@ -20,6 +20,7 @@
     webinterface to make it impossible to lock yourself out.
   - implement a approval/token revoke dialog in the manage interface (next to 
     client administration, for normal users)
-  - for confidential clients a secret is needed, for public clients not: hide
-    it in the interface when switching the select box for client type to public
+  - for "web application" clients a secret is needed, for other clients not: 
+    hide it in the interface when switching the select box for client profile to 
+    something selse
 

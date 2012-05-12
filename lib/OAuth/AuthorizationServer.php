@@ -103,7 +103,7 @@ class AuthorizationServer {
                 $newClient = array ( 'name' => $uriParts['host'],
                                      'description' => "UNREGISTERED (" . $uriParts['host'] . ")",
                                      'redirect_uri' => $redirectUri,
-                                     'type' => 'public');
+                                     'type' => 'user_agent_based_application');
                 if(FALSE === $this->_storage->addClient($newClient)) {
                     throw new OAuthException('unable to dynamically register client');
                 }

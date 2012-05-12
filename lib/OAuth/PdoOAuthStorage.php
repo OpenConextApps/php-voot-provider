@@ -64,9 +64,9 @@ class PdoOAuthStorage implements IOAuthStorage {
             $clientId = $this->_randomHex(16);
         }
 
-        // if confidential client and secret is set, use it, if confidential
+        // if profile is web application and secret is set, use it, if web application
         // and secret is not set generate one
-        if(array_key_exists('type', $data) && $data['type'] === "confidential") {
+        if(array_key_exists('type', $data) && $data['type'] === "web_application") {
             if(array_key_exists('secret', $data) && !empty($data['secret'])) {
                 $secret = $data['secret'];
             } else {

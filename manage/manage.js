@@ -130,6 +130,7 @@ $(document).ready(function () {
     }
 
     function addEditClientHandlers() {
+        $(".icon-info-sign").popover();
         $("#editModal a.editClose").click(function () {
             $("#editModal").modal('hide');
         });

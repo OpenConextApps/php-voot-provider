@@ -47,7 +47,7 @@ CREATE TABLE `AuthorizationCode` (
   FOREIGN KEY (`access_token`) REFERENCES `AccessToken` (`access_token`)
 );
 
-INSERT INTO `Client` VALUES ('manage', 'Management Client', 'Web application to manage OAuth client registrations.', NULL, 'http://localhost/phpvoot/manage/index.html', 'public');
-INSERT INTO `Client` VALUES ('voot','VOOT Demo Client', 'Simple web application to demonstrate the VOOT API.', NULL,'http://localhost/phpvoot/client/index.html','public');
-INSERT INTO `Client` VALUES ('webapp', 'Web Application Test', 'This client registration is for testing the authorization code grant', NULL, 'http://localhost/webapp/cb', 'public');
-
+INSERT INTO `Client` VALUES ('manage', 'Management Client', 'Web application to manage OAuth client registrations.', NULL, 'http://localhost/phpvoot/manage/index.html', 'user_agent_based_application');
+INSERT INTO `Client` VALUES ('voot','VOOT Demo Client', 'Simple web application to demonstrate the VOOT API.', NULL,'http://localhost/phpvoot/client/index.html','user_agent_based_application');
+INSERT INTO `Client` VALUES ('webapp', 'Web Application Test', 'This client registration is for testing the authorization code grant', 'secret', 'http://localhost/webapp/cb', 'web_application');
+INSERT INTO `Client` VALUES('mujina','Mujina Test Client','A simple test client available at https://mujina-sp.dev.surfconext.nl/social/social-queries.shtml','mujina','https://mujina-sp.dev.surfconext.nl/social/oauth-callback.shtml','web_application');

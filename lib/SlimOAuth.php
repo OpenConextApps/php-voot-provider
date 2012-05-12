@@ -123,7 +123,7 @@ class SlimOAuth {
     }
 
     public function token() {
-        // FIXME: still need to do client authentication for confidential clients
+        // FIXME: still need to do client authentication for "web application" clients
         $result = $this->_as->token($this->_app->request()->post());
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
