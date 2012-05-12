@@ -6,33 +6,27 @@ interface IResourceOwner {
 }
 
 interface IOAuthStorage {
+    public function storeAccessToken      ($accessToken, $clientId, $resourceOwnerId, $resourceOwnerDisplayName, $scope, $expiry);
+    public function getAccessToken        ($accessToken);
 
-    // FIXME: the next three should probably be renamed to
-    //        addApproval, updateApproval, getApproval
-    //        to make them more in line with the getApprovals, deleteApproval
-    public function storeApprovedScope       ($clientId, $resourceOwnerId, $scope);
-    public function updateApprovedScope      ($clientId, $resourceOwnerId, $scope);
-    public function getApprovedScope         ($clientId, $resourceOwnerId);
+    public function storeAuthorizeNonce   ($authorizeNonce, $clientId, $resourceOwnerId, $responseType, $redirectUri, $scope, $state);
+    public function getAuthorizeNonce     ($clientId, $resourceOwnerId, $scope, $authorizeNonce);
 
-    public function generateAccessToken      ($clientId, $resourceOwnerId, $resourceOwnerDisplayName, $scope, $expiry);
-    public function getAccessToken           ($accessToken);
-    public function generateAuthorizeNonce   ($clientId, $resourceOwnerId, $responseType, $redirectUri, $scope, $state);
-    public function generateAuthorizationCode($clientId, $redirectUri, $accessToken);
+    public function storeAuthorizationCode($authorizationCode, $clientId, $redirectUri, $accessToken);
+    public function getAuthorizationCode  ($authorizationCode, $redirectUri);
 
-    public function getAuthorizeNonce        ($clientId, $resourceOwnerId, $scope, $authorizeNonce);
-    public function getAuthorizationCode     ($authorizationCode, $redirectUri);
+    public function getClients            ();
+    public function getClient             ($clientId);
+    public function getClientByRedirectUri($redirectUri);
+    public function addClient             ($data);
+    public function updateClient          ($clientId, $data);
+    public function deleteClient          ($clientId);
 
-    public function getClient                ($clientId);
-    public function getClientByRedirectUri   ($redirectUri);
-
-    // management interface
-    public function getClients               ();
-    public function addClient                ($data);
-    public function updateClient             ($clientId, $data);
-    public function deleteClient             ($clientId);
-
-    public function getApprovals             ($resourceOwnerId);
-    public function deleteApproval           ($clientId, $resourceOwnerId);
+    public function getApprovals          ($resourceOwnerId);
+    public function getApproval           ($clientId, $resourceOwnerId);
+    public function addApproval           ($clientId, $resourceOwnerId, $scope);
+    public function updateApproval        ($clientId, $resourceOwnerId, $scope);
+    public function deleteApproval        ($clientId, $resourceOwnerId);
 
 }
 
@@ -181,15 +175,17 @@ class AuthorizationServer {
             }
         }
    
-        $approvedScope = $this->_storage->getApprovedScope($clientId, $resourceOwner->getResourceOwnerId(), $requestedScope);
+        $approvedScope = $this->_storage->getApproval($clientId, $resourceOwner->getResourceOwnerId(), $requestedScope);
 
         if(FALSE === $approvedScope || FALSE === self::isSubsetScope($requestedScope, $approvedScope->scope)) {
             // need to ask user, scope not yet approved
-            $authorizeNonce = $this->_storage->generateAuthorizeNonce($clientId, $resourceOwner->getResourceOwnerId(), $responseType, $redirectUri, $scope, $state);
+            $authorizeNonce = self::randomHex(16);
+            $this->_storage->storeAuthorizeNonce($authorizeNonce, $clientId, $resourceOwner->getResourceOwnerId(), $responseType, $redirectUri, $scope, $state);
             return array ("action" => "ask_approval", "authorize_nonce" => $authorizeNonce);
         } else {
             // approval already exists for this scope
-            $accessToken = $this->_storage->generateAccessToken($clientId, $resourceOwner->getResourceOwnerId(), $resourceOwner->getResourceOwnerDisplayName(), $requestedScope, $this->_c->getValue('accessTokenExpiry'));
+            $accessToken = self::randomHex(16);
+            $this->_storage->storeAccessToken($accessToken, $clientId, $resourceOwner->getResourceOwnerId(), $resourceOwner->getResourceOwnerDisplayName(), $requestedScope, $this->_c->getValue('accessTokenExpiry'));
 
             if("token" === $responseType) {
                 // implicit grant
@@ -205,7 +201,8 @@ class AuthorizationServer {
                 // authorization code grant
 
                 // we already generated an access_token, and we register this together with the authorization code
-                $authorizationCode = $this->_storage->generateAuthorizationCode($clientId, $redirectUri, $accessToken);
+                $authorizationCode = self::randomHex(16);
+                $this->_storage->storeAuthorizationCode($authorizationCode, $clientId, $redirectUri, $accessToken);
                 $token = array("code" => $authorizationCode);
                 if(NULL !== $state) {
                     $token += array ("state" => $state);
@@ -256,14 +253,14 @@ class AuthorizationServer {
                 return array("action" => "redirect_error", "url" => $client->redirect_uri . "#" . http_build_query($error));
             }
 
-            $approvedScope = $this->_storage->getApprovedScope($clientId, $resourceOwner->getResourceOwnerId());
+            $approvedScope = $this->_storage->getApproval($clientId, $resourceOwner->getResourceOwnerId());
             if(FALSE === $approvedScope) {
                 // no approved scope stored yet, new entry
-                $this->_storage->storeApprovedScope($clientId, $resourceOwner->getResourceOwnerId(), $postScope);
+                $this->_storage->addApproval($clientId, $resourceOwner->getResourceOwnerId(), $postScope);
             } else if(!self::isSubsetScope($postScope, $approvedScope->scope)) {
                 // not a subset, merge and store the new one
                 $mergedScopes = self::mergeScopes($postScope, $approvedScope->scope);
-                $this->_storage->updateApprovedScope($clientId, $resourceOwner->getResourceOwnerId(), $mergedScopes);
+                $this->_storage->updateApproval($clientId, $resourceOwner->getResourceOwnerId(), $mergedScopes);
             } else {
                 // subset, approval for superset of scope already exists, do nothing
             }

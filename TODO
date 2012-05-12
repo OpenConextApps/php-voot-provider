@@ -7,9 +7,6 @@
   - look into htaccess Authorization header rewrite to make it work better!
 
 - REFACTORING
-  - try to move all scope fiddling to the storage layer to have only 
-    one format (strings) in the application (if at all possible...)
-  - rename approval storing methods in de storage layer
 
 - MANAGEMENT WEB INTERFACE
   - rename management client (manage/index.html) to admin (admin/index.html)

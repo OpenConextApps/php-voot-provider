@@ -46,8 +46,7 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->fetch(PDO::FETCH_OBJ);
     }
 
-    // CHECK AGAIN
-    // returns TRUE on success, FALSE on failure or exception
+    // OK
     public function updateClient($clientId, $data) {
         $stmt = $this->_pdo->prepare("UPDATE Client SET name = :name, description = :description, secret = :secret, redirect_uri = :redirect_uri, type = :type WHERE id = :client_id");
         $stmt->bindValue(":name", $data['name'], PDO::PARAM_STR);
@@ -113,7 +112,7 @@ class PdoOAuthStorage implements IOAuthStorage {
     }
 
     // OK
-    public function storeApprovedScope($clientId, $resourceOwnerId, $scope) {
+    public function addApproval($clientId, $resourceOwnerId, $scope) {
         $stmt = $this->_pdo->prepare("INSERT INTO Approval (client_id, resource_owner_id, scope) VALUES(:client_id, :resource_owner_id, :scope)");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
@@ -125,7 +124,7 @@ class PdoOAuthStorage implements IOAuthStorage {
     }
 
     // OK
-    public function updateApprovedScope($clientId, $resourceOwnerId, $scope) {
+    public function updateApproval($clientId, $resourceOwnerId, $scope) {
         $stmt = $this->_pdo->prepare("UPDATE Approval SET scope = :scope WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
@@ -137,7 +136,7 @@ class PdoOAuthStorage implements IOAuthStorage {
     }
 
     // OK
-    public function getApprovedScope($clientId, $resourceOwnerId) {
+    public function getApproval($clientId, $resourceOwnerId) {
         $stmt = $this->_pdo->prepare("SELECT * FROM Approval WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
@@ -148,9 +147,8 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->fetch(PDO::FETCH_OBJ);
     }
 
-    // LITTLE FAIL
-    public function generateAccessToken($clientId, $resourceOwnerId, $resourceOwnerDisplayName, $scope, $expiry) {
-        $accessToken = AuthorizationServer::randomHex(16);
+    // OK
+    public function storeAccessToken($accessToken, $clientId, $resourceOwnerId, $resourceOwnerDisplayName, $scope, $expiry) {
         $stmt = $this->_pdo->prepare("INSERT INTO AccessToken (client_id, resource_owner_id, resource_owner_display_name, issue_time, expires_in, scope, access_token) VALUES(:client_id, :resource_owner_id, :resource_owner_display_name, :issue_time, :expires_in, :scope, :access_token)");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
@@ -159,19 +157,24 @@ class PdoOAuthStorage implements IOAuthStorage {
         $stmt->bindValue(":expires_in", $expiry, PDO::PARAM_INT);
         $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
         $stmt->bindValue(":access_token", $accessToken, PDO::PARAM_STR);
-        return ($stmt->execute()) ? $accessToken : FALSE;
+        if(FALSE === $stmt->execute()) {
+            throw new StorageException("unable to store access token");
+        }
+        return TRUE;
     }
 
-    // LITTLE FAIL
-    public function generateAuthorizationCode($clientId, $redirectUri, $accessToken) {
-        $authorizationCode = AuthorizationServer::randomHex(16);
+    // OK
+    public function storeAuthorizationCode($authorizationCode, $clientId, $redirectUri, $accessToken) {
         $stmt = $this->_pdo->prepare("INSERT INTO AuthorizationCode (client_id, authorization_code, redirect_uri, issue_time, access_token) VALUES(:client_id, :authorization_code, :redirect_uri, :issue_time, :access_token)");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":authorization_code", $authorizationCode, PDO::PARAM_STR);
         $stmt->bindValue(":redirect_uri", $redirectUri, PDO::PARAM_STR);
         $stmt->bindValue(":access_token", $accessToken, PDO::PARAM_STR);
         $stmt->bindValue(":issue_time", time(), PDO::PARAM_INT);
-        return ($stmt->execute()) ? $authorizationCode : FALSE;
+        if(FALSE === $stmt->execute()) {
+            throw new StorageException("unable to store authorization code");
+        }
+        return TRUE;
     }
 
     // BIG FAIL
@@ -222,9 +225,8 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->fetch(PDO::FETCH_OBJ);        
     }
 
-    // LITTLE FAIL
-    public function generateAuthorizeNonce($clientId, $resourceOwnerId, $responseType, $redirectUri, $scope, $state) {
-        $authorizeNonce = AuthorizationServer::randomHex(16);
+    // OK
+    public function storeAuthorizeNonce($authorizeNonce, $clientId, $resourceOwnerId, $responseType, $redirectUri, $scope, $state) {
         $stmt = $this->_pdo->prepare("INSERT INTO AuthorizeNonce (authorize_nonce, resource_owner_id, client_id, response_type, redirect_uri, scope, state) VALUES(:authorize_nonce, :resource_owner_id, :client_id, :response_type, :redirect_uri, :scope, :state)");
         $stmt->bindValue(":authorize_nonce", $authorizeNonce, PDO::PARAM_STR);        
         $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
@@ -233,7 +235,10 @@ class PdoOAuthStorage implements IOAuthStorage {
         $stmt->bindValue(":redirect_uri", $redirectUri, PDO::PARAM_STR);
         $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
         $stmt->bindValue(":state", $state, PDO::PARAM_STR);
-        return ($stmt->execute()) ? $authorizeNonce : FALSE;
+        if(FALSE === $stmt->execute()) {
+            throw new StorageException("unable to store authorize nonce");
+        }
+        return TRUE;
     }
 
     // OK

@@ -298,7 +298,7 @@ class SlimOAuth {
         //        storing it
         $scope = $data['scope'];
 
-        $data = $this->_oauthStorage->storeApprovedScope($clientId, $result->resource_owner_id, $scope);
+        $data = $this->_oauthStorage->addApproval($clientId, $result->resource_owner_id, $scope);
         if(FALSE === $data) {
             // FIXME: better error handling
             $this->_app->halt(500);
