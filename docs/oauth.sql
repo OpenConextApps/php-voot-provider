@@ -49,5 +49,5 @@ CREATE TABLE `AuthorizationCode` (
 
 INSERT INTO `Client` VALUES ('manage', 'Management Client', 'Web application to manage OAuth client registrations.', NULL, 'http://localhost/phpvoot/manage/index.html', 'user_agent_based_application');
 INSERT INTO `Client` VALUES ('voot','VOOT Demo Client', 'Simple web application to demonstrate the VOOT API.', NULL,'http://localhost/phpvoot/client/index.html','user_agent_based_application');
-INSERT INTO `Client` VALUES ('webapp', 'Web Application Test', 'This client registration is for testing the authorization code grant', 'secret', 'http://localhost/phpvoot/web/index.php', 'web_application');
-INSERT INTO `Client` VALUES('mujina','Mujina Test Client','A simple test client available at https://mujina-sp.dev.surfconext.nl/social/social-queries.shtml','mujina','https://mujina-sp.dev.surfconext.nl/social/oauth-callback.shtml','web_application');
+INSERT INTO `Client` VALUES ('webapp', 'Web Application Test', 'This client registration is for testing the authorization code grant', 's3cr3t', 'http://localhost/phpvoot/web/index.php', 'web_application');
+INSERT INTO `Client` VALUES('mujina','Mujina Test Client','A simple test client available at https://mujina-sp.dev.surfconext.nl/social/social-queries.shtml','abc','https://mujina-sp.dev.surfconext.nl/social/oauth-callback.shtml','web_application');

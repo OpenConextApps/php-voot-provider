@@ -124,7 +124,7 @@ class SlimOAuth {
 
     public function token() {
         // FIXME: still need to do client authentication for "web application" clients
-        $result = $this->_as->token($this->_app->request()->post());
+        $result = $this->_as->token($this->_app->request()->post(), $this->_app->request()->headers("X-Authorization"));
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
         $response->body(json_encode($result));

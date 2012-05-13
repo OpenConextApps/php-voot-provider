@@ -135,15 +135,18 @@ class AuthorizationServer {
             }
         }
 
-        if(NULL !== $responseType) {
-            if("token" !== $responseType && "code" !== $responseType) {
-                $error = array ( "error" => "unsupported_response_type", "error_description" => "response_type not supported");
-                if(NULL !== $state) {
-                    $error += array ( "state" => $state);
-                }
-                // FIXME: how to know how to return the error? either token or code type?
-                return array("action" => "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+        // we need to make sure the client can only request the grant types belonging to its profile
+        $allowedClientProfiles = array ( "web_application" => array ("code"),
+                                         "native_application" => array ("token", "code"),
+                                         "user_agent_based_application" => array ("token"));
+
+        if(!in_array($responseType, $allowedClientProfiles[$client->type])) {
+            $error = array ( "error" => "unsupported_response_type", "error_description" => "response_type not supported by client profile");
+            if(NULL !== $state) {
+                $error += array ( "state" => $state);
             }
+            // FIXME: how to know how to return the error? either token or code type?
+            return array("action" => "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
         }
 
         $requestedScope = self::normalizeScope($scope);
@@ -279,7 +282,7 @@ class AuthorizationServer {
         }
     }
 
-    public function token(array $post) {
+    public function token(array $post, $authorizationHeader) {
         // exchange authorization code for access token
         $grantType   = self::getParameter($post, 'grant_type');
         $code        = self::getParameter($post, 'code');
@@ -305,13 +308,34 @@ class AuthorizationServer {
         if(FALSE === $this->_storage->deleteAuthorizationCode($code, $redirectUri)) {
             throw new TokenException("invalid_grant: this grant was already used");
         }
+
+        $client = $this->_storage->getClient($result->client_id);
+        if("user_agent_based_application" === $client->type) {
+            throw new TokenException("unauthorized_client: this client type is not allowed to use the token endpoint");
+        }
+        if("web_application" === $client->type) {
+            // REQUIRE basic auth
+            if(NULL === $authorizationHeader || empty($authorizationHeader)) {
+                throw new TokenException("invalid_client: this client requires authentication");
+            }
+            if(FALSE === self::_verifyBasicAuth($authorizationHeader, $client)) {
+                throw new TokenException("invalid_client: client authentication failed");
+            }
+        }
+        if("native_application" === $client->type) {
+            // MAY use basic auth, so only check when Authorization header is provided
+            if(NULL !== $authorizationHeader && !empty($authorizationHeader)) {
+                if(FALSE === self::_verifyBasicAuth($authorizationHeader, $client)) {
+                    throw new TokenException("invalid_client: client authentication failed");
+                }
+            }
+        }
         return $this->_storage->getAccessToken($result->access_token);
     }
 
     public function verify($authorizationHeader) {
         // b64token = 1*( ALPHA / DIGIT / "-" / "." / "_" / "~" / "+" / "/" ) *"="
         $b64TokenRegExp = '(?:[[:alpha:][:digit:]-._~+/]+=*)';
-
         $result = preg_match('|^Bearer (?P<value>' . $b64TokenRegExp . ')$|', $authorizationHeader, $matches);
         if($result === FALSE || $result === 0) {
             throw new VerifyException("invalid_token: the access token is malformed");
@@ -325,6 +349,25 @@ class AuthorizationServer {
             throw new VerifyException("invalid_token: the access token expired");
         }
         return $token;
+    }
+
+    private static function _verifyBasicAuth($authorizationHeader, $client) {
+        // b64token = 1*( ALPHA / DIGIT / "-" / "." / "_" / "~" / "+" / "/" ) *"="
+        // FIXME: basic is more restrictive than Bearer?
+        $b64TokenRegExp = '(?:[[:alpha:][:digit:]-._~+/]+=*)';
+        $result = preg_match('|^Basic (?P<value>' . $b64TokenRegExp . ')$|', $authorizationHeader, $matches);
+        if($result === FALSE || $result === 0) {
+            return FALSE;
+        }
+        $basicAuth = $matches['value'];
+        $decodedBasicAuth = base64_decode($basicAuth, TRUE);
+        $colonPosition = strpos($decodedBasicAuth, ":");
+        if ($colonPosition === FALSE || $colonPosition === 0 || $colonPosition + 1 === strlen($decodedBasicAuth)) {
+            return FALSE;
+        }
+        $u = substr($decodedBasicAuth, 0, $colonPosition);
+        $p = substr($decodedBasicAuth, $colonPosition + 1);
+        return ($u === $client->id && $p === $client->secret);
     }
 
     public static function getParameter(array $parameters, $key) {
