@@ -123,7 +123,6 @@ class SlimOAuth {
     }
 
     public function token() {
-        // FIXME: still need to do client authentication for "web application" clients
         $result = $this->_as->token($this->_app->request()->post(), $this->_app->request()->headers("X-Authorization"));
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
@@ -311,36 +310,46 @@ class SlimOAuth {
 
     public function errorHandler(Exception $e) {
         switch(get_class($e)) {
+
             case "VerifyException":
+                $response = $this->_app->response();
                 // the request for the resource was not valid, tell client
                 list($error, $description) = explode(":", $e->getMessage());
-                $this->_app->response()->header('WWW-Authenticate', 'Bearer realm="OAuth Server",error="' . $error . '",error_description="' . $description . '"');
+                $response['WWW-Authenticate'] = sprintf('Bearer realm="OAuth Server",error="%s",error_description="%s"', $error, $description);
                 $code = 400;
-                if($error === 'invalid_request') {
+                if("invalid_request" === $error) {
                     $code = 400;
                 }
-                if($error === 'invalid_token') {
+                if("invalid_token" === $error) {
                     $code = 401;
                 }
-                if($error === 'insufficient_scope') {
+                if("insufficient_scope" === $error) {
                     $code = 403;
                 }
-                $this->_app->response()->status($code);
+                $response->status($code);
                 break;
+
             case "OAuthException":
                 // we cannot establish the identity of the client, tell user
                 $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "The identity of the application that tried to access this resource could not be established. Therefore we stopped processing this request. The message below may be of interest to the application developer."));
                 break;
+
             case "TokenException":
+                $response = $this->_app->response();
                 // we need to inform the client interacting with the token endpoint
                 list($error, $description) = explode(":", $e->getMessage());
                 $code = 400;
-                $response = $this->_app->response();
+                if("invalid_client" === $error) {
+                    $code = 401;
+                    $response['WWW-Authenticate'] = sprintf('Basic realm="OAuth Server",error="%s",error_description="%s"', $error, $description);
+                }
                 $response->status($code);
                 $response['Content-Type'] = 'application/json';
                 $response->body(json_encode(array("error" => $error, "error_description" => $description)));
                 break;
+
             case "ErrorException":
+
             default:
                 $this->_app->getLog()->error($e->getMessage());
                 $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "Internal Server Error"), 500);

@@ -304,10 +304,6 @@ class AuthorizationServer {
         if(time() > $result->issue_time + 600) {
             throw new TokenException("invalid_grant: the authorization code expired");
         }
-        // we need to be able to delete, otherwise someone else was first!
-        if(FALSE === $this->_storage->deleteAuthorizationCode($code, $redirectUri)) {
-            throw new TokenException("invalid_grant: this grant was already used");
-        }
 
         $client = $this->_storage->getClient($result->client_id);
         if("user_agent_based_application" === $client->type) {
@@ -329,6 +325,10 @@ class AuthorizationServer {
                     throw new TokenException("invalid_client: client authentication failed");
                 }
             }
+        }
+        // we need to be able to delete, otherwise someone else was first!
+        if(FALSE === $this->_storage->deleteAuthorizationCode($code, $redirectUri)) {
+            throw new TokenException("invalid_grant: this grant was already used");
         }
         return $this->_storage->getAccessToken($result->access_token);
     }
