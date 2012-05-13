@@ -291,7 +291,7 @@ class AuthorizationServer {
         if(NULL === $grantType) {
             throw new TokenException("invalid_request: the grant_type parameter is missing");
         }
-        if("code" !== $grantType) {
+        if("authorization_code" !== $grantType) {
             throw new TokenException("unsupported_grant_type: the requested grant type is not supported");
         }
         if(NULL === $code) {
