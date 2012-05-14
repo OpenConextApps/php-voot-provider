@@ -51,8 +51,8 @@ class SlimOAuth {
         });
 
 
-	    $this->_app->get('/oauth/whoami', function () use ($self) {
-            $self->whoAmI();
+	    $this->_app->get('/oauth/userinfo', function () use ($self) {
+            $self->userInfo();
         });
 
         $this->_app->get('/oauth/client/:client_id', function ($clientId) use ($self) {
@@ -130,16 +130,16 @@ class SlimOAuth {
     }
 
     // REST API
-    public function whoAmI() {
+    public function userInfo() {
         $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
 
-        if(!in_array('oauth_whoami', AuthorizationServer::getScopeArray($result->scope))) {
-            throw new VerifyException("insufficient_scope: need oauth_whoami scope");
+        if(!in_array('oauth_userinfo', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_userinfo scope");
         }
 
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode(array ("id" => $result->resource_owner_id, "displayName" => $result->resource_owner_display_name)));
+        $response->body(json_encode(array ("user_id" => $result->resource_owner_id, "name" => $result->resource_owner_display_name)));
     }
 
     public function getClient($clientId) {

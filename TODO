@@ -3,6 +3,11 @@
 - implement logging infrastructure, seems Slim has some functionality for that
   already so we can just use that
 
+- client_id cannot contain a ":" when it needs to use Basic authentication to
+  the token endpoint
+
+- validate redirect_uri on registration, it cannot contain '#'
+
 - SECURITY
   - look into htaccess Authorization header rewrite to make it work better!
 

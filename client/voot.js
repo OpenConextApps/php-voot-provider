@@ -1,6 +1,6 @@
 $(document).ready(function () {
     var apiRoot = 'http://localhost/phpvoot';
-    var apiScopes = ["read", "oauth_whoami"];
+    var apiScopes = ["read", "oauth_userinfo"];
     var apiClientId = 'voot';
     jso_configure({
         "voot": {
@@ -42,14 +42,14 @@ $(document).ready(function () {
 
     function getResourceOwner() {
         $.oajax({
-            url: apiRoot + "/oauth/whoami",
+            url: apiRoot + "/oauth/userinfo",
             jso_provider: "voot",
             jso_scopes: apiScopes,
             jso_allowia: true,
             dataType: 'json',
             success: function (data) {
-                $("#userId").append(data.displayName);
-                $("#userId").attr('title', data.id);
+                $("#userId").append(data.name);
+                $("#userId").attr('title', data.user_id);
             }
         });
     }
