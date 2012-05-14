@@ -1,6 +1,6 @@
 $(document).ready(function () {
     var apiRoot = 'http://localhost/storage';
-    var apiScopes = ["oauth_admin", "oauth_approval", "oauth_whoami"];
+    var apiScopes = ["oauth_admin", "oauth_approval", "oauth_userinfo"];
     var apiClientId = 'portal';
     var userId;
 
@@ -45,7 +45,7 @@ $(document).ready(function () {
 
     function getResourceOwner() {
         $.oajax({
-            url: apiRoot + "/oauth/whoami",
+            url: apiRoot + "/oauth/userinfo",
             jso_provider: "portal",
             jso_scopes: apiScopes,
             async: false,
@@ -53,8 +53,8 @@ $(document).ready(function () {
             dataType: 'json',
             success: function (data) {
                 userId = data.id;
-                $("#userId").append(data.displayName);
-                $("#userId").attr('title', data.id);
+                $("#userId").append(data.name);
+                $("#userId").attr('title', data.user_id);
             }
         });
     }
