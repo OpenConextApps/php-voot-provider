@@ -84,6 +84,10 @@ class AuthorizationServer {
             throw new OAuthException('client_id missing');
         }
 
+        if(strlen($clientId) > 64) {
+            throw new OAuthException('client_id is too long');
+        }
+
         if(NULL === $responseType) {
             throw new OAuthException('response_type missing');
         }
@@ -115,7 +119,9 @@ class AuthorizationServer {
             $client = $this->_storage->getClientByRedirectUri($redirectUri);
             if(FALSE === $client) { 
                 // create a new one
-                $newClient = array ( 'name' => $uriParts['host'],
+                $newClient = array ( 'id' => $clientId,
+                                     'secret' => NULL,
+                                     'name' => $uriParts['host'],
                                      'description' => "UNREGISTERED (" . $uriParts['host'] . ")",
                                      'redirect_uri' => $redirectUri,
                                      'type' => 'user_agent_based_application');
@@ -392,6 +398,10 @@ class AuthorizationServer {
     }
 
     public static function normalizeScope($scopeToNormalize, $toArray = FALSE) {
+        if(!is_array($scopeToNormalize)) {
+            // FIXME: hack for Unhosted remoteStorage using "," as scope separator
+            $scopeToNormalize = str_replace(",", " ", $scopeToNormalize);
+        }
         $scopeToNormalize = self::getScopeString($scopeToNormalize);
         if(self::_isValidScopeToken($scopeToNormalize)) {
             $a = self::getScopeArray($scopeToNormalize);

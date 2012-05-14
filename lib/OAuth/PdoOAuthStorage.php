@@ -211,7 +211,7 @@ $stmt = $this->_pdo->prepare("SELECT * FROM AuthorizationCode WHERE authorizatio
         $stmt->bindValue(":response_type", $responseType, PDO::PARAM_STR);
         $stmt->bindValue(":redirect_uri", $redirectUri, PDO::PARAM_STR);
         $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
-        $stmt->bindValue(":state", $state, PDO::PARAM_STR);
+        $stmt->bindValue(":state", $state, PDO::PARAM_STR | PDO::PARAM_NULL);
         if(FALSE === $stmt->execute()) {
             throw new StorageException("unable to store authorize nonce");
         }
