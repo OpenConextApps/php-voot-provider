@@ -33,6 +33,10 @@ class SlimOAuth {
             $self->approve();
         });
 
+        $this->_app->post('/oauth/token', function () use ($self) {
+            $self->token();
+        });
+
         // management
         $this->_app->get('/oauth/approval', function () use ($self) {
             $self->getApprovals();
@@ -47,8 +51,8 @@ class SlimOAuth {
         });
 
 
-	    $this->_app->get('/oauth/whoami', function () use ($self) {
-            $self->whoAmI();
+	    $this->_app->get('/oauth/userinfo', function () use ($self) {
+            $self->userInfo();
         });
 
         $this->_app->get('/oauth/client/:client_id', function ($clientId) use ($self) {
@@ -118,17 +122,24 @@ class SlimOAuth {
         $this->_app->redirect($result['url']);
     }
 
+    public function token() {
+        $result = $this->_as->token($this->_app->request()->post(), $this->_app->request()->headers("X-Authorization"));
+        $response = $this->_app->response();
+        $response['Content-Type'] = 'application/json';
+        $response->body(json_encode($result));
+    }
+
     // REST API
-    public function whoAmI() {
+    public function userInfo() {
         $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
 
-        if(!in_array('oauth_whoami', AuthorizationServer::getScopeArray($result->scope))) {
-            throw new VerifyException("insufficient_scope: need oauth_whoami scope");
+        if(!in_array('oauth_userinfo', AuthorizationServer::getScopeArray($result->scope))) {
+            throw new VerifyException("insufficient_scope: need oauth_userinfo scope");
         }
 
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode(array ("id" => $result->resource_owner_id, "displayName" => $result->resource_owner_display_name)));
+        $response->body(json_encode(array ("user_id" => $result->resource_owner_id, "name" => $result->resource_owner_display_name)));
     }
 
     public function getClient($clientId) {
@@ -183,7 +194,7 @@ class SlimOAuth {
         $response['Content-Type'] = 'application/json';
         $response->body(json_encode($data));
 
-        $this->_app->getLog()->info("oauth client '" . $clientId . "' updated by '" . $result->resource_owner_id . "'");
+        $this->_app->getLog()->info("oauth client '" . $clientId . "' updated to '" . $this->_app->request()->getBody() . "' by '" . $result->resource_owner_id . "'");
     }
 
     public function addClient() {
@@ -193,16 +204,32 @@ class SlimOAuth {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
         }
 
-        $data = $this->_oauthStorage->addClient(json_decode($this->_app->request()->getBody(), TRUE));
+        $requestData = json_decode($this->_app->request()->getBody(), TRUE);
+
+        // if id is set, use it for the registration, if not generate one
+        if(!array_key_exists('id', $requestData) || empty($requestData['id'])) {
+            $requestData['id'] = AuthorizationServer::randomHex(16);
+        }
+
+        // if profile is web application and secret is set, use it, if web application
+        // and secret is not set generate one
+        if(!array_key_exists('secret', $requestData) || empty($requestData['secret'])) {
+            if("web_application" === $requestData['type']) {
+                $requestData['secret'] = AuthorizationServer::randomHex(16);
+            } else {
+                $requestData['secret'] = NULL;
+            }
+        }
+
+        $data = $this->_oauthStorage->addClient($requestData);
         if(FALSE === $data) {
             // FIXME: better error handling
             $this->_app->halt(500);
         }
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode($data));
-
-        $this->_app->getLog()->info("oauth client '" . $data['client_id'] . "' added by '" . $result->resource_owner_id . "'");
+        $response->body(json_encode($requestData));
+        $this->_app->getLog()->info("oauth client added '" . json_encode($requestData) . "' by '" . $result->resource_owner_id . "'");
     }
 
     public function getClients() {
@@ -270,7 +297,7 @@ class SlimOAuth {
         //        storing it
         $scope = $data['scope'];
 
-        $data = $this->_oauthStorage->storeApprovedScope($clientId, $result->resource_owner_id, $scope);
+        $data = $this->_oauthStorage->addApproval($clientId, $result->resource_owner_id, $scope);
         if(FALSE === $data) {
             // FIXME: better error handling
             $this->_app->halt(500);
@@ -283,27 +310,46 @@ class SlimOAuth {
 
     public function errorHandler(Exception $e) {
         switch(get_class($e)) {
+
             case "VerifyException":
+                $response = $this->_app->response();
                 // the request for the resource was not valid, tell client
                 list($error, $description) = explode(":", $e->getMessage());
-                $this->_app->response()->header('WWW-Authenticate', 'Bearer realm="OAuth Server",error="' . $error . '",error_description="' . $description . '"');
+                $response['WWW-Authenticate'] = sprintf('Bearer realm="OAuth Server",error="%s",error_description="%s"', $error, $description);
                 $code = 400;
-                if($error === 'invalid_request') {
+                if("invalid_request" === $error) {
                     $code = 400;
                 }
-                if($error === 'invalid_token') {
+                if("invalid_token" === $error) {
                     $code = 401;
                 }
-                if($error === 'insufficient_scope') {
+                if("insufficient_scope" === $error) {
                     $code = 403;
                 }
-                $this->_app->response()->status($code);
+                $response->status($code);
                 break;
+
             case "OAuthException":
                 // we cannot establish the identity of the client, tell user
                 $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "The identity of the application that tried to access this resource could not be established. Therefore we stopped processing this request. The message below may be of interest to the application developer."));
                 break;
+
+            case "TokenException":
+                $response = $this->_app->response();
+                // we need to inform the client interacting with the token endpoint
+                list($error, $description) = explode(":", $e->getMessage());
+                $code = 400;
+                if("invalid_client" === $error) {
+                    $code = 401;
+                    $response['WWW-Authenticate'] = sprintf('Basic realm="OAuth Server",error="%s",error_description="%s"', $error, $description);
+                }
+                $response->status($code);
+                $response['Content-Type'] = 'application/json';
+                $response->body(json_encode(array("error" => $error, "error_description" => $description)));
+                break;
+
             case "ErrorException":
+
             default:
                 $this->_app->getLog()->error($e->getMessage());
                 $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "Internal Server Error"), 500);

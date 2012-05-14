@@ -3,13 +3,15 @@
 - implement logging infrastructure, seems Slim has some functionality for that
   already so we can just use that
 
+- client_id cannot contain a ":" when it needs to use Basic authentication to
+  the token endpoint
+
+- validate redirect_uri on registration, it cannot contain '#'
+
 - SECURITY
   - look into htaccess Authorization header rewrite to make it work better!
 
 - REFACTORING
-  - try to move all scope fiddling to the storage layer to have only 
-    one format (strings) in the application (if at all possible...)
-  - rename approval storing methods in de storage layer
 
 - MANAGEMENT WEB INTERFACE
   - rename management client (manage/index.html) to admin (admin/index.html)
@@ -20,6 +22,7 @@
     webinterface to make it impossible to lock yourself out.
   - implement a approval/token revoke dialog in the manage interface (next to 
     client administration, for normal users)
-  - for confidential clients a secret is needed, for public clients not: hide
-    it in the interface when switching the select box for client type to public
+  - for "web application" clients a secret is needed, for other clients not: 
+    hide it in the interface when switching the select box for client profile to 
+    something selse
 

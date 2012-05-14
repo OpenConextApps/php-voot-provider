@@ -99,47 +99,43 @@
             <fieldset>
                 <!-- <legend>Legend text</legend> -->
                 <div class="control-group">
-                    <label class="control-label" for="form_id">Client Identifier</label>
+                    <label class="control-label" for="form_id">Identifier <i class="icon-info-sign" title="Identifier" data-content="A unique identifier for the OAuth client. If this field is left empty a client identifier will be generated."></i></label>
                     <div class="controls">
                         {{if id}}
                             <input type="text" class="input-xlarge uneditable-input" id="form_id" name="id" value="{{:id}}" >
                         {{else}}
                             <input type="text" class="input-xlarge" id="form_id" name="id" value="{{:id}}" >
                         {{/if}}
-                        <p class="help-block">A unique identifier for the OAuth client. If this field is left empty a client identifier will be generated.</p>
                     </div>
 
-                    <label class="control-label" for="form_name">Name</label>
+                    <label class="control-label" for="form_name">Name <i class="icon-info-sign" title="Name" data-content="The display name for the OAuth client"></i></label>
                     <div class="controls">
                         <input type="text" class="input-xlarge" id="form_name" name="name" value="{{:name}}" >
-                        <p class="help-block">The display name for the OAuth client</p>
                     </div>
 
-                    <label class="control-label" for="form_description">Description</label>
+                    <label class="control-label" for="form_description">Description <i class="icon-info-sign" title="Description" data-content="Detailed information about the OAuth client."></i></label>
                     <div class="controls">
                         <input type="text" class="input-xlarge" id="form_description" name="description" value="{{:description}}" >
-                        <p class="help-block">Detailed information about the OAuth client</p>
+
                     </div>
 
-                    <label class="control-label" for="form_type">Type</label>
+                    <label class="control-label" for="form_type">Profile <i class="icon-info-sign" title="Profile" data-content="<strong>Web Application</strong>: A client running on a web server, like 3-legged OAuth 1.0a, requires a secret;<br><strong>User-agent-based Application</strong>: The client runs in the web browser only;<br><strong>Native Application</strong>: The client runs on a mobile device or is a 'rich' desktop application."></i></label>
                     <div class="controls">
                         <select class="input-xlarge" id="form_type" name="type">
-                            <option value="public" {{if type === 'public' }} selected="selected" {{/if}}>Public</option>
-                            <option value="confidential" {{if type === 'confidential' }} selected="selected" {{/if}}>Confidential</option>
+                            <option value="web_application" {{if type === 'web_application' }} selected="selected" {{/if}}>Web Application</option>
+                            <option value="user_agent_based_application" {{if type === 'user_agent_based_application' }} selected="selected" {{/if}}>User-agent-based Application</option>
+                            <option value="native application" {{if type === 'native_application' }} selected="selected" {{/if}}>Native Application</option>
                         </select>
-                        <p class="help-block">Type of OAuth client: <strong>Public</strong> is for "in browser" applications and mobile apps; <strong>Confidential</strong> is for hosted web applications.</p>
                     </div>
 
-                    <label class="control-label" for="form_secret">Secret</label>
+                    <label class="control-label" for="form_secret">Secret <i class="icon-info-sign" title="Secret" data-content="Secret for the OAuth client (only for the <strong>Web Application</strong> profile). If this field is left empty a secret will be generated."></i></label>
                     <div class="controls">
                         <input type="text" class="input-xlarge" id="form_secret" name="secret" value="{{:secret}}" >
-                        <p class="help-block">Secret for the OAuth client (only for <strong>Confidential</strong> clients). If this field is left empty and the client type is <strong>Confidential</strong> a secret will be generated.</p>
                     </div>
 
-                    <label class="control-label" for="form_redirect_uri">Redirect URI</label>
+                    <label class="control-label" for="form_redirect_uri">Redirect URI <i class="icon-info-sign" title="Redirect URI" data-content="Redirect URI of the Client for redirecting the browser after authentication and authorization."></i></label>
                     <div class="controls">
                         <input type="text" class="input-xlarge" id="form_redirect_uri" name="redirect_uri" value="{{:redirect_uri}}" >
-                        <p class="help-block">Redirect URI of the Client for redirecting the browser after authentication and authorization.</p>
                     </div>
                 </div>
             </fieldset>
@@ -159,6 +155,8 @@
     <script src="../ext/js/jsrender.js"></script>
     <script src="../ext/js/jso.js"></script>
     <script src="../ext/js/bootstrap-modal.js"></script>
+    <script src="../ext/js/bootstrap-tooltip.js"></script>
+    <script src="../ext/js/bootstrap-popover.js"></script>
     <script src="manage.js"></script>
 
   </body>

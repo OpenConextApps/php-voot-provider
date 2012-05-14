@@ -33,7 +33,7 @@ supportedScopes[] = "oauth_admin"
 
 ; When this permission is given the client can request information about the
 ; authenticated user
-supportedScopes[] = "oauth_whoami"
+supportedScopes[] = "oauth_userinfo"
 
 ; When this permission is given the client can request information about the
 ; approved application and register approvals or delete them

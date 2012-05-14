@@ -1,6 +1,6 @@
 $(document).ready(function () {
-    var apiRoot = 'http://localhost/storage';
-    var apiScopes = ["oauth_admin", "oauth_approval", "oauth_whoami"];
+    var apiRoot = 'http://localhost/phpvoot';
+    var apiScopes = ["oauth_admin", "oauth_approval", "oauth_userinfo"];
     var apiClientId = 'manage';
     jso_configure({
         "admin": {
@@ -43,14 +43,14 @@ $(document).ready(function () {
 
     function getResourceOwner() {
         $.oajax({
-            url: apiRoot + "/oauth/whoami",
+            url: apiRoot + "/oauth/userinfo",
             jso_provider: "admin",
             jso_scopes: apiScopes,
             jso_allowia: true,
             dataType: 'json',
             success: function (data) {
-                $("#userId").append(data.displayName);
-                $("#userId").attr('title', data.id);
+                $("#userId").append(data.name);
+                $("#userId").attr('title', data.user_id);
             }
         });
     }
@@ -130,6 +130,7 @@ $(document).ready(function () {
     }
 
     function addEditClientHandlers() {
+        $(".icon-info-sign").popover();
         $("#editModal a.editClose").click(function () {
             $("#editModal").modal('hide');
         });
