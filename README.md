@@ -46,11 +46,15 @@ This is only for Red Hat based Linux distributions like RHEL, CentOS and
 Fedora.
 
 # Apache
-There is an example configuration file in `docs/apache.conf`. On Red Hat based
-distributions the file can be placed in `/etc/httpd/conf.d/phpvoot.conf`. Be
-sure to modify it to suit your environment and do not forget to restart Apache. 
+There is an example configuration file in `docs/apache.conf`. 
+
+On Red Hat based distributions the file can be placed in 
+`/etc/httpd/conf.d/phpvoot.conf`. On Debian based distributions the file can
+be placed in `/etc/apache2/conf.d/phpvoot`. Be sure to modify it to suit your 
+environment and do not forget to restart Apache. 
+
 The install script from the previous section outputs a config for your system
-by replacing the `/PATH/TO/APP` with the actual directory.
+which replaces the `/PATH/TO/APP` with the actual directory.
 
 # Configuration
 In the configuration file `config/voot.ini` and `config/oauth.ini` various 

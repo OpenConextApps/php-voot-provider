@@ -398,10 +398,6 @@ class AuthorizationServer {
     }
 
     public static function normalizeScope($scopeToNormalize, $toArray = FALSE) {
-        if(!is_array($scopeToNormalize)) {
-            // FIXME: hack for Unhosted remoteStorage using "," as scope separator
-            $scopeToNormalize = str_replace(",", " ", $scopeToNormalize);
-        }
         $scopeToNormalize = self::getScopeString($scopeToNormalize);
         if(self::_isValidScopeToken($scopeToNormalize)) {
             $a = self::getScopeArray($scopeToNormalize);
