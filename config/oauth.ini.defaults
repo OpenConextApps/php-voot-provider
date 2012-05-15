@@ -13,6 +13,7 @@ adminResourceOwnerId[] = "fkooman"
 ;adminResourceOwnerId[] = "francois"
 
 authenticationMechanism = "DummyResourceOwner"
+;authenticationMechanism = "BrowserIDResourceOwner"
 ;authenticationMechanism = "SspResourceOwner"
 
 ; the scopes supported by the resource server
@@ -65,6 +66,13 @@ dsn = "sqlite:/PATH/TO/APP/data/oauth2.sqlite";
 [DummyResourceOwner]
 resourceOwnerId = "fkooman"
 resourceOwnerDisplayName = "François Kooman"
+
+; BrowserID configuration
+[BrowserIDResourceOwner]
+verifierAddress = "https://browserid.org/verify"
+userAddressIsRequiredEmail = TRUE
+resourceOwnerIdAttributeName = "email"
+resourceOwnerDisplayNameAttributeName = "email"
 
 ; simpleSAMLphp configuration
 [SspResourceOwner]
