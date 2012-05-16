@@ -1,7 +1,5 @@
 <?php
 
-require_once 'ext/browserid-session/browserid.php';
-
 class BrowserIDResourceOwner implements IResourceOwner {
 
     private $_config;
@@ -9,21 +7,22 @@ class BrowserIDResourceOwner implements IResourceOwner {
 
     public function __construct(Config $c) {
         $this->_c = $c;
-        $this->_verifier = new BrowserIDVerifier();
+
+        $bPath = $this->_c->getSectionValue('BrowserIdResourceOwner', 'browserIDPath') . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'BrowserIDVerifier.php';
+        if(!file_exists($bPath) || !is_file($bPath) || !is_readable($bPath)) {
+            throw new Exception("invalid path to php-browserid");
+        }
+        require_once $bPath;
+
+        $this->_verifier = new BrowserIDVerifier($this->_c->getSectionValue('BrowserIdResourceOwner', 'verifierAddress');
     }
 
     public function getResourceOwnerId() {
-        $this->_verifier->requireAuth();
-        $attributes = $this->_verifier->getAttributes();
-        return $attributes[$this->_c->getSectionValue('BrowserIDResourceOwner', 'resourceOwnerIdAttributeName')];
+        return $this->_verifier->authenticate();
     }
 
     public function getResourceOwnerDisplayName() {
-        $this->_verifier->requireAuth();
-        $attributes = $this->_verifier->getAttributes();
-        return $attributes[$this->_c->getSectionValue('BrowserIDResourceOwner', 'resourceOwnerDisplayNameAttributeName')];
+        return $this->_verifier->authenticate();
     }
 
 }
-
-?>
