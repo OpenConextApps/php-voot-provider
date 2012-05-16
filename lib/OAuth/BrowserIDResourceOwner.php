@@ -8,13 +8,13 @@ class BrowserIDResourceOwner implements IResourceOwner {
     public function __construct(Config $c) {
         $this->_c = $c;
 
-        $bPath = $this->_c->getSectionValue('BrowserIdResourceOwner', 'browserIDPath') . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'BrowserIDVerifier.php';
+        $bPath = $this->_c->getSectionValue('BrowserIDResourceOwner', 'browserIDPath') . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'BrowserIDVerifier.php';
         if(!file_exists($bPath) || !is_file($bPath) || !is_readable($bPath)) {
             throw new Exception("invalid path to php-browserid");
         }
         require_once $bPath;
 
-        $this->_verifier = new BrowserIDVerifier($this->_c->getSectionValue('BrowserIdResourceOwner', 'verifierAddress');
+        $this->_verifier = new BrowserIDVerifier($this->_c->getSectionValue('BrowserIDResourceOwner', 'verifierAddress'));
     }
 
     public function getResourceOwnerId() {

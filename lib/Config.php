@@ -32,7 +32,7 @@ class Config {
             return $this->_config[$section][$key];
         } else {
             if($required) {
-                throw new ConfigException("configuration key '$key' in sectoin '$section' not set in '$this->_instance'");
+                throw new ConfigException("configuration key '$key' in section '$section' not set in '$this->_instance'");
             }
             return NULL;
         }
