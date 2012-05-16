@@ -95,19 +95,13 @@ class SlimOAuth {
         // we know that all request parameters we used below are acceptable because they were verified by the authorize method.
         // Do something with case where no scope is requested!
         if($result['action'] === 'ask_approval') { 
-            $client = $this->_oauthStorage->getClient($this->_app->request()->get('client_id'));
-            if(FALSE === $client) {
-                if($this->_c->getValue('allowUnregisteredClients')) {
-                    $client = $this->_oauthStorage->getClientByRedirectUri($this->_app->request()->get('redirect_uri'));
-                }   
-            }
+            $client = $result['client'];
             $this->_app->render('askAuthorization.php', array (
                 'clientId' => $client->id,
                 'clientName' => $client->name,
                 'clientDescription' => $client->description,
                 'clientRedirectUri' => $client->redirect_uri,
-                'scope' => $this->_app->request()->get('scope'), 
-                'authorizeNonce' => $result['authorize_nonce'],
+                'scope' => AuthorizationServer::normalizeScope($this->_app->request()->get('scope'), TRUE), 
                 'serviceName' => $this->_c->getValue('serviceName'),
                 'serviceResources' => $this->_c->getValue('serviceResources'),
                 'allowFilter' => $this->_c->getValue('allowResourceOwnerScopeFiltering')));
@@ -327,6 +321,16 @@ class SlimOAuth {
                     $code = 403;
                 }
                 $response->status($code);
+                break;
+        
+            case "AuthorizeException": 
+                $client = $e->getClient();
+                $separator = ($client->type === "user_agent_based_application") ? "#" : "?";
+                $parameters = array("error" => $e->getMessage(), "error_description" => $e->getDescription());
+                if(NULL !== $e->getState()) {
+                    $parameters['state'] = $e->getState();
+                }
+                $this->_app->redirect($client->redirect_uri . $separator . http_build_query($parameters));
                 break;
 
             case "OAuthException":

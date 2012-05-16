@@ -5,8 +5,6 @@
  *
  * FIXME: look into throwing exceptions on error instead of returning FALSE?
  * FIXME: switch to ASSOC instead of OBJ return types
- * FIXME: don't delete in getAuthorizeNonce, create a separate 
- *        deleteAuthorizeNonce or get rid of it completely
  */
 class PdoOAuthStorage implements IOAuthStorage {
 
@@ -88,12 +86,6 @@ class PdoOAuthStorage implements IOAuthStorage {
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         if(FALSE === $stmt->execute()) {
             throw new StorageException("unable to delete access tokens");
-        }
-        // delete authorize nonces
-        $stmt = $this->_pdo->prepare("DELETE FROM AuthorizeNonce WHERE client_id = :client_id");
-        $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
-        if(FALSE === $stmt->execute()) {
-            throw new StorageException("unable to delete authorize nonces");
         }
         // delete authorization codes
         $stmt = $this->_pdo->prepare("DELETE FROM AuthorizationCode WHERE client_id = :client_id");
@@ -201,34 +193,6 @@ $stmt = $this->_pdo->prepare("SELECT * FROM AuthorizationCode WHERE authorizatio
             throw new StorageException("unable to get access token");
         }
         return $stmt->fetch(PDO::FETCH_OBJ);        
-    }
-
-    public function storeAuthorizeNonce($authorizeNonce, $clientId, $resourceOwnerId, $responseType, $redirectUri, $scope, $state) {
-        $stmt = $this->_pdo->prepare("INSERT INTO AuthorizeNonce (authorize_nonce, resource_owner_id, client_id, response_type, redirect_uri, scope, state) VALUES(:authorize_nonce, :resource_owner_id, :client_id, :response_type, :redirect_uri, :scope, :state)");
-        $stmt->bindValue(":authorize_nonce", $authorizeNonce, PDO::PARAM_STR);        
-        $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
-        $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
-        $stmt->bindValue(":response_type", $responseType, PDO::PARAM_STR);
-        $stmt->bindValue(":redirect_uri", $redirectUri, PDO::PARAM_STR);
-        $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
-        $stmt->bindValue(":state", $state, PDO::PARAM_STR | PDO::PARAM_NULL);
-        if(FALSE === $stmt->execute()) {
-            throw new StorageException("unable to store authorize nonce");
-        }
-        return 1 === $stmt->rowCount();
-    }
-
-    public function getAuthorizeNonce($clientId, $resourceOwnerId, $scope, $authorizeNonce) {
-        $stmt = $this->_pdo->prepare("DELETE FROM AuthorizeNonce WHERE client_id = :client_id AND scope = :scope AND authorize_nonce = :authorize_nonce AND resource_owner_id = :resource_owner_id");
-        $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
-        $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
-        $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
-        $stmt->bindValue(":authorize_nonce", $authorizeNonce, PDO::PARAM_STR);
-        $result = $stmt->execute();
-        if (FALSE === $result) {
-            throw new StorageException("unable to get authorize nonce");
-        }
-        return 1 === $stmt->rowCount();
     }
 
     public function getApprovals($resourceOwnerId) {
