@@ -80,15 +80,16 @@ class AuthorizationServer {
         $scope        = self::normalizeScope(self::getParameter($get, 'scope'));
         $state        = self::getParameter($get, 'state');
 
-        if(NULL === $clientId) {
+        if(NULL === $clientId || empty($clientId)) {
             throw new OAuthException('client_id missing');
         }
 
-        if(strlen($clientId) > 64) {
-            throw new OAuthException('client_id is too long');
+        $clientIdLength = strlen($clientId);
+        if(NULL === $clientIdLength || $clientIdLength < 1 || $clientIdLength > 64) {
+            throw new OAuthException('client_id length exceeded');
         }
 
-        if(NULL === $responseType) {
+        if(NULL === $responseType || empty($responseType)) {
             throw new OAuthException('response_type missing');
         }
 
@@ -102,6 +103,7 @@ class AuthorizationServer {
             if(NULL === $redirectUri) {
                 throw new OAuthException('redirect_uri required for unregistered clients');
             }
+
             // validate the redirectUri
             $u = filter_var($redirectUri, FILTER_VALIDATE_URL);
             if(FALSE === $u) {
@@ -135,7 +137,7 @@ class AuthorizationServer {
             }
         }
 
-        if(NULL !== $redirectUri) {
+        if(NULL !== $redirectUri || empty($redirectUri)) {
             if($client->redirect_uri !== $redirectUri) {
                 throw new OAuthException('specified redirect_uri not the same as registered redirect_uri');
             }
