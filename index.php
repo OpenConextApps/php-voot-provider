@@ -9,6 +9,8 @@ $app = new Slim(array(
     // we need to disable Slim's session handling due to incompatibilies with
     // simpleSAMLphp sessions
     'session.handler' => null,
+    'mode' => 'production',
+    // 'mode' => 'development',
     'debug' => false,
     'log.writer' => new TimestampLogFileWriter(array('path' => 'data' . DIRECTORY_SEPARATOR . 'logs')),
 ));

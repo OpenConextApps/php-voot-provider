@@ -106,20 +106,22 @@ class SlimOAuth {
                 'serviceResources' => $this->_c->getValue('serviceResources'),
                 'allowFilter' => $this->_c->getValue('allowResourceOwnerScopeFiltering')));
         } else {
-            $this->_app->redirect($result['url']);
+            $this->_app->redirect($result['url'], 302);
         }
     }
 
     public function approve() {
         $this->_authenticate();
         $result = $this->_as->approve($this->_resourceOwner, $this->_app->request()->get(), $this->_app->request()->post());
-        $this->_app->redirect($result['url']);
+        $this->_app->redirect($result['url'], 302);
     }
 
     public function token() {
         $result = $this->_as->token($this->_app->request()->post(), $this->_app->request()->headers("X-Authorization"));
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
+        $response['Cache-Control'] = 'no-store';
+        $response['Pragma'] = 'no-cache';
         $response->body(json_encode($result));
     }
 
@@ -330,7 +332,7 @@ class SlimOAuth {
                 if(NULL !== $e->getState()) {
                     $parameters['state'] = $e->getState();
                 }
-                $this->_app->redirect($client->redirect_uri . $separator . http_build_query($parameters));
+                $this->_app->redirect($client->redirect_uri . $separator . http_build_query($parameters), 302);
                 break;
 
             case "OAuthException":
@@ -349,6 +351,8 @@ class SlimOAuth {
                 }
                 $response->status($code);
                 $response['Content-Type'] = 'application/json';
+                $response['Cache-Control'] = 'no-store';
+                $response['Pragma'] = 'no-cache';
                 $response->body(json_encode(array("error" => $error, "error_description" => $description)));
                 break;
 
