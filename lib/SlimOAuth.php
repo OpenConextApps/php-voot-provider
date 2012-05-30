@@ -94,7 +94,10 @@ class SlimOAuth {
 
         // we know that all request parameters we used below are acceptable because they were verified by the authorize method.
         // Do something with case where no scope is requested!
-        if($result['action'] === 'ask_approval') { 
+        if($result['action'] === 'ask_approval') {
+            $response = $this->_app->response();
+            // prevent loading the authorization window in an iframe
+            $response["X-Frame-Options"] = "deny"; 
             $client = $result['client'];
             $this->_app->render('askAuthorization.php', array (
                 'clientId' => $client->id,
