@@ -28,30 +28,31 @@ interface IOAuthStorage {
 }
 
 /**
- * Exception thrown when the user instead of the client needs to be informed
- * of an error, i.e.: when the client identity cannot be confirmed or is not
- * valid
+ * Thrown when the resource owner needs to be  informed of an error
  */
-class OAuthException extends Exception {
+class ResourceOwnerException extends Exception {
 
 }
 
 /**
- * Exception thrown when the verification of the access token fails
+ * Thrown when the verification of the access token fails
  */
 class VerifyException extends Exception {
 
 }
 
 /**
- * When interaction with the token endpoint fails
+ * Thrown when interaction with the token endpoint fails
  * https://tools.ietf.org/html/draft-ietf-oauth-v2-26#section-5.2
  */
 class TokenException extends Exception {
 
 }
 
-class AuthorizeException extends Exception {
+/**
+ * Thrown when the client needs to be informed of an error
+ */
+class ClientException extends Exception {
 
     private $_description;
     private $_client;
@@ -104,48 +105,48 @@ class AuthorizationServer {
         $state        = self::getParameter($get, 'state');
 
         if(NULL === $clientId) {
-            throw new OAuthException('client_id missing');
+            throw new ResourceOwnerException('client_id missing');
         }
 
         $clientIdLength = strlen($clientId);
         if(NULL === $clientIdLength || $clientIdLength < 1 || $clientIdLength > 64) {
-            throw new OAuthException('client_id length exceeded');
+            throw new ResourceOwnerException('client_id length exceeded');
         }
 
         if(NULL === $responseType) {
-            throw new OAuthException('response_type missing');
+            throw new ResourceOwnerException('response_type missing');
         }
 
         $client = $this->_storage->getClient($clientId);
         if(FALSE === $client) {
             if(!$this->_c->getValue('allowUnregisteredClients')) {
-                throw new OAuthException('client not registered');
+                throw new ResourceOwnerException('client not registered');
             }
             // we need a redirectUri for unregistered clients
             if(NULL === $redirectUri) {
-                throw new OAuthException('redirect_uri required for unregistered clients');
+                throw new ResourceOwnerException('redirect_uri required for unregistered clients');
             }
             // validate the redirectUri
             $u = filter_var($redirectUri, FILTER_VALIDATE_URL);
             if(FALSE === $u) {
-                throw new OAuthException("redirect_uri is malformed");
+                throw new ResourceOwnerException("redirect_uri is malformed");
             }
             // redirectUri MUST NOT contain fragment
             $fragment = parse_url($redirectUri, PHP_URL_FRAGMENT);
             if($fragment !== NULL) {
-                throw new OAuthException("redirect_uri must not contain fragment");
+                throw new ResourceOwnerException("redirect_uri must not contain fragment");
             }
             // clientId MUST be hostname of redirect_uri
             $host = parse_url($redirectUri, PHP_URL_HOST);
             if($host !== $clientId) {
-                throw new OAuthException("client_id should match with hostname of redirect_uri");
+                throw new ResourceOwnerException("client_id should match with hostname of redirect_uri");
             }
             $client = (object) array ("id" => $host, "name" => $host, "description" => "UNREGISTERED APPLICATION", "type" => "user_agent_based_application", "redirect_uri" => $redirectUri);
         }
 
         if(NULL !== $redirectUri) {
             if($client->redirect_uri !== $redirectUri) {
-                throw new OAuthException('specified redirect_uri not the same as registered redirect_uri');
+                throw new ResourceOwnerException('specified redirect_uri not the same as registered redirect_uri');
             }
         }
 
@@ -156,26 +157,26 @@ class AuthorizationServer {
 
         if(!in_array($responseType, $allowedClientProfiles[$client->type])) {
 
-            throw new AuthorizeException("unsupported_response_type", "response_type not supported by client profile", $client, $state);
+            throw new ClientException("unsupported_response_type", "response_type not supported by client profile", $client, $state);
         }
 
         $requestedScope = self::normalizeScope($scope);
 
         if(FALSE === $requestedScope) {
-            throw new AuthorizeException("invalid_scope", "malformed scope", $client, $state);
+            throw new ClientException("invalid_scope", "malformed scope", $client, $state);
         }
 
         if(!$this->_c->getValue('allowAllScopes')) {
             if(FALSE === self::isSubsetScope($requestedScope, $this->_c->getValue('supportedScopes'))) {
                 // scope not supported
-                throw new AuthorizeException("invalid_scope", "scope not supported", $client, $state);
+                throw new ClientException("invalid_scope", "scope not supported", $client, $state);
             }
         }
 
         if(in_array('oauth_admin', self::getScopeArray($requestedScope))) {
             // administrator scope requested, need to be in admin list
             if(!in_array($resourceOwner->getResourceOwnerId(), $this->_c->getValue('adminResourceOwnerId'))) {
-                throw new AuthorizeException("invalid_scope", "scope not supported: resource owner is not an administrator", $client, $state);
+                throw new ClientException("invalid_scope", "scope not supported: resource owner is not an administrator", $client, $state);
             }
         }
    
@@ -230,7 +231,7 @@ class AuthorizationServer {
         if("Approve" === $approval) {
             if(FALSE === self::isSubsetScope($postScope, $scope)) {
                 // FIXME: should this actually be an authorize exception? this is a user error!
-                throw new AuthorizeException("invalid_scope", "approved scope is not a subset of requested scope", $client, $state);
+                throw new ClientException("invalid_scope", "approved scope is not a subset of requested scope", $client, $state);
             }
 
             $approvedScope = $this->_storage->getApproval($clientId, $resourceOwner->getResourceOwnerId());
@@ -248,7 +249,7 @@ class AuthorizationServer {
             return $this->authorize($resourceOwner, $get);
 
         } else {
-            throw new AuthorizeException("access_denied", "not authorized by resource owner", $client, $state);
+            throw new ClientException("access_denied", "not authorized by resource owner", $client, $state);
         }
     }
 

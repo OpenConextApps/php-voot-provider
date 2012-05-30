@@ -126,7 +126,7 @@ class SlimOAuth {
             $referrerUri = substr($referrerUri, 0, $queryPos);
         }
         if($fullRequestUri !== $referrerUri) {
-            throw new OAuthException("csrf protection triggered, referrer does not match request uri");
+            throw new ResourceOwnerException("csrf protection triggered, referrer does not match request uri");
         }
         $result = $this->_as->approve($this->_resourceOwner, $this->_app->request()->get(), $this->_app->request()->post());
         $this->_app->redirect($result['url'], 302);
@@ -341,7 +341,7 @@ class SlimOAuth {
                 $response->status($code);
                 break;
         
-            case "AuthorizeException": 
+            case "ClientException": 
                 $client = $e->getClient();
                 $separator = ($client->type === "user_agent_based_application") ? "#" : "?";
                 $parameters = array("error" => $e->getMessage(), "error_description" => $e->getDescription());
@@ -351,8 +351,8 @@ class SlimOAuth {
                 $this->_app->redirect($client->redirect_uri . $separator . http_build_query($parameters), 302);
                 break;
 
-            case "OAuthException":
-                // we cannot establish the identity of the client, tell user
+            case "ResourceOwnerException":
+                // tell resource owner about the error
                 $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "The identity of the application that tried to access this resource could not be established. Therefore we stopped processing this request. The message below may be of interest to the application developer."));
                 break;
 
