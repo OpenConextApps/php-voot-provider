@@ -13,11 +13,11 @@ This project is a stand-alone VOOT group provider. The
 # Requirements
 The installation requirements on Fedora/CentOS can be installed like this:
 
-    $ su -c 'yum install php-pdo php php-ldap httpd mod_xsendfile'
+    $ su -c 'yum install git php-pdo php php-ldap httpd mod_xsendfile wget'
 
 On Debian/Ubuntu:
 
-    $ sudo apt-get install git sqlite3 php5 php5-sqlite unzip libapache2-mod-xsendfile php5-ldap
+    $ sudo apt-get install git sqlite3 php5 php5-sqlite wget unzip libapache2-mod-xsendfile php5-ldap
 
 # Installation
 The project includes an install script that downloads the required dependencies
@@ -141,6 +141,9 @@ the `adminResourceOwnerId[]` list in `config/oauth.ini`.
 # Testing
 
 A JavaScript client is included to test the VOOT provider. It uses the 
-"implicit grant" OAuth 2 profile to obtain an access token. The client can 
-be found at `client/index.html`. Modify the client registration and the file 
+"implicit" grant type to obtain an access token. The client can  be found at 
+`client/index.html`. Modify the client registration and the file 
 `client/voot.js` to point to the correct base endpoint as well.
+
+There also is an "authorization code" grant type test client available at 
+`web/index.php`.
