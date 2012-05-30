@@ -20,16 +20,23 @@ On Debian/Ubuntu:
     $ sudo apt-get install git sqlite3 php5 php5-sqlite wget unzip libapache2-mod-xsendfile php5-ldap
 
 # Installation
-The project includes an install script that downloads the required dependencies
+The project includes install scripts that downloads the required dependencies
 and sets the permissions for the directories to write to and fixes SELinux 
 permissions.
 
     $ cd /var/www/html
     $ git clone git://github.com/fkooman/phpvoot.git
     $ cd phpvoot
-    $ docs/install.sh
+    $ docs/install_dependencies.sh
 
-On Ubuntu (Debian) you would typically install in `/var/www/phpvoot`.
+Now you can configure the installation and set some default OAuth client
+registrations. Make sure to replace the URI with the full URI to your \
+installation.
+
+    $ docs/install.sh https://localhost/phpvoot
+
+On Ubuntu (Debian) you would typically install in `/var/www/phpvoot` and not in
+`/var/www/html/phpvoot`.
 
 # SELinux
 The install script already takes care of setting the file permissions of the
@@ -109,23 +116,8 @@ that do work.
 
 # Configuring OAuth Clients
 
-The default OAuth token store contains two OAuth clients, one for the included
-demo VOOT client (`client/index.html` and one for the management environment 
-(`manage/index.html`). You may need to update the `redirect_uri` to have them
-point to your actual server if you don't run the code on `localhost`:
-
-    http://localhost/phpvoot/manage/index.html
-
-Modify it to the actual location where the files were installed, for example:
-
-    https://www.example.org/phpvoot/manage/index.html
-
-To update the client registration:
-
-    $ echo "UPDATE Client SET redirect_uri='https://www.example.org/phpvoot/client/index.html' WHERE id='voot';" | sqlite3 data/oauth2.sqlite
-    $ echo "UPDATE Client SET redirect_uri='https://www.example.org/phpvoot/manage/index.html' WHERE id='manage';" | sqlite3 data/oauth2.sqlite
-
-You also need to modify the API endpoint in `manage/manage.js`:
+If you want to use the JS management interface you need to modify the API 
+endpoint in `manage/manage.js`:
 
     var apiRoot = 'http://localhost/phpvoot';
 
@@ -134,9 +126,12 @@ To (in this example):
     var apiRoot = 'https://www.example.org/phpvoot';
 
 Once this is done you can manage the OAuth client registrations by going to the
-URL configured above at `https://www.example.org/phpvoot/manage/index.html`. Make
-sure the user identifiers you want to allow `admin` permissions are listed in 
-the `adminResourceOwnerId[]` list in `config/oauth.ini`.
+URL configured above at `https://www.example.org/phpvoot/manage/index.html`. 
+
+Make sure the user identifiers you want to allow `admin` permissions are listed 
+in the `adminResourceOwnerId[]` list in `config/oauth.ini` and you ran the 
+`docs/install.sh` script with the full installation URI of phpvoot as a 
+parameter, see above on how to do that.
 
 # Testing
 
