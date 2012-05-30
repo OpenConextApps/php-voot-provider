@@ -249,6 +249,7 @@ class AuthorizationServer {
             return $this->authorize($resourceOwner, $get);
 
         } else {
+            $client = $this->_storage->getClient($clientId);
             throw new ClientException("access_denied", "not authorized by resource owner", $client, $state);
         }
     }
