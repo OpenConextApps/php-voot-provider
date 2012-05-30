@@ -115,6 +115,19 @@ class SlimOAuth {
 
     public function approve() {
         $this->_authenticate();
+        // CSRF protection, check the referrer, it should be equal to the 
+        // request URI
+        $fullRequestUri = $this->_app->request()->getUrl() . $this->_app->request()->getPath();
+        $referrerUri = $this->_app->request()->getReferrer();
+
+        // throw away query from referrer
+        $queryPos = strpos($referrerUri, "?");
+        if(FALSE !== $queryPos) {
+            $referrerUri = substr($referrerUri, 0, $queryPos);
+        }
+        if($fullRequestUri !== $referrerUri) {
+            throw new OAuthException("csrf protection triggered, referrer does not match request uri");
+        }
         $result = $this->_as->approve($this->_resourceOwner, $this->_app->request()->get(), $this->_app->request()->post());
         $this->_app->redirect($result['url'], 302);
     }
