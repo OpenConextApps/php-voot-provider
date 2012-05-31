@@ -90,42 +90,57 @@ class SlimOAuth {
 
     public function authorize() {
         $this->_authenticate();
+        $this->_resourceOwner->setHint(AuthorizationServer::getParameter($this->_app->request()->get(), 'user_address'));
         $result = $this->_as->authorize($this->_resourceOwner, $this->_app->request()->get());
 
         // we know that all request parameters we used below are acceptable because they were verified by the authorize method.
         // Do something with case where no scope is requested!
-        if($result['action'] === 'ask_approval') { 
-            $client = $this->_oauthStorage->getClient($this->_app->request()->get('client_id'));
-            if(FALSE === $client) {
-                if($this->_c->getValue('allowUnregisteredClients')) {
-                    $client = $this->_oauthStorage->getClientByRedirectUri($this->_app->request()->get('redirect_uri'));
-                }   
-            }
+        if($result['action'] === 'ask_approval') {
+            $response = $this->_app->response();
+            // prevent loading the authorization window in an iframe
+            $response["X-Frame-Options"] = "deny"; 
+            $client = $result['client'];
             $this->_app->render('askAuthorization.php', array (
                 'clientId' => $client->id,
                 'clientName' => $client->name,
                 'clientDescription' => $client->description,
                 'clientRedirectUri' => $client->redirect_uri,
-                'scope' => $this->_app->request()->get('scope'), 
-                'authorizeNonce' => $result['authorize_nonce'],
+                'scope' => AuthorizationServer::normalizeScope($this->_app->request()->get('scope'), TRUE), 
                 'serviceName' => $this->_c->getValue('serviceName'),
                 'serviceResources' => $this->_c->getValue('serviceResources'),
                 'allowFilter' => $this->_c->getValue('allowResourceOwnerScopeFiltering')));
         } else {
-            $this->_app->redirect($result['url']);
+            $this->_app->redirect($result['url'], 302);
         }
     }
 
     public function approve() {
         $this->_authenticate();
+        $this->_resourceOwner->setHint(AuthorizationServer::getParameter($this->_app->request()->get(), 'user_address'));
+
+        // CSRF protection, check the referrer, it should be equal to the 
+        // request URI
+        $fullRequestUri = $this->_app->request()->getUrl() . $this->_app->request()->getPath();
+        $referrerUri = $this->_app->request()->getReferrer();
+
+        // throw away query from referrer
+        $queryPos = strpos($referrerUri, "?");
+        if(FALSE !== $queryPos) {
+            $referrerUri = substr($referrerUri, 0, $queryPos);
+        }
+        if($fullRequestUri !== $referrerUri) {
+            throw new ResourceOwnerException("csrf protection triggered, referrer does not match request uri");
+        }
         $result = $this->_as->approve($this->_resourceOwner, $this->_app->request()->get(), $this->_app->request()->post());
-        $this->_app->redirect($result['url']);
+        $this->_app->redirect($result['url'], 302);
     }
 
     public function token() {
         $result = $this->_as->token($this->_app->request()->post(), $this->_app->request()->headers("X-Authorization"));
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
+        $response['Cache-Control'] = 'no-store';
+        $response['Pragma'] = 'no-cache';
         $response->body(json_encode($result));
     }
 
@@ -328,9 +343,19 @@ class SlimOAuth {
                 }
                 $response->status($code);
                 break;
+        
+            case "ClientException": 
+                $client = $e->getClient();
+                $separator = ($client->type === "user_agent_based_application") ? "#" : "?";
+                $parameters = array("error" => $e->getMessage(), "error_description" => $e->getDescription());
+                if(NULL !== $e->getState()) {
+                    $parameters['state'] = $e->getState();
+                }
+                $this->_app->redirect($client->redirect_uri . $separator . http_build_query($parameters), 302);
+                break;
 
-            case "OAuthException":
-                // we cannot establish the identity of the client, tell user
+            case "ResourceOwnerException":
+                // tell resource owner about the error
                 $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "The identity of the application that tried to access this resource could not be established. Therefore we stopped processing this request. The message below may be of interest to the application developer."));
                 break;
 
@@ -345,6 +370,8 @@ class SlimOAuth {
                 }
                 $response->status($code);
                 $response['Content-Type'] = 'application/json';
+                $response['Cache-Control'] = 'no-store';
+                $response['Pragma'] = 'no-cache';
                 $response->body(json_encode(array("error" => $error, "error_description" => $description)));
                 break;
 

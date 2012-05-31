@@ -8,6 +8,9 @@ class DummyResourceOwner implements IResourceOwner {
         $this->_c = $c;
     }
 
+    public function setHint($resourceOwnerIdHint = NULL) {
+    }
+
     public function getResourceOwnerId() {
         return $this->_c->getSectionValue('DummyResourceOwner', 'resourceOwnerId');
     }

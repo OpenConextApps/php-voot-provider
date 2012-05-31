@@ -7,6 +7,7 @@ CREATE TABLE `Client` (
   `type` text NOT NULL,
   PRIMARY KEY (`id`)
 );
+
 CREATE TABLE `AccessToken` (
   `access_token` varchar(64) NOT NULL,
   `client_id` varchar(64) NOT NULL,
@@ -18,22 +19,11 @@ CREATE TABLE `AccessToken` (
   PRIMARY KEY (`access_token`),
   FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`)
 );
+
 CREATE TABLE `Approval` (
   `client_id` varchar(64) NOT NULL,
   `resource_owner_id` text NOT NULL,
   `scope` text NOT NULL,
-  FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`)
-);
-
-CREATE TABLE `AuthorizeNonce` (
-  `authorize_nonce` varchar(64) NOT NULL,
-  `resource_owner_id` text NOT NULL,
-  `client_id` varchar(64) NOT NULL,
-  `response_type` text NOT NULL,
-  `redirect_uri` text,
-  `scope` text NOT NULL,
-  `state` text,
-  PRIMARY KEY (`authorize_nonce`),
   FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`)
 );
 

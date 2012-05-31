@@ -1,6 +1,7 @@
 <?php 
 
 interface IResourceOwner {
+    public function setHint                    ($resourceOwnerIdHint = NULL);
     public function getResourceOwnerId         ();
     public function getResourceOwnerDisplayName();
 }
@@ -8,10 +9,6 @@ interface IResourceOwner {
 interface IOAuthStorage {
     public function storeAccessToken      ($accessToken, $issueTime, $clientId, $resourceOwnerId, $resourceOwnerDisplayName, $scope, $expiry);
     public function getAccessToken        ($accessToken);
-
-    public function storeAuthorizeNonce   ($authorizeNonce, $clientId, $resourceOwnerId, $responseType, $redirectUri, $scope, $state);
-    public function getAuthorizeNonce     ($clientId, $resourceOwnerId, $scope, $authorizeNonce);
-
     public function storeAuthorizationCode($authorizationCode, $issueTime, $clientId, $redirectUri, $accessToken);
     public function getAuthorizationCode  ($authorizationCode, $redirectUri);
     public function deleteAuthorizationCode($authorizationCode, $redirectUri);
@@ -32,26 +29,54 @@ interface IOAuthStorage {
 }
 
 /**
- * Exception thrown when the user instead of the client needs to be informed
- * of an error, i.e.: when the client identity cannot be confirmed or is not
- * valid
+ * Thrown when the resource owner needs to be  informed of an error
  */
-class OAuthException extends Exception {
+class ResourceOwnerException extends Exception {
 
 }
 
 /**
- * Exception thrown when the verification of the access token fails
+ * Thrown when the verification of the access token fails
  */
 class VerifyException extends Exception {
 
 }
 
 /**
- * When interaction with the token endpoint fails
+ * Thrown when interaction with the token endpoint fails
  * https://tools.ietf.org/html/draft-ietf-oauth-v2-26#section-5.2
  */
 class TokenException extends Exception {
+
+}
+
+/**
+ * Thrown when the client needs to be informed of an error
+ */
+class ClientException extends Exception {
+
+    private $_description;
+    private $_client;
+    private $_state;
+
+    public function __construct($message, $description, $client, $state, $code = 0, Exception $previous = null) {
+        $this->_description = $description;
+        $this->_client = $client;
+        $this->_state = $state;
+        parent::__construct($message, $code, $previous);
+    }
+
+    public function getDescription() {
+        return $this->_description;
+    }
+
+    public function getClient() {
+        return $this->_client;
+    }
+
+    public function getState() {
+        return $this->_state;
+    }
 
 }
 
@@ -81,63 +106,48 @@ class AuthorizationServer {
         $state        = self::getParameter($get, 'state');
 
         if(NULL === $clientId) {
-            throw new OAuthException('client_id missing');
+            throw new ResourceOwnerException('client_id missing');
         }
 
-        if(strlen($clientId) > 64) {
-            throw new OAuthException('client_id is too long');
+        $clientIdLength = strlen($clientId);
+        if(NULL === $clientIdLength || $clientIdLength < 1 || $clientIdLength > 64) {
+            throw new ResourceOwnerException('client_id length exceeded');
         }
 
         if(NULL === $responseType) {
-            throw new OAuthException('response_type missing');
+            throw new ResourceOwnerException('response_type missing');
         }
 
         $client = $this->_storage->getClient($clientId);
         if(FALSE === $client) {
             if(!$this->_c->getValue('allowUnregisteredClients')) {
-                throw new OAuthException('client not registered');
-            }      
-
+                throw new ResourceOwnerException('client not registered');
+            }
             // we need a redirectUri for unregistered clients
             if(NULL === $redirectUri) {
-                throw new OAuthException('redirect_uri required for unregistered clients');
+                throw new ResourceOwnerException('redirect_uri required for unregistered clients');
             }
             // validate the redirectUri
             $u = filter_var($redirectUri, FILTER_VALIDATE_URL);
             if(FALSE === $u) {
-                throw new OAuthException("redirect_uri is malformed");
+                throw new ResourceOwnerException("redirect_uri is malformed");
             }
-            // redirectUri MUST NOT contain fragment (should not be possible to
-            // introduce this using the browser...)
-            $uriParts = parse_url($redirectUri);
-            if(array_key_exists("fragment", $uriParts)) {
-                throw new OAuthException("redirect_uri must not contain fragment");
+            // redirectUri MUST NOT contain fragment
+            $fragment = parse_url($redirectUri, PHP_URL_FRAGMENT);
+            if($fragment !== NULL) {
+                throw new ResourceOwnerException("redirect_uri must not contain fragment");
             }
-
-            // this client is unregistered and unregistered clients are allowed,
-            // check for the client using its redirect_uri as client_id
-            $client = $this->_storage->getClientByRedirectUri($redirectUri);
-            if(FALSE === $client) { 
-                // create a new one
-                $newClient = array ( 'id' => $clientId,
-                                     'secret' => NULL,
-                                     'name' => $uriParts['host'],
-                                     'description' => "UNREGISTERED (" . $uriParts['host'] . ")",
-                                     'redirect_uri' => $redirectUri,
-                                     'type' => 'user_agent_based_application');
-                if(FALSE === $this->_storage->addClient($newClient)) {
-                    throw new OAuthException('unable to dynamically register client');
-                }
-                $client = $this->_storage->getClientByRedirectUri($redirectUri);
-                if(FALSE === $client) {
-                    throw new OAuthException('unable to get client by redirect_uri');
-                }
+            // clientId MUST be hostname of redirect_uri
+            $host = parse_url($redirectUri, PHP_URL_HOST);
+            if($host !== $clientId) {
+                throw new ResourceOwnerException("client_id should match with hostname of redirect_uri");
             }
+            $client = (object) array ("id" => $host, "name" => $host, "description" => "UNREGISTERED APPLICATION", "type" => "user_agent_based_application", "redirect_uri" => $redirectUri);
         }
 
         if(NULL !== $redirectUri) {
             if($client->redirect_uri !== $redirectUri) {
-                throw new OAuthException('specified redirect_uri not the same as registered redirect_uri');
+                throw new ResourceOwnerException('specified redirect_uri not the same as registered redirect_uri');
             }
         }
 
@@ -147,53 +157,33 @@ class AuthorizationServer {
                                          "user_agent_based_application" => array ("token"));
 
         if(!in_array($responseType, $allowedClientProfiles[$client->type])) {
-            $error = array ( "error" => "unsupported_response_type", "error_description" => "response_type not supported by client profile");
-            if(NULL !== $state) {
-                $error += array ( "state" => $state);
-            }
-            // FIXME: how to know how to return the error? either token or code type?
-            return array("action" => "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+
+            throw new ClientException("unsupported_response_type", "response_type not supported by client profile", $client, $state);
         }
 
         $requestedScope = self::normalizeScope($scope);
 
         if(FALSE === $requestedScope) {
-            // malformed scope
-            $error = array ( "error" => "invalid_scope", "error_description" => "malformed scope");
-            if(NULL !== $state) {
-                $error += array ( "state" => $state);
-            }
-            return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+            throw new ClientException("invalid_scope", "malformed scope", $client, $state);
         }
 
         if(!$this->_c->getValue('allowAllScopes')) {
             if(FALSE === self::isSubsetScope($requestedScope, $this->_c->getValue('supportedScopes'))) {
                 // scope not supported
-                $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported");
-                if(NULL !== $state) {
-                    $error += array ( "state" => $state);
-                }
-                return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+                throw new ClientException("invalid_scope", "scope not supported", $client, $state);
             }
         }
 
         if(in_array('oauth_admin', self::getScopeArray($requestedScope))) {
             // administrator scope requested, need to be in admin list
             if(!in_array($resourceOwner->getResourceOwnerId(), $this->_c->getValue('adminResourceOwnerId'))) {
-                $error = array ( "error" => "invalid_scope", "error_description" => "scope not supported resource owner is not an administrator");
-                if(NULL !== $state) {
-                    $error += array ( "state" => $state);
-                }
-                return array("action"=> "error_redirect", "url" => $client->redirect_uri . "#" . http_build_query($error));
+                throw new ClientException("invalid_scope", "scope not supported: resource owner is not an administrator", $client, $state);
             }
         }
    
         $approvedScope = $this->_storage->getApproval($clientId, $resourceOwner->getResourceOwnerId(), $requestedScope);
         if(FALSE === $approvedScope || FALSE === self::isSubsetScope($requestedScope, $approvedScope->scope)) {
-            // need to ask user, scope not yet approved
-            $authorizeNonce = self::randomHex(16);
-            $this->_storage->storeAuthorizeNonce($authorizeNonce, $clientId, $resourceOwner->getResourceOwnerId(), $responseType, $redirectUri, $scope, $state);
-            return array ("action" => "ask_approval", "authorize_nonce" => $authorizeNonce);
+            return array ("action" => "ask_approval", "client" => $client);
         } else {
             // approval already exists for this scope
             $accessToken = self::randomHex(16);
@@ -225,44 +215,24 @@ class AuthorizationServer {
     }
 
     public function approve(IResourceOwner $resourceOwner, array $get, array $post) {
-        $clientId       = self::getParameter($get, 'client_id');
-        $responseType   = self::getParameter($get, 'response_type');
-        $redirectUri    = self::getParameter($get, 'redirect_uri');
-        $scope          = self::normalizeScope(self::getParameter($get, 'scope'));
-        $state          = self::getParameter($get, 'state');
+        $clientId     = self::getParameter($get, 'client_id');
+        $responseType = self::getParameter($get, 'response_type');
+        $redirectUri  = self::getParameter($get, 'redirect_uri');
+        $scope        = self::normalizeScope(self::getParameter($get, 'scope'));
+        $state        = self::getParameter($get, 'state');
 
-        $authorizeNonce = self::getParameter($post, 'authorize_nonce');
-        $postScope      = self::normalizeScope(self::getParameter($post, 'scope'));
-        $approval       = self::getParameter($post, 'approval');
+        $result = $this->authorize($resourceOwner, $get);
+        $postScope = self::normalizeScope(self::getParameter($post, 'scope'));
+        $approval = self::getParameter($post, 'approval');
 
-        // FIXME: normalizeScope returns FALSE if it is a broken scope, do something
-        //        with this...
-        // FIXME: we should add all parameters from above to the 
-        //        getAuthorizeNonce check, also responseType, redirectUri, state...
-        if(FALSE === $this->_storage->getAuthorizeNonce($clientId, $resourceOwner->getResourceOwnerId(), $scope, $authorizeNonce)) {
-            throw new Exception("authorize nonce was not found");
-        }
-
-        $client = $this->_storage->getClient($clientId);
-        if(FALSE === $client) {
-            if(!$this->_c->getValue('allowUnregisteredClients')) {
-                throw new OAuthException('client not registered');
-            }
-            // this client is unregistered and unregistered clients are allowed,
-            // check for the client using its redirect_uri as client_id
-            $client = $this->_storage->getClientByRedirectUri($redirectUri);
-            if(FALSE === $client) { 
-                throw new OAuthException('client not registered');
-            }
+        if($result['action'] !== "ask_approval") {
+            return $result;
         }
 
         if("Approve" === $approval) {
             if(FALSE === self::isSubsetScope($postScope, $scope)) {
-                $error = array ( "error" => "invalid_scope", "error_description" => "approved scope is not a subset of requested scope");
-                if(NULL !== $state) {
-                    $error += array ( "state" => $state);
-                }
-                return array("action" => "redirect_error", "url" => $client->redirect_uri . "#" . http_build_query($error));
+                // FIXME: should this actually be an authorize exception? this is a user error!
+                throw new ClientException("invalid_scope", "approved scope is not a subset of requested scope", $client, $state);
             }
 
             $approvedScope = $this->_storage->getApproval($clientId, $resourceOwner->getResourceOwnerId());
@@ -280,11 +250,8 @@ class AuthorizationServer {
             return $this->authorize($resourceOwner, $get);
 
         } else {
-            $error = array ( "error" => "access_denied", "error_description" => "not authorized by resource owner");
-            if(NULL !== $state) {
-                $error += array ( "state" => $state);
-            }
-            return array("action" => "redirect_error", "url" => $client->redirect_uri . "#" . http_build_query($error));
+            $client = $this->_storage->getClient($clientId);
+            throw new ClientException("access_denied", "not authorized by resource owner", $client, $state);
         }
     }
 
@@ -377,7 +344,7 @@ class AuthorizationServer {
     }
 
     public static function getParameter(array $parameters, $key) {
-        return array_key_exists($key, $parameters) ? $parameters[$key] : NULL;
+        return (array_key_exists($key, $parameters) && !empty($parameters[$key])) ? $parameters[$key] : NULL;
     }
 
     private static function _isValidScopeToken($scopeToTest) {
