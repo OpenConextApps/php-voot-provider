@@ -221,7 +221,7 @@ class SlimStorage {
         $subject = $this->_app->request()->get('uri');
         list($x,$userAddress) = explode(":", $subject);
         $baseUri = $this->_app->request()->getUrl() . $this->_app->request()->getRootUri();
-        $authUri = $baseUri . "/oauth/authorize";
+        $authUri = $baseUri . "/oauth/authorize?user_address=" . $userAddress;
         $templateUri = $baseUri . "/$userAddress/{category}/";
         $this->_app->response()->header("Access-Control-Allow-Origin", "*");
         $this->_app->response()->header("Content-Type", "application/xrd+xml; charset=UTF-8");
