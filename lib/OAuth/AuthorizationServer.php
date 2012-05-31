@@ -1,6 +1,7 @@
 <?php 
 
 interface IResourceOwner {
+    public function setHint                    ($resourceOwnerIdHint = NULL);
     public function getResourceOwnerId         ();
     public function getResourceOwnerDisplayName();
 }

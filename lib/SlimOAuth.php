@@ -90,6 +90,7 @@ class SlimOAuth {
 
     public function authorize() {
         $this->_authenticate();
+        $this->_resourceOwner->setHint(AuthorizationServer::getParameter($this->_app->request()->get(), 'user_address'));
         $result = $this->_as->authorize($this->_resourceOwner, $this->_app->request()->get());
 
         // we know that all request parameters we used below are acceptable because they were verified by the authorize method.
@@ -115,6 +116,8 @@ class SlimOAuth {
 
     public function approve() {
         $this->_authenticate();
+        $this->_resourceOwner->setHint(AuthorizationServer::getParameter($this->_app->request()->get(), 'user_address'));
+
         // CSRF protection, check the referrer, it should be equal to the 
         // request URI
         $fullRequestUri = $this->_app->request()->getUrl() . $this->_app->request()->getPath();
