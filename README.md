@@ -6,9 +6,9 @@ This project is a stand-alone VOOT group provider. The
 # Features
 * PDO storage backend for VOOT data and OAuth tokens
 * LDAP backend for VOOT
-* Only OAuth 2 support
+* OAuth 2 (authorization code and implicit grant) support
 * SAML authentication support ([simpleSAMLphp](http://www.simplesamlphp.org)) 
-* BrowserID support (almost)
+* [BrowserID](http://browserid.org) authentication support
 
 # Requirements
 The installation requirements on Fedora/CentOS can be installed like this:
