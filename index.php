@@ -15,8 +15,8 @@ $app = new Slim(array(
     'log.writer' => new TimestampLogFileWriter(array('path' => 'data' . DIRECTORY_SEPARATOR . 'logs')),
 ));
 
-$oauthConfig = new Config("oauth");
-$vootConfig = new Config("voot");
+$oauthConfig = new Config(__DIR__ . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "oauth.ini");
+$vootConfig = new Config(__DIR__ . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "voot.ini");
 
 // OAuth
 $s = new SlimOAuth($app, $oauthConfig);
