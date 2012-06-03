@@ -37,6 +37,14 @@ class Config {
         }
     }
 
+    public function setValue($key, $value) {
+        $this->_configValues[$key] = $value;
+    }
+
+    public function setSectionValue($section, $key, $value) {
+        $this->_configValues[$section][$key] = $value;
+    }
+
 }
 
 class ConfigException extends Exception {
