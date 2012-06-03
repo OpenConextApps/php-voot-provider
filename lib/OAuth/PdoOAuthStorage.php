@@ -13,8 +13,18 @@ class PdoOAuthStorage implements IOAuthStorage {
 
     public function __construct(Config $c) {
         $this->_c = $c;
-        $this->_pdo = new PDO($this->_c->getSectionValue('PdoOAuthStorage', 'dsn'), $this->_c->getSectionValue('PdoOAuthStorage', 'username', FALSE), $this->_c->getSectionValue('PdoOAuthStorage', 'password', FALSE));
-    	$this->_pdo->exec("PRAGMA foreign_keys = ON");
+
+        $driverOptions = array();
+        if(TRUE === $this->_c->getSectionValue('PdoOAuthStorage', 'persistentConnection')) {
+            $driverOptions = array(PDO::ATTR_PERSISTENT => TRUE);
+        }
+
+        $this->_pdo = new PDO($this->_c->getSectionValue('PdoOAuthStorage', 'dsn'), $this->_c->getSectionValue('PdoOAuthStorage', 'username', FALSE), $this->_c->getSectionValue('PdoOAuthStorage', 'password', FALSE), $driverOptions);
+
+        if(FALSE === $this->_c->getValue("allowUnregisteredClients")) {
+            // enforce foreign keys, we do not have unregistered clients
+        	$this->_pdo->exec("PRAGMA foreign_keys = ON");
+        }
     }
 
     public function getClients() {

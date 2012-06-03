@@ -53,6 +53,10 @@ dsn = "sqlite:/PATH/TO/APP/data/oauth2.sqlite";
 ;username = "oauth"
 ;password = "s3cr3t"
 
+; use a persistent DB connection, make sure to ENABLE this for PRODUCTION 
+; systems
+persistentConnection = FALSE
+
 ; Dummy Configuration
 [DummyResourceOwner]
 resourceOwnerId = "fkooman"
