@@ -324,6 +324,7 @@ class SlimOAuth {
     }
 
     public function errorHandler(Exception $e) {
+       $this->_app->getLog()->error($e->getMessage() . PHP_EOL . $e->getTraceAsString());        
         switch(get_class($e)) {
 
             case "VerifyException":
@@ -366,7 +367,7 @@ class SlimOAuth {
                 $code = 400;
                 if("invalid_client" === $error) {
                     $code = 401;
-                    $response['WWW-Authenticate'] = sprintf('Basic realm="OAuth Server",error="%s",error_description="%s"', $error, $description);
+                    $response['WWW-Authenticate'] = 'Basic realm="OAuth Server"';
                 }
                 $response->status($code);
                 $response['Content-Type'] = 'application/json';
@@ -378,7 +379,6 @@ class SlimOAuth {
             case "ErrorException":
 
             default:
-                $this->_app->getLog()->error($e->getMessage() . PHP_EOL . $e->getTraceAsString());
                 $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "Internal Server Error"), 500);
                 break;
         }
