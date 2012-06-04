@@ -303,7 +303,18 @@ class AuthorizationServer {
         if(FALSE === $this->_storage->deleteAuthorizationCode($code, $redirectUri)) {
             throw new TokenException("invalid_grant: this grant was already used");
         }
-        return $this->_storage->getAccessToken($result->access_token);
+        $token = $this->_storage->getAccessToken($result->access_token);
+        $token->expires_in = $token->issue_time + $token->expires_in - time();
+        // FIXME: move token_type to DB
+        $token->token_type = 'bearer';
+        // filter unwanted response parameters
+        $responseParameters = array("access_token", "token_type", "expires_in", "refresh_token", "scope");
+        foreach($token as $k => $v) {
+            if(!in_array($k, $responseParameters)) {
+                unset($token->$k);
+            }
+        }
+        return $token;
     }
 
     public function verify($authorizationHeader) {
