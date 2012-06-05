@@ -192,13 +192,14 @@ class PdoOAuthStorage implements IOAuthStorage {
         return 1 === $stmt->rowCount();
     }
 
-    public function storeAuthorizationCode($authorizationCode, $issueTime, $clientId, $redirectUri, $accessToken) {
-        $stmt = $this->_pdo->prepare("INSERT INTO AuthorizationCode (client_id, authorization_code, redirect_uri, issue_time, access_token) VALUES(:client_id, :authorization_code, :redirect_uri, :issue_time, :access_token)");
+    public function storeAuthorizationCode($authorizationCode, $resourceOwnerId, $issueTime, $clientId, $redirectUri, $scope) {
+        $stmt = $this->_pdo->prepare("INSERT INTO AuthorizationCode (client_id, resource_owner_id, authorization_code, redirect_uri, issue_time, scope) VALUES(:client_id, :resource_owner_id, :authorization_code, :redirect_uri, :issue_time, :scope)");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
+        $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
         $stmt->bindValue(":authorization_code", $authorizationCode, PDO::PARAM_STR);
         $stmt->bindValue(":redirect_uri", $redirectUri, PDO::PARAM_STR);
-        $stmt->bindValue(":access_token", $accessToken, PDO::PARAM_STR);
         $stmt->bindValue(":issue_time", time(), PDO::PARAM_INT);
+        $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
         if(FALSE === $stmt->execute()) {
             throw new StorageException("unable to store authorization code");
         }

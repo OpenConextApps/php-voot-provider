@@ -9,7 +9,7 @@ interface IResourceOwner {
 interface IOAuthStorage {
     public function storeAccessToken       ($accessToken, $issueTime, $clientId, $resourceOwnerId, $scope, $expiry);
     public function getAccessToken         ($accessToken);
-    public function storeAuthorizationCode ($authorizationCode, $issueTime, $clientId, $redirectUri, $accessToken);
+    public function storeAuthorizationCode ($authorizationCode, $resourceOwnerId, $issueTime, $clientId, $redirectUri, $scope);
     public function getAuthorizationCode   ($authorizationCode, $redirectUri);
     public function deleteAuthorizationCode($authorizationCode, $redirectUri);
 
@@ -190,12 +190,10 @@ class AuthorizationServer {
         if(FALSE === $approvedScope || FALSE === self::isSubsetScope($requestedScope, $approvedScope->scope)) {
             return array ("action" => "ask_approval", "client" => $client);
         } else {
-            // approval already exists for this scope
-            $accessToken = self::randomHex(16);
-            $this->_storage->storeAccessToken($accessToken, time(), $clientId, $resourceOwner->getResourceOwnerId(), $requestedScope, $this->_c->getValue('accessTokenExpiry'));
-
             if("token" === $responseType) {
                 // implicit grant
+                $accessToken = self::randomHex(16);
+                $this->_storage->storeAccessToken($accessToken, time(), $clientId, $resourceOwner->getResourceOwnerId(), $requestedScope, $this->_c->getValue('accessTokenExpiry'));
                 $token = array("access_token" => $accessToken, 
                                "expires_in" => $this->_c->getValue('accessTokenExpiry'), 
                                "token_type" => "bearer", 
@@ -206,10 +204,8 @@ class AuthorizationServer {
                 return array("action" => "redirect", "url" => $client->redirect_uri . "#" . http_build_query($token));
             } else {
                 // authorization code grant
-
-                // we already generated an access_token, and we register this together with the authorization code
                 $authorizationCode = self::randomHex(16);
-                $this->_storage->storeAuthorizationCode($authorizationCode, time(), $clientId, $redirectUri, $accessToken);
+                $this->_storage->storeAuthorizationCode($authorizationCode, $resourceOwner->getResourceOwnerId(), time(), $clientId, $redirectUri, $requestedScope);
                 $token = array("code" => $authorizationCode);
                 if(NULL !== $state) {
                     $token += array ("state" => $state);
@@ -323,26 +319,22 @@ class AuthorizationServer {
             throw new TokenException("invalid_grant: grant was not issued to this client");
         }
 
+        // create a new access token
+        $accessToken = self::randomHex(16);
+        $this->_storage->storeAccessToken($accessToken, time(), $result->client_id, $result->resource_owner_id, $result->scope, $this->_c->getValue('accessTokenExpiry'));
+        $token = $this->_storage->getAccessToken($accessToken);
+
         if("authorization_code" === $grantType) {
             // we need to be able to delete, otherwise someone else was first!
             if(FALSE === $this->_storage->deleteAuthorizationCode($code, $redirectUri)) {
                 throw new TokenException("invalid_grant: this grant was already used");
             }
-
-            // FIXME: maybe we should only create the access token here, so we don't need to 
-            // add it to the AuthorizationCode table... Or was there a special reason to do it there?
-            $token = $this->_storage->getAccessToken($result->access_token);
-
-            // create a new refresh token
+            // create a refresh token as well
             $token->refresh_token = self::randomHex(16);
             $this->_storage->storeRefreshToken($token->refresh_token, $token->client_id, $token->resource_owner_id, $token->scope);
         } else {
             // refresh_token
-
-            // create a new access token
-            $accessToken = self::randomHex(16);
-            $this->_storage->storeAccessToken($accessToken, time(), $result->client_id, $result->resource_owner_id, $result->scope, $this->_c->getValue('accessTokenExpiry'));
-            $token = $this->_storage->getAccessToken($accessToken);
+            // just return the generated access_token
         }
 
         $token->expires_in = $token->issue_time + $token->expires_in - time();
