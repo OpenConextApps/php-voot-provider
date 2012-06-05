@@ -12,6 +12,12 @@
 
 - validate redirect_uri on registration, it cannot contain '#'
 
+- make sure refresh_token can only be requested by correct client_id, 
+  so it has to belong to the client
+
+- make sure authorization_code belongs to the client_id requesting
+
+
 - SECURITY
   - look into htaccess Authorization header rewrite to make it work better!
 
