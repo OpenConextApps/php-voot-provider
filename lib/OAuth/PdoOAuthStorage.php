@@ -36,6 +36,43 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->fetchAll(PDO::FETCH_ASSOC); 
     }
 
+    public function getResourceOwner($resourceOwnerId) {
+        $stmt = $this->_pdo->prepare("SELECT * FROM ResourceOwner WHERE id = :resource_owner_id");
+        $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
+        $result = $stmt->execute();
+        if (FALSE === $result) {
+            throw new StorageException("unable to retrieve resource owner");
+        }
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
+    public function storeResourceOwner($resourceOwnerId, $resourceOwnerDisplayName) {
+        $result = $this->getResourceOwner($resourceOwnerId);
+        if(FALSE === $result || empty($result)) {
+            // resource_owner_id does not exist yet, insert new record
+            $stmt = $this->_pdo->prepare("INSERT INTO ResourceOwner (id, display_name) VALUES(:id, :display_name)");
+            $stmt->bindValue(":id", $resourceOwnerId, PDO::PARAM_STR);
+            $stmt->bindValue(":display_name", $resourceOwnerDisplayName, PDO::PARAM_STR);
+            if(FALSE === $stmt->execute()) {
+                throw new StorageException("unable to store resource owner");
+            }
+            return 1 === $stmt->rowCount();
+        } else {
+            // resource_owner_id already exists, update if display_name changed
+            if($resourceOwnerDisplayName !== $result->display_name) {
+                $stmt = $this->_pdo->prepare("UPDATE ResourceOwner SET display_name = :display_name WHERE id = :id");
+                $stmt->bindValue(":id", $resourceOwnerId, PDO::PARAM_STR);
+                $stmt->bindValue(":display_name", $resourceOwnerDisplayName, PDO::PARAM_STR);
+                if(FALSE === $stmt->execute()) {
+                    throw new StorageException("unable to update resource owner");
+                }
+                return 1 === $stmt->rowCount();
+            }
+            // already exists, no change in display_name, do nothing
+        }
+        return TRUE;
+    }
+
     public function getClient($clientId) {
         $stmt = $this->_pdo->prepare("SELECT * FROM Client WHERE id = :client_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
@@ -145,11 +182,10 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->fetch(PDO::FETCH_OBJ);
     }
 
-    public function storeAccessToken($accessToken, $issueTime, $clientId, $resourceOwnerId, $resourceOwnerDisplayName, $scope, $expiry) {
-        $stmt = $this->_pdo->prepare("INSERT INTO AccessToken (client_id, resource_owner_id, resource_owner_display_name, issue_time, expires_in, scope, access_token) VALUES(:client_id, :resource_owner_id, :resource_owner_display_name, :issue_time, :expires_in, :scope, :access_token)");
+    public function storeAccessToken($accessToken, $issueTime, $clientId, $resourceOwnerId, $scope, $expiry) {
+        $stmt = $this->_pdo->prepare("INSERT INTO AccessToken (client_id, resource_owner_id, issue_time, expires_in, scope, access_token) VALUES(:client_id, :resource_owner_id, :issue_time, :expires_in, :scope, :access_token)");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
-        $stmt->bindValue(":resource_owner_display_name", $resourceOwnerDisplayName, PDO::PARAM_STR);
         $stmt->bindValue(":issue_time", time(), PDO::PARAM_INT);
         $stmt->bindValue(":expires_in", $expiry, PDO::PARAM_INT);
         $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);

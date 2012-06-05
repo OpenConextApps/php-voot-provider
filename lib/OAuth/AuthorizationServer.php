@@ -7,24 +7,27 @@ interface IResourceOwner {
 }
 
 interface IOAuthStorage {
-    public function storeAccessToken      ($accessToken, $issueTime, $clientId, $resourceOwnerId, $resourceOwnerDisplayName, $scope, $expiry);
-    public function getAccessToken        ($accessToken);
-    public function storeAuthorizationCode($authorizationCode, $issueTime, $clientId, $redirectUri, $accessToken);
-    public function getAuthorizationCode  ($authorizationCode, $redirectUri);
+    public function storeAccessToken       ($accessToken, $issueTime, $clientId, $resourceOwnerId, $scope, $expiry);
+    public function getAccessToken         ($accessToken);
+    public function storeAuthorizationCode ($authorizationCode, $issueTime, $clientId, $redirectUri, $accessToken);
+    public function getAuthorizationCode   ($authorizationCode, $redirectUri);
     public function deleteAuthorizationCode($authorizationCode, $redirectUri);
 
-    public function getClients            ();
-    public function getClient             ($clientId);
-    public function getClientByRedirectUri($redirectUri);
-    public function addClient             ($data);
-    public function updateClient          ($clientId, $data);
-    public function deleteClient          ($clientId);
+    public function getResourceOwner       ($resourceOwnerId);
+    public function storeResourceOwner     ($resourceOwnerId, $resourceOwnerDisplayName);
 
-    public function getApprovals          ($resourceOwnerId);
-    public function getApproval           ($clientId, $resourceOwnerId);
-    public function addApproval           ($clientId, $resourceOwnerId, $scope);
-    public function updateApproval        ($clientId, $resourceOwnerId, $scope);
-    public function deleteApproval        ($clientId, $resourceOwnerId);
+    public function getClients             ();
+    public function getClient              ($clientId);
+    public function getClientByRedirectUri ($redirectUri);
+    public function addClient              ($data);
+    public function updateClient           ($clientId, $data);
+    public function deleteClient           ($clientId);
+
+    public function getApprovals           ($resourceOwnerId);
+    public function getApproval            ($clientId, $resourceOwnerId);
+    public function addApproval            ($clientId, $resourceOwnerId, $scope);
+    public function updateApproval         ($clientId, $resourceOwnerId, $scope);
+    public function deleteApproval         ($clientId, $resourceOwnerId);
 
 }
 
@@ -187,7 +190,7 @@ class AuthorizationServer {
         } else {
             // approval already exists for this scope
             $accessToken = self::randomHex(16);
-            $this->_storage->storeAccessToken($accessToken, time(), $clientId, $resourceOwner->getResourceOwnerId(), $resourceOwner->getResourceOwnerDisplayName(), $requestedScope, $this->_c->getValue('accessTokenExpiry'));
+            $this->_storage->storeAccessToken($accessToken, time(), $clientId, $resourceOwner->getResourceOwnerId(), $requestedScope, $this->_c->getValue('accessTokenExpiry'));
 
             if("token" === $responseType) {
                 // implicit grant
