@@ -26,9 +26,18 @@ CREATE TABLE `AccessToken` (
   FOREIGN KEY (`resource_owner_id`) REFERENCES `ResourceOwner` (`id`)
 );
 
+CREATE TABLE `RefreshToken` (
+  `refresh_token` varchar(64) NOT NULL,
+  `client_id` varchar(64) NOT NULL,
+  `resource_owner_id` varchar(64) NOT NULL,
+  `scope` text NOT NULL,
+  PRIMARY KEY (`refresh_token`),
+  FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`),
+  FOREIGN KEY (`resource_owner_id`) REFERENCES `ResourceOwner` (`id`)
+);
+
 CREATE TABLE `Approval` (
   `client_id` varchar(64) NOT NULL,
-  `refresh_token` varchar(64) DEFAULT NULL,
   `resource_owner_id` varchar(64) NOT NULL,
   `scope` text NOT NULL,
   FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`),

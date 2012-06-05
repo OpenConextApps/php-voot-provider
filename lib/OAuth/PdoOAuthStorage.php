@@ -130,6 +130,12 @@ class PdoOAuthStorage implements IOAuthStorage {
         if(FALSE === $stmt->execute()) {
             throw new StorageException("unable to delete authorization codes");
         }
+        // delete refresh tokens
+        $stmt = $this->_pdo->prepare("DELETE FROM RefreshToken WHERE client_id = :client_id");
+        $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
+        if(FALSE === $stmt->execute()) {
+            throw new StorageException("unable to delete refresh tokens");
+        }
         // delete the client
         $stmt = $this->_pdo->prepare("DELETE FROM Client WHERE id = :client_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
@@ -242,6 +248,14 @@ $stmt = $this->_pdo->prepare("SELECT * FROM AuthorizationCode WHERE authorizatio
     }
 
     public function deleteApproval($clientId, $resourceOwnerId) {
+        // remove refresh token
+        $stmt = $this->_pdo->prepare("DELETE FROM RefreshToken WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id");
+        $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
+        $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
+        if (FALSE === $stmt->execute()) {
+            throw new StorageException("unable to delete approval");
+        }
+        // remove approval
         $stmt = $this->_pdo->prepare("DELETE FROM Approval WHERE client_id = :client_id AND resource_owner_id = :resource_owner_id");
         $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
         $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
@@ -249,6 +263,28 @@ $stmt = $this->_pdo->prepare("SELECT * FROM AuthorizationCode WHERE authorizatio
             throw new StorageException("unable to delete approval");
         } 
         return 1 === $stmt->rowCount();
+    }
+
+    public function getRefreshToken($refreshToken) {
+        $stmt = $this->_pdo->prepare("SELECT * FROM RefreshToken WHERE refresh_token = :refresh_token");
+        $stmt->bindValue(":refresh_token", $refreshToken, PDO::PARAM_STR);
+        $result = $stmt->execute();
+        if (FALSE === $result) {
+            throw new StorageException("unable to get refresh token");
+        }
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
+    public function storeRefreshToken($refreshToken, $clientId, $resourceOwnerId, $scope) {
+        $stmt = $this->_pdo->prepare("INSERT INTO RefreshToken (client_id, resource_owner_id, scope, refresh_token) VALUES(:client_id, :resource_owner_id, :scope, :refresh_token)");
+        $stmt->bindValue(":client_id", $clientId, PDO::PARAM_STR);
+        $stmt->bindValue(":resource_owner_id", $resourceOwnerId, PDO::PARAM_STR);
+        $stmt->bindValue(":scope", $scope, PDO::PARAM_STR);
+        $stmt->bindValue(":refresh_token", $refreshToken, PDO::PARAM_STR);
+        if(FALSE === $stmt->execute()) {
+            throw new StorageException("unable to store refresh token");
+        }
+       return 1 === $stmt->rowCount();
     }
 
 }
