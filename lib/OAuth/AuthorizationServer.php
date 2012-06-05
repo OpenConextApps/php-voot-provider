@@ -18,7 +18,7 @@ interface IOAuthStorage {
 
     public function getClients             ();
     public function getClient              ($clientId);
-    public function getClientByRedirectUri ($redirectUri);
+
     public function addClient              ($data);
     public function updateClient           ($clientId, $data);
     public function deleteClient           ($clientId);

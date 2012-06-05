@@ -83,16 +83,6 @@ class PdoOAuthStorage implements IOAuthStorage {
         return $stmt->fetch(PDO::FETCH_OBJ);
     }
 
-    public function getClientByRedirectUri($redirectUri) {
-        $stmt = $this->_pdo->prepare("SELECT * FROM Client WHERE redirect_uri = :redirect_uri");
-        $stmt->bindValue(":redirect_uri", $redirectUri, PDO::PARAM_STR);
-        $result = $stmt->execute();
-        if (FALSE === $result) {
-            throw new StorageException("unable to retrieve client by redirectUri");
-        }
-        return $stmt->fetch(PDO::FETCH_OBJ);
-    }
-
     public function updateClient($clientId, $data) {
         $stmt = $this->_pdo->prepare("UPDATE Client SET name = :name, description = :description, secret = :secret, redirect_uri = :redirect_uri, type = :type WHERE id = :client_id");
         $stmt->bindValue(":name", $data['name'], PDO::PARAM_STR);
