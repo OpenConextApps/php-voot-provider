@@ -2,40 +2,47 @@
 
 class Config {
 
-    private $_instance;
-    private $_config;
+    private $_configFile;
+    private $_configValues;
    
-    public function __construct($configInstance) {
-        $this->_instance = $configInstance;
+    public function __construct($configFile) {
+        $this->_configFile = $configFile;
 
-        $configFile = "config" . DIRECTORY_SEPARATOR . $configInstance . ".ini";
         if(!file_exists($configFile) || !is_file($configFile) || !is_readable($configFile)) {
             throw new ConfigException("configuration file '$configFile' not found");
         }
 
-        $this->_config = parse_ini_file($configFile, TRUE);
+        $this->_configValues = parse_ini_file($configFile, TRUE);
     }
 
     public function getValue($key, $required = TRUE) {
-        if(array_key_exists($key, $this->_config)) {
-            return $this->_config[$key];
+        if(array_key_exists($key, $this->_configValues)) {
+            return $this->_configValues[$key];
         } else {
             if($required) {
-                throw new ConfigException("configuration key '$key' not set in '$this->_instance'");
+                throw new ConfigException("configuration key '$key' not set in '$this->_configFile'");
             }
             return NULL;
         }
     }
 
     public function getSectionValue($section, $key, $required = TRUE) {
-        if(array_key_exists($section, $this->_config) && array_key_exists($key, $this->_config[$section])) {
-            return $this->_config[$section][$key];
+        if(array_key_exists($section, $this->_configValues) && array_key_exists($key, $this->_configValues[$section])) {
+            return $this->_configValues[$section][$key];
         } else {
             if($required) {
-                throw new ConfigException("configuration key '$key' in section '$section' not set in '$this->_instance'");
+                throw new ConfigException("configuration key '$key' in section '$section' not set in '$this->_configFile'");
             }
             return NULL;
         }
+    }
+
+    public function setValue($key, $value) {
+        $this->_configValues[$key] = $value;
+    }
+
+    public function setSectionValue($section, $key, $value) {
+        $this->_configValues[$section][$key] = $value;
     }
 
 }

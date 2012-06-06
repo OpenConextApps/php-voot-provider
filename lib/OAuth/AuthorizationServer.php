@@ -7,24 +7,30 @@ interface IResourceOwner {
 }
 
 interface IOAuthStorage {
-    public function storeAccessToken      ($accessToken, $issueTime, $clientId, $resourceOwnerId, $resourceOwnerDisplayName, $scope, $expiry);
-    public function getAccessToken        ($accessToken);
-    public function storeAuthorizationCode($authorizationCode, $issueTime, $clientId, $redirectUri, $accessToken);
-    public function getAuthorizationCode  ($authorizationCode, $redirectUri);
+    public function storeAccessToken       ($accessToken, $issueTime, $clientId, $resourceOwnerId, $scope, $expiry);
+    public function getAccessToken         ($accessToken);
+    public function storeAuthorizationCode ($authorizationCode, $resourceOwnerId, $issueTime, $clientId, $redirectUri, $scope);
+    public function getAuthorizationCode   ($authorizationCode, $redirectUri);
     public function deleteAuthorizationCode($authorizationCode, $redirectUri);
 
-    public function getClients            ();
-    public function getClient             ($clientId);
-    public function getClientByRedirectUri($redirectUri);
-    public function addClient             ($data);
-    public function updateClient          ($clientId, $data);
-    public function deleteClient          ($clientId);
+    public function getRefreshToken        ($refreshToken);
+    public function storeRefreshToken      ($refreshToken, $clientId, $resourceOwnerId, $scope);
 
-    public function getApprovals          ($resourceOwnerId);
-    public function getApproval           ($clientId, $resourceOwnerId);
-    public function addApproval           ($clientId, $resourceOwnerId, $scope);
-    public function updateApproval        ($clientId, $resourceOwnerId, $scope);
-    public function deleteApproval        ($clientId, $resourceOwnerId);
+    public function getResourceOwner       ($resourceOwnerId);
+    public function storeResourceOwner     ($resourceOwnerId, $resourceOwnerDisplayName);
+
+    public function getClients             ();
+    public function getClient              ($clientId);
+
+    public function addClient              ($data);
+    public function updateClient           ($clientId, $data);
+    public function deleteClient           ($clientId);
+
+    public function getApprovals           ($resourceOwnerId);
+    public function getApproval            ($clientId, $resourceOwnerId);
+    public function addApproval            ($clientId, $resourceOwnerId, $scope);
+    public function updateApproval         ($clientId, $resourceOwnerId, $scope);
+    public function deleteApproval         ($clientId, $resourceOwnerId);
 
 }
 
@@ -157,7 +163,6 @@ class AuthorizationServer {
                                          "user_agent_based_application" => array ("token"));
 
         if(!in_array($responseType, $allowedClientProfiles[$client->type])) {
-
             throw new ClientException("unsupported_response_type", "response_type not supported by client profile", $client, $state);
         }
 
@@ -185,12 +190,10 @@ class AuthorizationServer {
         if(FALSE === $approvedScope || FALSE === self::isSubsetScope($requestedScope, $approvedScope->scope)) {
             return array ("action" => "ask_approval", "client" => $client);
         } else {
-            // approval already exists for this scope
-            $accessToken = self::randomHex(16);
-            $this->_storage->storeAccessToken($accessToken, time(), $clientId, $resourceOwner->getResourceOwnerId(), $resourceOwner->getResourceOwnerDisplayName(), $requestedScope, $this->_c->getValue('accessTokenExpiry'));
-
             if("token" === $responseType) {
                 // implicit grant
+                $accessToken = self::randomHex(16);
+                $this->_storage->storeAccessToken($accessToken, time(), $clientId, $resourceOwner->getResourceOwnerId(), $requestedScope, $this->_c->getValue('accessTokenExpiry'));
                 $token = array("access_token" => $accessToken, 
                                "expires_in" => $this->_c->getValue('accessTokenExpiry'), 
                                "token_type" => "bearer", 
@@ -201,10 +204,8 @@ class AuthorizationServer {
                 return array("action" => "redirect", "url" => $client->redirect_uri . "#" . http_build_query($token));
             } else {
                 // authorization code grant
-
-                // we already generated an access_token, and we register this together with the authorization code
                 $authorizationCode = self::randomHex(16);
-                $this->_storage->storeAuthorizationCode($authorizationCode, time(), $clientId, $redirectUri, $accessToken);
+                $this->_storage->storeAuthorizationCode($authorizationCode, $resourceOwner->getResourceOwnerId(), time(), $clientId, $redirectUri, $requestedScope);
                 $token = array("code" => $authorizationCode);
                 if(NULL !== $state) {
                     $token += array ("state" => $state);
@@ -257,25 +258,39 @@ class AuthorizationServer {
 
     public function token(array $post, $authorizationHeader) {
         // exchange authorization code for access token
-        $grantType   = self::getParameter($post, 'grant_type');
-        $code        = self::getParameter($post, 'code');
-        $redirectUri = self::getParameter($post, 'redirect_uri');
+        $grantType    = self::getParameter($post, 'grant_type');
+        $code         = self::getParameter($post, 'code');
+        $redirectUri  = self::getParameter($post, 'redirect_uri');
+        $refreshToken = self::getParameter($post, 'refresh_token');
 
         if(NULL === $grantType) {
             throw new TokenException("invalid_request: the grant_type parameter is missing");
         }
-        if("authorization_code" !== $grantType) {
+        if("authorization_code" !== $grantType && "refresh_token" !== $grantType) {
             throw new TokenException("unsupported_grant_type: the requested grant type is not supported");
         }
-        if(NULL === $code) {
-            throw new TokenException("invalid_request: the code parameter is missing");
-        }
-        $result = $this->_storage->getAuthorizationCode($code, $redirectUri);
-        if(FALSE === $result) {
-            throw new TokenException("invalid_grant: the authorization code was not found");
-        }
-        if(time() > $result->issue_time + 600) {
-            throw new TokenException("invalid_grant: the authorization code expired");
+
+        if("authorization_code" === $grantType) {
+            // authorization_code
+            if(NULL === $code) {
+                throw new TokenException("invalid_request: the code parameter is missing");
+            }
+            $result = $this->_storage->getAuthorizationCode($code, $redirectUri);
+            if(FALSE === $result) {
+                throw new TokenException("invalid_grant: the authorization code was not found");
+            }
+            if(time() > $result->issue_time + 600) {
+                throw new TokenException("invalid_grant: the authorization code expired");
+            }
+        } else {
+            // refresh_token
+            if(NULL === $refreshToken) {
+                throw new TokenException("invalid_request: the refresh_token parameter is missing");
+            }
+            $result = $this->_storage->getRefreshToken($refreshToken);        
+            if(FALSE === $result) {
+                throw new TokenException("invalid_grant: the refresh_token was not found");
+            }
         }
 
         $client = $this->_storage->getClient($result->client_id);
@@ -299,11 +314,39 @@ class AuthorizationServer {
                 }
             }
         }
-        // we need to be able to delete, otherwise someone else was first!
-        if(FALSE === $this->_storage->deleteAuthorizationCode($code, $redirectUri)) {
-            throw new TokenException("invalid_grant: this grant was already used");
+
+        if($client->id !== $result->client_id) {
+            throw new TokenException("invalid_grant: grant was not issued to this client");
         }
-        return $this->_storage->getAccessToken($result->access_token);
+
+        // create a new access token
+        $accessToken = self::randomHex(16);
+        $this->_storage->storeAccessToken($accessToken, time(), $result->client_id, $result->resource_owner_id, $result->scope, $this->_c->getValue('accessTokenExpiry'));
+        $token = $this->_storage->getAccessToken($accessToken);
+
+        if("authorization_code" === $grantType) {
+            // we need to be able to delete, otherwise someone else was first!
+            if(FALSE === $this->_storage->deleteAuthorizationCode($code, $redirectUri)) {
+                throw new TokenException("invalid_grant: this grant was already used");
+            }
+            // create a refresh token as well
+            $token->refresh_token = self::randomHex(16);
+            $this->_storage->storeRefreshToken($token->refresh_token, $token->client_id, $token->resource_owner_id, $token->scope);
+        } else {
+            // refresh_token
+            // just return the generated access_token
+        }
+
+        $token->expires_in = $token->issue_time + $token->expires_in - time();
+        $token->token_type = 'bearer';
+        // filter unwanted response parameters
+        $responseParameters = array("access_token", "token_type", "expires_in", "refresh_token", "scope");
+        foreach($token as $k => $v) {
+            if(!in_array($k, $responseParameters)) {
+                unset($token->$k);
+            }
+        }
+        return $token;
     }
 
     public function verify($authorizationHeader) {

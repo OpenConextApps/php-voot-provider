@@ -2,39 +2,58 @@ CREATE TABLE `Client` (
   `id` varchar(64) NOT NULL,
   `name` text NOT NULL,
   `description` text NOT NULL,
-  `secret` text,
+  `secret` text DEFAULT NULL,
   `redirect_uri` text NOT NULL,
   `type` text NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `ResourceOwner` (
+  `id` varchar(64) NOT NULL,
+  `display_name` text NOT NULL,
   PRIMARY KEY (`id`)
 );
 
 CREATE TABLE `AccessToken` (
   `access_token` varchar(64) NOT NULL,
   `client_id` varchar(64) NOT NULL,
-  `resource_owner_id` text NOT NULL,
-  `resource_owner_display_name` text NOT NULL,
+  `resource_owner_id` varchar(64) NOT NULL,
   `issue_time` int(11) DEFAULT NULL,
   `expires_in` int(11) DEFAULT NULL,
   `scope` text NOT NULL,
   PRIMARY KEY (`access_token`),
-  FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`)
+  FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`),
+  FOREIGN KEY (`resource_owner_id`) REFERENCES `ResourceOwner` (`id`)
+);
+
+CREATE TABLE `RefreshToken` (
+  `refresh_token` varchar(64) NOT NULL,
+  `client_id` varchar(64) NOT NULL,
+  `resource_owner_id` varchar(64) NOT NULL,
+  `scope` text NOT NULL,
+  PRIMARY KEY (`refresh_token`),
+  FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`),
+  FOREIGN KEY (`resource_owner_id`) REFERENCES `ResourceOwner` (`id`)
 );
 
 CREATE TABLE `Approval` (
   `client_id` varchar(64) NOT NULL,
-  `resource_owner_id` text NOT NULL,
+  `resource_owner_id` varchar(64) NOT NULL,
   `scope` text NOT NULL,
-  FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`)
+  FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`),
+  FOREIGN KEY (`resource_owner_id`) REFERENCES `ResourceOwner` (`id`)
 );
 
 CREATE TABLE `AuthorizationCode` (
-  `client_id` varchar(64) NOT NULL,
   `authorization_code` varchar(64) NOT NULL,
-  `redirect_uri` text,
-  `access_token` varchar(64) NOT NULL,
+  `client_id` varchar(64) NOT NULL,
+  `resource_owner_id` varchar(64) NOT NULL,
+  `redirect_uri` text DEFAULT NULL,
   `issue_time` int(11) DEFAULT NULL,
+  `scope` text NOT NULL,
+  PRIMARY KEY (`authorization_code`),
   FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`),
-  FOREIGN KEY (`access_token`) REFERENCES `AccessToken` (`access_token`)
+  FOREIGN KEY (`resource_owner_id`) REFERENCES `ResourceOwner` (`id`)
 );
 
 INSERT INTO `Client` VALUES ('manage', 'Management Client', 'Web application to manage OAuth client registrations.', NULL, 'http://localhost/phpvoot/manage/index.html', 'user_agent_based_application');

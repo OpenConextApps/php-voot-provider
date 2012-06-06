@@ -86,6 +86,7 @@ class SlimOAuth {
         $authMech = $this->_c->getValue('authenticationMechanism');
         require_once "lib/OAuth/$authMech.php";
         $this->_resourceOwner = new $authMech($this->_c);
+        $this->_oauthStorage->storeResourceOwner($this->_resourceOwner->getResourceOwnerId(), $this->_resourceOwner->getResourceOwnerDisplayName());
     }
 
     public function authorize() {
@@ -152,9 +153,14 @@ class SlimOAuth {
             throw new VerifyException("insufficient_scope: need oauth_userinfo scope");
         }
 
+        $data = $this->_oauthStorage->getResourceOwner($result->resource_owner_id);
+        if(FALSE === $data) {
+            // FIXME: better error handling
+            $this->_app->halt(404);
+        }
         $response = $this->_app->response();
         $response['Content-Type'] = 'application/json';
-        $response->body(json_encode(array ("user_id" => $result->resource_owner_id, "name" => $result->resource_owner_display_name)));
+        $response->body(json_encode(array ("user_id" => $data->id, "name" => $data->display_name)));
     }
 
     public function getClient($clientId) {
@@ -324,6 +330,7 @@ class SlimOAuth {
     }
 
     public function errorHandler(Exception $e) {
+       $this->_app->getLog()->error($e->getMessage() . PHP_EOL . $e->getTraceAsString());        
         switch(get_class($e)) {
 
             case "VerifyException":
@@ -366,7 +373,7 @@ class SlimOAuth {
                 $code = 400;
                 if("invalid_client" === $error) {
                     $code = 401;
-                    $response['WWW-Authenticate'] = sprintf('Basic realm="OAuth Server",error="%s",error_description="%s"', $error, $description);
+                    $response['WWW-Authenticate'] = 'Basic realm="OAuth Server"';
                 }
                 $response->status($code);
                 $response['Content-Type'] = 'application/json';
@@ -378,7 +385,6 @@ class SlimOAuth {
             case "ErrorException":
 
             default:
-                $this->_app->getLog()->error($e->getMessage() . PHP_EOL . $e->getTraceAsString());
                 $this->_app->render("errorPage.php", array ("error" => $e->getMessage(), "description" => "Internal Server Error"), 500);
                 break;
         }

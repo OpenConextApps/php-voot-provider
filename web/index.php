@@ -27,7 +27,7 @@ if("POST" === $_SERVER['REQUEST_METHOD']) {
     curl_setopt($ch, CURLOPT_FAILONERROR, FALSE);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array ("Authorization: Basic $auth"));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post));
 
 
     // grab URL and pass it to the browser

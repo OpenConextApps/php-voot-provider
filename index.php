@@ -15,8 +15,8 @@ $app = new Slim(array(
     'log.writer' => new TimestampLogFileWriter(array('path' => 'data' . DIRECTORY_SEPARATOR . 'logs')),
 ));
 
-$oauthConfig = new Config("oauth");
-$remoteStorageConfig = new Config("remoteStorage");
+$oauthConfig = new Config(__DIR__ . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "oauth.ini");
+$remoteStorageConfig = new Config(__DIR__ . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "remoteStorage.ini");
 
 // OAuth
 $s = new SlimOAuth($app, $oauthConfig);
