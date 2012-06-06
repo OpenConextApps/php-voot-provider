@@ -11,6 +11,8 @@ class PdoOAuthStorage implements IOAuthStorage {
     private $_c;
     private $_pdo;
 
+    public $requiredVersion = 2012060601;
+
     public function __construct(Config $c) {
         $this->_c = $c;
 
@@ -286,6 +288,125 @@ $stmt = $this->_pdo->prepare("SELECT * FROM AuthorizationCode WHERE authorizatio
             throw new StorageException("unable to store refresh token");
         }
        return 1 === $stmt->rowCount();
+    }
+
+    public function initDatabase() {
+        // this is the initial database. Any modifications to the database 
+        // after this will be done in updateDatabase
+
+        $this->_pdo->exec("
+            CREATE TABLE IF NOT EXISTS `Version` (
+            `version` int(11) NOT NULL)
+        ");
+
+        $this->_pdo->exec("
+            DELETE FROM Version
+        ");
+
+        $this->_pdo->exec("
+            INSERT INTO Version
+            VALUES(2012060601)
+        ");
+
+        $this->_pdo->exec("
+            CREATE TABLE IF NOT EXISTS `Client` (
+            `id` varchar(64) NOT NULL,
+            `name` text NOT NULL,
+            `description` text NOT NULL,
+            `secret` text DEFAULT NULL,
+            `redirect_uri` text NOT NULL,
+            `type` text NOT NULL,
+            PRIMARY KEY (`id`))
+        ");
+
+        $this->_pdo->exec("
+            CREATE TABLE IF NOT EXISTS `ResourceOwner` (
+            `id` varchar(64) NOT NULL,
+            `display_name` text NOT NULL,
+            PRIMARY KEY (`id`))
+        ");
+
+        $this->_pdo->exec("
+            CREATE TABLE IF NOT EXISTS `AccessToken` (
+            `access_token` varchar(64) NOT NULL,
+            `client_id` varchar(64) NOT NULL,
+            `resource_owner_id` varchar(64) NOT NULL,
+            `issue_time` int(11) DEFAULT NULL,
+            `expires_in` int(11) DEFAULT NULL,
+            `scope` text NOT NULL,
+            PRIMARY KEY (`access_token`),
+            FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`),
+            FOREIGN KEY (`resource_owner_id`) REFERENCES `ResourceOwner` (`id`))
+        ");
+
+        $this->_pdo->exec("
+            CREATE TABLE IF NOT EXISTS `RefreshToken` (
+            `refresh_token` varchar(64) NOT NULL,
+            `client_id` varchar(64) NOT NULL,
+            `resource_owner_id` varchar(64) NOT NULL,
+            `scope` text NOT NULL,
+            PRIMARY KEY (`refresh_token`),
+            FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`),
+            FOREIGN KEY (`resource_owner_id`) REFERENCES `ResourceOwner` (`id`))
+        ");
+
+        $this->_pdo->exec("
+            CREATE TABLE IF NOT EXISTS `Approval` (
+            `client_id` varchar(64) NOT NULL,
+            `resource_owner_id` varchar(64) NOT NULL,
+            `scope` text NOT NULL,
+            FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`),
+            FOREIGN KEY (`resource_owner_id`) REFERENCES `ResourceOwner` (`id`))
+        ");
+
+        $this->_pdo->exec("
+            CREATE TABLE IF NOT EXISTS `AuthorizationCode` (
+            `authorization_code` varchar(64) NOT NULL,
+            `client_id` varchar(64) NOT NULL,
+            `resource_owner_id` varchar(64) NOT NULL,
+            `redirect_uri` text DEFAULT NULL,
+            `issue_time` int(11) DEFAULT NULL,
+            `scope` text NOT NULL,
+            PRIMARY KEY (`authorization_code`),
+            FOREIGN KEY (`client_id`) REFERENCES `Client` (`id`),
+            FOREIGN KEY (`resource_owner_id`) REFERENCES `ResourceOwner` (`id`))
+        ");
+    }
+
+    public function getDatabaseVersion() {
+        $stmt = $this->_pdo->prepare("SELECT * FROM Version");
+        $result = $stmt->execute();
+        if (FALSE === $result) {
+            throw new StorageException("unable to get database version");
+        }
+        $data = $stmt->fetch(PDO::FETCH_OBJ);
+        return $data->version;
+    }
+
+    public function setDatabaseVersion($version) {
+        $stmt = $this->_pdo->prepare("UPDATE Version SET version = :version");
+        $stmt->bindValue(":version", $version, PDO::PARAM_INT);
+        if(FALSE === $stmt->execute()) {
+            throw new StorageException("unable to update database version");
+        }
+        return 1 === $stmt->rowCount();
+    }
+
+    public function updateDatabase() {
+        $version = $this->getDatabaseVersion();
+        switch($version) {
+            case 2012060601:
+                // intial version, do nothing here...
+
+        /*
+            case 2012060602:
+                // perform updates to reach this version...
+                $this->setDatabaseVersion(2012060602);
+            case 2012070101:
+                // perform updates to reach this version...
+                $this->setDatabaseVersion(2012070701);
+        */
+        }
     }
 
 }

@@ -10,6 +10,8 @@
 
 - validate redirect_uri on registration, it cannot contain '#'
 
+- warn if not using SSL!
+
 - SECURITY
   - look into htaccess Authorization header rewrite to make it work better!
 
