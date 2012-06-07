@@ -6,8 +6,6 @@
 - client_id cannot contain a ":" when it needs to use Basic authentication to
   the token endpoint
 
-- do something with DB schema migration/installation (revisions, upgrades)
-
 - validate redirect_uri on registration, it cannot contain '#'
 
 - warn if not using SSL!
