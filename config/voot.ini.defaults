@@ -4,10 +4,15 @@ storageBackend = "PdoVootStorage"
 ;storageBackend = "LdapVootStorage"
 
 [PdoVootStorage]
+
 dsn = "sqlite:/PATH/TO/APP/data/voot.sqlite";
 ;dsn = "mysql:host=localhost;dbname=voot"
 ;username = "voot"
 ;password = "s3cr3t"
+
+; use a persistent DB connection, make sure to ENABLE this for PRODUCTION 
+; systems
+persistentConnection = FALSE
 
 [LdapVootStorage]
 ; OpenLDAP / Fedora Directory Server

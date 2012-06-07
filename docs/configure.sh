@@ -1,32 +1,23 @@
 #!/bin/sh
 INSTALL_DIR=`pwd`
 
-if [ $# -eq 0 ]
-then
-    HOST="http://localhost/phpvoot"
-else
-    HOST=$1
-fi
-
-# Create directories
+# create directories
 mkdir -p data
 mkdir -p data/logs
 
-# Default population of DB if not yet initialized
-rm data/oauth2.sqlite
-cat docs/oauth.sql | sed "s|http://localhost/phpvoot|$HOST|" | sqlite3 data/oauth2.sqlite
+# create SQlite files
+touch data/oauth2.sqlite
 chmod o+w data/oauth2.sqlite
 
-rm data/voot.sqlite
-sqlite3 data/voot.sqlite < docs/voot.sql
-sqlite3 data/voot.sqlite < docs/voot_demo_data.sql
+touch data/voot.sqlite
 chmod o+w data/voot.sqlite
 
-# Set permissions
+# set permissions
 chmod -R o+w data/
 chcon -R -t httpd_sys_rw_content_t data/
 
-# Configure
+# generate config files
+(
 cd config/
 for DEFAULTS_FILE in `ls *.defaults`
 do
@@ -37,12 +28,12 @@ do
         sed -i "s|/PATH/TO/APP|${INSTALL_DIR}|g" ${INI_FILE}
     fi
 done
-cd ../
+)
 
-# Apache Configuration File
-echo "************************"
-echo "* Apache Configuration *"
-echo "************************"
+# httpd configuration
+echo "***********************"
+echo "* HTTPD Configuration *"
+echo "***********************"
 echo "---- cut ----"
 cat docs/apache.conf | sed "s|/PATH/TO/APP|${INSTALL_DIR}|g"
 echo "---- cut ----"

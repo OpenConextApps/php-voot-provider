@@ -22,21 +22,40 @@ On Debian/Ubuntu:
 # Installation
 The project includes install scripts that downloads the required dependencies
 and sets the permissions for the directories to write to and fixes SELinux 
-permissions.
+permissions. *NOTE*: in the `chown` line you need to use your own user account 
+name!
 
     $ cd /var/www/html
+    $ su -c 'mkdir phpvoot'
+    $ su -c 'chown fkooman.fkooman phpvoot'
     $ git clone git://github.com/fkooman/phpvoot.git
     $ cd phpvoot
     $ docs/install_dependencies.sh
 
-Now you can configure the installation and set some default OAuth client
-registrations. Make sure to replace the URI with the full URI to your \
-installation.
+Now you can create the default configuration files, the paths will be 
+automatically set, permissions set and a sample Apache configuration file will 
+be generated and shown on the screen (see later for Apache configuration).
 
-    $ docs/install.sh https://localhost/phpvoot
+    $ docs/configure.sh
+
+Next make sure to configure the database settings, and possibly other settings. 
+If you want to keep using SQlite you are good to go without fiddling with the
+database settings. Now to initialize the database:
+
+    $ php docs/initOAuthDatabase.php https://www.example.org/phpvoot
+
+Make sure to replace the URI with the full URI to your installation as to 
+register the included management client. See below for more details on the 
+management client.
+
+If you want to use VOOT with an SQL database you can also initialize this
+database. Make sure you configure it correctly in `config/voot.ini`. Again, if 
+you want to use the default SQlite, then you can initialize immediately:
+
+    $ php docs/initVootDatabase.php
 
 On Ubuntu (Debian) you would typically install in `/var/www/phpvoot` and not in
-`/var/www/html/phpvoot`.
+`/var/www/html/phpvoot` and you use `sudo` instead of `su -c`.
 
 # SELinux
 The install script already takes care of setting the file permissions of the
@@ -65,8 +84,8 @@ which replaces the `/PATH/TO/APP` with the actual directory.
 
 # Configuration
 In the configuration file `config/voot.ini` and `config/oauth.ini` various 
-aspects can be configured. To configure the SAML integration (in `oauth.ini`), 
-make sure the following settings are correct:
+aspects can be configured. To configure the SAML integration (in 
+`config/oauth.ini`), make sure the following settings are correct:
 
     authenticationMechanism = "SspResourceOwner"
 
@@ -130,8 +149,8 @@ URL configured above at `https://www.example.org/phpvoot/manage/index.html`.
 
 Make sure the user identifiers you want to allow `admin` permissions are listed 
 in the `adminResourceOwnerId[]` list in `config/oauth.ini` and you ran the 
-`docs/install.sh` script with the full installation URI of phpvoot as a 
-parameter, see above on how to do that.
+`docs/initOAuthDatabase.php` script with the full installation URI of phpvoot 
+as a parameter, see above on how to do that.
 
 # Testing
 
