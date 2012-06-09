@@ -1,6 +1,7 @@
 <?php
 
 require_once 'lib/OAuth/AuthorizationServer.php';
+require_once 'lib/OAuth/ResourceServer.php';
 
 class SlimOAuth {
 
@@ -11,6 +12,7 @@ class SlimOAuth {
 
     private $_resourceOwner;
     private $_as;
+    private $_rs;
 
     public function __construct(Slim $app, Config $c) {
         $this->_app = $app;
@@ -21,6 +23,7 @@ class SlimOAuth {
         $this->_oauthStorage = new $oauthStorageBackend($this->_c);
 
         $this->_as = new AuthorizationServer($this->_oauthStorage, $this->_c);
+        $this->_rs = new ResourceServer($this->_oauthStorage, $this->_c);
 
         // in PHP 5.4 $this is possible inside anonymous functions.
         $self = &$this;
@@ -147,7 +150,7 @@ class SlimOAuth {
 
     // REST API
     public function userInfo() {
-        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
+        $result = $this->_rs->verify($this->_app->request()->headers("X-Authorization"));
 
         if(!in_array('oauth_userinfo', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need oauth_userinfo scope");
@@ -164,7 +167,7 @@ class SlimOAuth {
     }
 
     public function getClient($clientId) {
-        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
+        $result = $this->_rs->verify($this->_app->request()->headers("X-Authorization"));
 
         if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
@@ -181,7 +184,7 @@ class SlimOAuth {
     }
 
     public function deleteClient($clientId) {
-        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
+        $result = $this->_rs->verify($this->_app->request()->headers("X-Authorization"));
 
         if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
@@ -200,7 +203,7 @@ class SlimOAuth {
     }
 
     public function updateClient($clientId) {
-        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
+        $result = $this->_rs->verify($this->_app->request()->headers("X-Authorization"));
 
         if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
@@ -219,7 +222,7 @@ class SlimOAuth {
     }
 
     public function addClient() {
-        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
+        $result = $this->_rs->verify($this->_app->request()->headers("X-Authorization"));
 
         if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
@@ -254,7 +257,7 @@ class SlimOAuth {
     }
 
     public function getClients() {
-        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
+        $result = $this->_rs->verify($this->_app->request()->headers("X-Authorization"));
 
         if(!in_array('oauth_admin', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need oauth_admin scope");
@@ -271,7 +274,7 @@ class SlimOAuth {
     }
 
     public function getApprovals() {
-        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
+        $result = $this->_rs->verify($this->_app->request()->headers("X-Authorization"));
 
         if(!in_array('oauth_approval', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need oauth_approval scope");
@@ -288,7 +291,7 @@ class SlimOAuth {
     }
 
     public function deleteApproval($clientId) {
-        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
+        $result = $this->_rs->verify($this->_app->request()->headers("X-Authorization"));
 
         if(!in_array('oauth_approval', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need oauth_approval scope");
@@ -305,7 +308,7 @@ class SlimOAuth {
     }
 
     public function addApproval() {
-        $result = $this->_as->verify($this->_app->request()->headers("X-Authorization"));
+        $result = $this->_rs->verify($this->_app->request()->headers("X-Authorization"));
 
         if(!in_array('oauth_approval', AuthorizationServer::getScopeArray($result->scope))) {
             throw new VerifyException("insufficient_scope: need oauth_approval scope");

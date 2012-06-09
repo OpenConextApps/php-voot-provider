@@ -1,37 +1,12 @@
 <?php 
 
+require_once "lib/OAuth/IOAuthStorage.php";
+require_once "lib/StorageException.php";
+
 interface IResourceOwner {
     public function setHint                    ($resourceOwnerIdHint = NULL);
     public function getResourceOwnerId         ();
     public function getResourceOwnerDisplayName();
-}
-
-interface IOAuthStorage {
-    public function storeAccessToken       ($accessToken, $issueTime, $clientId, $resourceOwnerId, $scope, $expiry);
-    public function getAccessToken         ($accessToken);
-    public function storeAuthorizationCode ($authorizationCode, $resourceOwnerId, $issueTime, $clientId, $redirectUri, $scope);
-    public function getAuthorizationCode   ($authorizationCode, $redirectUri);
-    public function deleteAuthorizationCode($authorizationCode, $redirectUri);
-
-    public function getRefreshToken        ($refreshToken);
-    public function storeRefreshToken      ($refreshToken, $clientId, $resourceOwnerId, $scope);
-
-    public function getResourceOwner       ($resourceOwnerId);
-    public function storeResourceOwner     ($resourceOwnerId, $resourceOwnerDisplayName);
-
-    public function getClients             ();
-    public function getClient              ($clientId);
-
-    public function addClient              ($data);
-    public function updateClient           ($clientId, $data);
-    public function deleteClient           ($clientId);
-
-    public function getApprovals           ($resourceOwnerId);
-    public function getApproval            ($clientId, $resourceOwnerId);
-    public function addApproval            ($clientId, $resourceOwnerId, $scope);
-    public function updateApproval         ($clientId, $resourceOwnerId, $scope);
-    public function deleteApproval         ($clientId, $resourceOwnerId);
-
 }
 
 /**
@@ -83,14 +58,6 @@ class ClientException extends Exception {
     public function getState() {
         return $this->_state;
     }
-
-}
-
-/**
- * When something went wrong with storing or retrieving 
- * something storage
- */
-class StorageException extends Exception {
 
 }
 
@@ -345,24 +312,6 @@ class AuthorizationServer {
             if(!in_array($k, $responseParameters)) {
                 unset($token->$k);
             }
-        }
-        return $token;
-    }
-
-    public function verify($authorizationHeader) {
-        // b64token = 1*( ALPHA / DIGIT / "-" / "." / "_" / "~" / "+" / "/" ) *"="
-        $b64TokenRegExp = '(?:[[:alpha:][:digit:]-._~+/]+=*)';
-        $result = preg_match('|^Bearer (?P<value>' . $b64TokenRegExp . ')$|', $authorizationHeader, $matches);
-        if($result === FALSE || $result === 0) {
-            throw new VerifyException("invalid_token: the access token is malformed");
-        }
-        $accessToken = $matches['value'];
-        $token = $this->_storage->getAccessToken($accessToken);
-        if($token === FALSE) {
-            throw new VerifyException("invalid_token: the access token is invalid");
-        }
-        if(time() > $token->issue_time + $token->expires_in) {
-            throw new VerifyException("invalid_token: the access token expired");
         }
         return $token;
     }

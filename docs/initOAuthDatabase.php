@@ -1,6 +1,5 @@
 <?php
 require_once "lib/Config.php";
-require_once "lib/OAuth/AuthorizationServer.php";
 require_once "lib/OAuth/PdoOAuthStorage.php";
 
 $config = new Config(dirname(__DIR__) . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "oauth.ini");

@@ -1,5 +1,10 @@
 <?php
 
+require_once "lib/Voot/IVootStorage.php";
+require_once "lib/Config.php";
+require_once "lib/StorageException.php";
+
+
 class PdoVootStorage implements IVootStorage {
 
     private $_c;

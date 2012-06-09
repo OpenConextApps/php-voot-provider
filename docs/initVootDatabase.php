@@ -1,7 +1,5 @@
 <?php
 require_once "lib/Config.php";
-require_once "lib/OAuth/AuthorizationServer.php"; // due to StorageException
-require_once "lib/Voot/Provider.php";
 require_once "lib/Voot/PdoVootStorage.php";
 
 $config = new Config(dirname(__DIR__) . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "voot.ini");

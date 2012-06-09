@@ -1,5 +1,9 @@
 <?php
 
+require_once "lib/OAuth/IOAuthStorage.php";
+require_once "lib/Config.php";
+require_once "lib/StorageException.php";
+
 /**
  * Class to implement storage for the OAuth Authorization Server using PDO.
  *
