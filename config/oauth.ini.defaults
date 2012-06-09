@@ -16,7 +16,7 @@ authenticationMechanism = "DummyResourceOwner"
 ;authenticationMechanism = "BrowserIDResourceOwner"
 ;authenticationMechanism = "SspResourceOwner"
 
-; the scopes supported by the resource server
+; example scopes supported by the resource server
 supportedScopes[] = "read"
 supportedScopes[] = "write"
 
