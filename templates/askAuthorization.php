@@ -11,6 +11,7 @@
     <link href="../ext/bootstrap/css/bootstrap.css" rel="stylesheet">
     <style>
       form { margin-bottom: 0; }
+      table#detailsTable { display: none; }
     </style>
     <link href="../ext/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
 
@@ -34,9 +35,9 @@
 
   <p><strong><?php echo $clientName; ?></strong> wants to access your <strong><?php echo $serviceResources; ?></strong>.</p>
 
-    <a class="btn btn-mini btn-info infoButton" href="#">Details...</a>
+    <a id="detailsButton" class="btn btn-mini btn-info infoButton" href="#">Details...</a>
 
-    <table class="table table-striped detailsTable" > 
+    <table id="detailsTable" class="table table-striped detailsTable" > 
         <tr><th>Application Identifier</th><td><?php echo $clientId; ?></td></tr>
         <tr><th>Description</th><td><span><?php echo $clientDescription; ?></span></td></tr>
         <tr><th>Requested Permission(s)</th>
@@ -77,9 +78,6 @@
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="../ext/js/jquery.js"></script>
     <script src="../templates/askAuthorization.js"></script>
-
-
 </body>
 </html>
