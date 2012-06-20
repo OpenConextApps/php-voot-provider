@@ -1,83 +1,73 @@
 <!DOCTYPE html>
+
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Authorization</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
+<head>
+  <title>Authorization</title>
+  <script src="../templates/askAuthorization.js" type=
+  "text/javascript">
+</script>
+  <link rel="stylesheet" type="text/css" href=
+  "../templates/default.css">
+</head>
 
-    <!-- Le styles -->
-    <link href="../ext/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <style>
-      form { margin-bottom: 0; }
-      table#detailsTable { display: none; }
-    </style>
-    <link href="../ext/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+<body>
+  <div id="container">
+    <form method="post" action="">
+      <h3><?php echo $serviceName; ?></h3>
 
-    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-  </head>
+      <p><strong><?php echo $clientName; ?></strong> wants to
+      access your
+      <strong><?php echo $serviceResources; ?></strong>.</p>
 
-  <body>
+      <table id="detailsTable">
+        <tr>
+          <th>Application Identifier</th>
 
-    <div class="container">
-
-    <div class="modal"> 
-  <form method="post" class="form-horizontal">
-
-   <div class="modal-header">
-     <h3><?php echo $serviceName; ?></h3>
-   </div>
-   <div class="modal-body">
-
-  <p><strong><?php echo $clientName; ?></strong> wants to access your <strong><?php echo $serviceResources; ?></strong>.</p>
-
-    <a id="detailsButton" class="btn btn-mini btn-info infoButton" href="#">Details...</a>
-
-    <table id="detailsTable" class="table table-striped detailsTable" > 
-        <tr><th>Application Identifier</th><td><?php echo $clientId; ?></td></tr>
-        <tr><th>Description</th><td><span><?php echo $clientDescription; ?></span></td></tr>
-        <tr><th>Requested Permission(s)</th>
-            <td>
-            <?php if($allowFilter) { ?>
-                <?php foreach($scope as $s) { ?>
-                    <label><input type="checkbox" checked="checked" name="scope[]" value="<?php echo $s; ?>"> <?php echo $s; ?></label>
-                <?php } ?>
-
-                <?php if($allowFilter) { ?>
-                    <p><div class="alert alert-info">
-                        By removing permissions, the application may not work as expected!
-                    </div></p>
-                <?php } ?>
-            <?php } else { ?>
-                <ul>
-                <?php foreach($scope as $s) { ?>
-                    <li><?php echo $s; ?></li>
-                    <input type="hidden" name="scope[]" value="<?php echo $s; ?>">
-                <?php } ?>
-                </ul>
-            <?php } ?>
-            </td>
+          <td><?php echo $clientId; ?></td>
         </tr>
-        <tr><th>Redirect URI</th><td><?php echo $clientRedirectUri; ?></td></tr>
-    </table>
 
-     </div>
-            <div class="modal-footer">
-                <input type="submit" name="approval" class="btn" value="Reject">
-                <input type="submit" name="approval" class="btn btn-primary" value="Approve">
-            </div>
- </form>
+        <tr>
+          <th>Description</th>
 
-</div>
-    </div> <!-- /container -->
+          <td><span><?php echo $clientDescription; ?></span></td>
+        </tr>
 
-    <!-- Le javascript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="../templates/askAuthorization.js"></script>
+        <tr>
+          <th>Requested Permission(s)</th>
+
+          <td>
+            <?php if($allowFilter) { ?><?php foreach($scope as $s) { ?><label><input type="checkbox"
+            checked="checked" name="scope[]" value=
+            "<?php echo $s; ?>"> <?php echo $s; ?></label>
+            <?php } ?> <?php if($allowFilter) { ?>
+
+            <div>
+              By removing permissions, the application may not work
+              as expected!
+            </div><?php } ?><?php } else { ?>
+
+            <ul>
+              <?php foreach($scope as $s) { ?>
+
+              <li><?php echo $s; ?></li>
+
+              <li style="list-style: none"><input type="hidden"
+              name="scope[]" value="<?php echo $s; ?>">
+              <?php } ?></li>
+            </ul><?php } ?>
+          </td>
+        </tr>
+
+        <tr>
+          <th>Redirect URI</th>
+
+          <td><?php echo $clientRedirectUri; ?></td>
+        </tr>
+      </table><button id="showDetails" type=
+      "button">Details</button> <input type="submit" class=
+      "formButton" name="approval" value="Approve"> <input type=
+      "submit" class="formButton" name="approval" value="Reject">
+    </form>
+  </div><!-- /container -->
 </body>
 </html>
