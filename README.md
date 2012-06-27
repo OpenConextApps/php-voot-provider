@@ -4,6 +4,7 @@ This project is a stand-alone VOOT group provider. The
 [VOOT specification](http://www.openvoot.org/) is implemented.
 
 # Features
+* HTTP Basic Authentication
 * PDO storage backend for VOOT data
 * LDAP backend for VOOT
 
@@ -23,10 +24,10 @@ permissions. *NOTE*: in the `chown` line you need to use your own user account
 name!
 
     $ cd /var/www/html
-    $ su -c 'mkdir phpvoot'
-    $ su -c 'chown fkooman.fkooman phpvoot'
+    $ su -c 'mkdir php-voot'
+    $ su -c 'chown fkooman.fkooman php-voot'
     $ git clone git://github.com/fkooman/phpvoot.git
-    $ cd phpvoot
+    $ cd php-voot
     $ docs/install_dependencies.sh
 
 Now you can create the default configuration files, the paths will be 
@@ -35,33 +36,22 @@ be generated and shown on the screen (see later for Apache configuration).
 
     $ docs/configure.sh
 
-Next make sure to configure the database settings, and possibly other settings. 
-If you want to keep using SQlite you are good to go without fiddling with the
-database settings. Now to initialize the database:
-
-Make sure to replace the URI with the full URI to your installation as to 
-register the included management client. See below for more details on the 
-management client.
-
 If you want to use VOOT with an SQL database you can also initialize this
-database. Make sure you configure it correctly in `config/voot.ini`. Again, if 
+database. Make sure you configure it correctly in `config/voot.ini`. If 
 you want to use the default SQlite, then you can initialize immediately:
 
     $ php docs/initVootDatabase.php
 
-On Ubuntu (Debian) you would typically install in `/var/www/phpvoot` and not in
-`/var/www/html/phpvoot` and you use `sudo` instead of `su -c`.
+On Ubuntu (Debian) you would typically install in `/var/www/php-voot` and not in
+`/var/www/html/php-voot` and you use `sudo` instead of `su -c`.
 
 # SELinux
 The install script already takes care of setting the file permissions of the
 `data/` directory to allow Apache to write to the directory. However, if you
 want to use the LDAP backend to retrieve group information Apache also needs
-the permission to access LDAP servers. If you want to use the BrowserID 
-authentication plugin you also need to give Apache permission to access the 
-network. These permissions can be given by using `setsebool` as root:
+the permission to access LDAP servers.
 
     $ sudo setsebool -P httpd_can_connect_ldap=on
-    $ sudo setsebool -P httpd_can_network_connect=on
 
 This is only for Red Hat based Linux distributions like RHEL, CentOS and 
 Fedora.
@@ -70,29 +60,15 @@ Fedora.
 There is an example configuration file in `docs/apache.conf`. 
 
 On Red Hat based distributions the file can be placed in 
-`/etc/httpd/conf.d/phpvoot.conf`. On Debian based distributions the file can
-be placed in `/etc/apache2/conf.d/phpvoot`. Be sure to modify it to suit your 
+`/etc/httpd/conf.d/php-voot.conf`. On Debian based distributions the file can
+be placed in `/etc/apache2/conf.d/php-voot`. Be sure to modify it to suit your 
 environment and do not forget to restart Apache. 
 
 The install script from the previous section outputs a config for your system
 which replaces the `/PATH/TO/APP` with the actual directory.
 
 # Configuration
-In the configuration file `config/voot.ini` and `config/oauth.ini` various 
-aspects can be configured. To configure the SAML integration (in 
-`config/oauth.ini`), make sure the following settings are correct:
-
-    authenticationMechanism = "SspResourceOwner"
-
-    ; simpleSAMLphp configuration
-    [SspResourceOwner]
-    sspPath = "/var/simplesamlphp/lib"
-    authSource = "default-sp"
-
-    resourceOwnerIdAttributeName = "uid"
-    resourceOwnerDisplayNameAttributeName = "cn"
-    ;resourceOwnerIdAttributeName = "urn:mace:dir:attribute-def:uid"
-    ;resourceOwnerDisplayNameAttributeName = "urn:mace:dir:attribute-def:displayName"
+In the configuration file `config/voot.ini` various aspects can be configured. 
 
 ## LDAP 
 It is possible to use an LDAP server as backend to retrieve group membership.
@@ -127,32 +103,3 @@ To test the configuration of your LDAP settings it is possible to use the
 This should return an `array` with the group information. If it does not work,
 make sure you match the configuration values with the `ldapsearch` commands 
 that do work.
-
-# Configuring OAuth Clients
-
-If you want to use the JS management interface you need to modify the API 
-endpoint in `manage/manage.js`:
-
-    var apiRoot = 'http://localhost/phpvoot';
-
-To (in this example):
-
-    var apiRoot = 'https://www.example.org/phpvoot';
-
-Once this is done you can manage the OAuth client registrations by going to the
-URL configured above at `https://www.example.org/phpvoot/manage/index.html`. 
-
-Make sure the user identifiers you want to allow `admin` permissions are listed 
-in the `adminResourceOwnerId[]` list in `config/oauth.ini` and you ran the 
-`docs/initOAuthDatabase.php` script with the full installation URI of phpvoot 
-as a parameter, see above on how to do that.
-
-# Testing
-
-A JavaScript client is included to test the VOOT provider. It uses the 
-"implicit" grant type to obtain an access token. The client can  be found at 
-`client/index.html`. Modify the client registration and the file 
-`client/voot.js` to point to the correct base endpoint as well.
-
-There also is an "authorization code" grant type test client available at 
-`web/index.php`.
