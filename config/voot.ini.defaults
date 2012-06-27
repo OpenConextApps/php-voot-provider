@@ -3,6 +3,13 @@
 storageBackend = "PdoVootStorage"
 ;storageBackend = "LdapVootStorage"
 
+authBackend = "HttpBasicAuth"
+;authBackend = "HttpBearerAuth"
+
+[HttpBasicAuth]
+username = "foo"
+password = "bar"
+
 [PdoVootStorage]
 
 dsn = "sqlite:/PATH/TO/APP/data/voot.sqlite";
