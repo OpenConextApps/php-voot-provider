@@ -1,8 +1,8 @@
 <?php
 require_once 'ext/Slim/Slim/Slim.php';
 require_once 'ext/Slim-Extras/Log Writers/TimestampLogFileWriter.php';
+require_once 'ext/Slim-Extras/Middleware/HttpBasicAuth.php';
 require_once 'lib/Config.php';
-require_once 'lib/SlimOAuth.php';
 require_once 'lib/SlimVoot.php';
 
 $app = new Slim(array(
@@ -14,15 +14,12 @@ $app = new Slim(array(
     'debug' => false,
     'log.writer' => new TimestampLogFileWriter(array('path' => 'data' . DIRECTORY_SEPARATOR . 'logs')),
 ));
+$app->add(new HttpBasicAuth('theUsername', 'thePassword'));
 
-$oauthConfig = new Config(__DIR__ . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "oauth.ini");
 $vootConfig = new Config(__DIR__ . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "voot.ini");
 
-// OAuth
-$s = new SlimOAuth($app, $oauthConfig);
-
 // VOOT
-$t = new SlimVoot($app, $oauthConfig, $vootConfig);
+$t = new SlimVoot($app, $vootConfig);
 
 $app->run();
 

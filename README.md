@@ -4,20 +4,17 @@ This project is a stand-alone VOOT group provider. The
 [VOOT specification](http://www.openvoot.org/) is implemented.
 
 # Features
-* PDO storage backend for VOOT data and OAuth tokens
+* PDO storage backend for VOOT data
 * LDAP backend for VOOT
-* OAuth 2 (authorization code and implicit grant) support
-* SAML authentication support ([simpleSAMLphp](http://www.simplesamlphp.org)) 
-* [BrowserID](http://browserid.org) authentication support
 
 # Requirements
 The installation requirements on Fedora/CentOS can be installed like this:
 
-    $ su -c 'yum install git php-pdo php php-ldap httpd mod_xsendfile wget'
+    $ su -c 'yum install git php-pdo php php-ldap httpd wget unzip'
 
 On Debian/Ubuntu:
 
-    $ sudo apt-get install git sqlite3 php5 php5-sqlite wget unzip libapache2-mod-xsendfile php5-ldap
+    $ sudo apt-get install git sqlite3 php5 php5-sqlite wget unzip php5-ldap
 
 # Installation
 The project includes install scripts that downloads the required dependencies
@@ -41,8 +38,6 @@ be generated and shown on the screen (see later for Apache configuration).
 Next make sure to configure the database settings, and possibly other settings. 
 If you want to keep using SQlite you are good to go without fiddling with the
 database settings. Now to initialize the database:
-
-    $ php docs/initOAuthDatabase.php https://www.example.org/phpvoot
 
 Make sure to replace the URI with the full URI to your installation as to 
 register the included management client. See below for more details on the 

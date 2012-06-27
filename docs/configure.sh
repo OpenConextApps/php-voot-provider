@@ -5,10 +5,6 @@ INSTALL_DIR=`pwd`
 mkdir -p data
 mkdir -p data/logs
 
-# create SQlite files
-touch data/oauth2.sqlite
-chmod o+w data/oauth2.sqlite
-
 touch data/voot.sqlite
 chmod o+w data/voot.sqlite
 
