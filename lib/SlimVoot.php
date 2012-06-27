@@ -31,14 +31,14 @@ class SlimVoot {
 
     public function isMemberOf($name) {
         $g = new Provider($this->_vootStorage);
-        $grp_array = $g->isMemberOf($result->resource_owner_id, $this->_app->request()->get('startIndex'), $this->_app->request()->get('count'));
+        $grp_array = $g->isMemberOf($name, $this->_app->request()->get('startIndex'), $this->_app->request()->get('count'));
         $this->_app->response()->header('Content-Type','application/json');
         echo json_encode($grp_array);
     }
 
     public function getGroupMembers($name, $groupId) {
         $g = new Provider($this->_vootStorage);
-        $grp_array = $g->getGroupMembers($result->resource_owner_id, $groupId, $this->_app->request()->get('startIndex'), $this->_app->request()->get('count'));
+        $grp_array = $g->getGroupMembers($name, $groupId, $this->_app->request()->get('startIndex'), $this->_app->request()->get('count'));
         $this->_app->response()->header('Content-Type','application/json');
         echo json_encode($grp_array);
     }

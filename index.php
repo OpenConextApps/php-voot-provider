@@ -9,9 +9,9 @@ $app = new Slim(array(
     // we need to disable Slim's session handling due to incompatibilies with
     // simpleSAMLphp sessions
     'session.handler' => null,
-    'mode' => 'production',
-    // 'mode' => 'development',
-    'debug' => false,
+    //'mode' => 'production',
+    'mode' => 'development',
+    'debug' => true,
     'log.writer' => new TimestampLogFileWriter(array('path' => 'data' . DIRECTORY_SEPARATOR . 'logs')),
 ));
 $app->add(new HttpBasicAuth('theUsername', 'thePassword'));
