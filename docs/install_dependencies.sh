@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #SLIM_VERSION="master"
-SLIM_VERSION="release-1.6.3"
+SLIM_VERSION="release-1.6.5"
 SLIM_EXTRAS_VERSION="master"
 
 # Create directories
