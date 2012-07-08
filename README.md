@@ -26,7 +26,7 @@ name!
     $ cd /var/www/html
     $ su -c 'mkdir php-voot'
     $ su -c 'chown fkooman.fkooman php-voot'
-    $ git clone git://github.com/fkooman/phpvoot.git
+    $ git clone git://github.com/fkooman/php-voot.git
     $ cd php-voot
     $ docs/install_dependencies.sh
 
