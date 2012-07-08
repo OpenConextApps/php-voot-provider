@@ -10,8 +10,10 @@ authBackend = "HttpBasicAuth"
 username = "foo"
 password = "bar"
 
-[PdoVootStorage]
+[HttpBearerAuth]
+phpOAuthPath = "/usr/share/php/php-oauth"
 
+[PdoVootStorage]
 dsn = "sqlite:/PATH/TO/APP/data/voot.sqlite";
 ;dsn = "mysql:host=localhost;dbname=voot"
 ;username = "voot"
