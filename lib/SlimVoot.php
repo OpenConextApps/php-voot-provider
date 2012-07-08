@@ -32,7 +32,9 @@ class SlimVoot {
     public function isMemberOf($name) {
         $env = $this->_app->environment();
         // FIXME verify scope if BearerAuth is used
-
+        if("@me" === $name) {
+            $name = $env['oauth.token']['resource_owner_id'];
+        }
         $g = new Provider($this->_vootStorage);
         $grp_array = $g->isMemberOf($name, $this->_app->request()->get('startIndex'), $this->_app->request()->get('count'));
         $this->_app->response()->header('Content-Type','application/json');
@@ -42,6 +44,9 @@ class SlimVoot {
     public function getGroupMembers($name, $groupId) {
         $env = $this->_app->environment();
         // FIXME verify scope if BearerAuth is used
+        if("@me" === $name) {
+            $name = $env['oauth.token']['resource_owner_id'];
+        }
 
         $g = new Provider($this->_vootStorage);
         $grp_array = $g->getGroupMembers($name, $groupId, $this->_app->request()->get('startIndex'), $this->_app->request()->get('count'));

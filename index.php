@@ -2,6 +2,7 @@
 require_once 'ext/Slim/Slim/Slim.php';
 require_once 'ext/Slim-Extras/Log Writers/TimestampLogFileWriter.php';
 require_once 'ext/Slim-Extras/Middleware/HttpBasicAuth.php';
+require_once 'lib/HttpBearerAuth.php';
 require_once 'lib/Config.php';
 require_once 'lib/SlimVoot.php';
 
