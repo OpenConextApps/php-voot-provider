@@ -18,8 +18,17 @@ $app = new Slim(array(
 $vootConfig = new Config(__DIR__ . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "voot.ini");
 
 $authBackend = $vootConfig->getValue('authBackend');
-// FIXME: just give all configuration parameters (vootConfig->getSection(...)) to the constructor
-$app->add(new $authBackend($vootConfig->getSectionValue('HttpBasicAuth','username'), $vootConfig->getSectionValue('HttpBasicAuth','password')));
+
+switch($authBackend) {
+    case "HttpBasicAuth":
+        $app->add(new HttpBasicAuth($vootConfig->getSectionValue('HttpBasicAuth','httpUsername'), $vootConfig->getSectionValue('HttpBasicAuth','httpPassword'), $vootConfig->getSectionValue('HttpBasicAuth','httpRealm')));
+        break;
+    case "HttpBearerAuth":
+        $app->add(new HttpBearerAuth($vootConfig->getSectionValue('HttpBearerAuth','verificationEndpoint'), $vootConfig->getSectionValue('HttpBearerAuth','httpRealm')));
+        break;
+    default:
+        throw new Exception("unsupported authentication backend");
+}
 
 // VOOT
 $t = new SlimVoot($app, $vootConfig);

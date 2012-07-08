@@ -7,11 +7,13 @@ authBackend = "HttpBasicAuth"
 ;authBackend = "HttpBearerAuth"
 
 [HttpBasicAuth]
-username = "foo"
-password = "bar"
+httpUsername = "foo"
+httpPassword = "bar"
+httpRealm = "VOOT Provider"
 
 [HttpBearerAuth]
-phpOAuthPath = "/usr/share/php/php-oauth"
+verificationEndpoint = "http://localhost/php-oauth/oauth/token"
+httpRealm = "VOOT Provider"
 
 [PdoVootStorage]
 dsn = "sqlite:/PATH/TO/APP/data/voot.sqlite";

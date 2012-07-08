@@ -1,83 +1,69 @@
 <?php
-/**
- * HTTP Bearer Authentication
- *
- * Use this middleware with your Slim Framework application
- * to require HTTP bearer auth for all routes.
- *
- * @author François Kooman <fkooman@tuxed.net>
- * @version 1.0
- * @copyright 2012 François Kooman
- *
- * USAGE
- *
- * $app = new Slim();
- * $app->add(new HttpBearerAuth('https://server/oauth/token','user','pass'));
- *
- * MIT LICENSE
- *
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-class HttpBearerAuth extends Slim_Middleware {
-    /**
-     * @var string
-     */
-    protected $realm;
 
-    /**
-     * Constructor
-     *
-     * @param   string  $realm      The HTTP Authentication realm
-     * @return  void
-     */
-    public function __construct( $tokenEndpoint, $user, $pass, $realm = 'Protected Area' ) {
-        $this->tokenEndpoint = $tokenEndpoint;
-        $this->user = $user;
-        $this->pass = $pass;
-        $this->realm = $realm;
+class HttpBearerAuthException extends Exception {
+
+}
+
+class HttpBearerAuth extends Slim_Middleware {
+
+    private $_verificationEndpoint;
+    private $_realm;
+
+    public function __construct($verificationEndpoint, $realm = 'Protected Area' ) {
+        $this->_verificationEndpoint = $verificationEndpoint;
+        $this->_realm = $realm;
     }
 
-    /**
-     * Call
-     *
-     * This method will check the HTTP request headers for previous authentication. If
-     * the request has already authenticated, the next middleware is called. Otherwise,
-     * a 401 Authentication Required response is returned to the client.
-     *
-     * @return void
-     */
     public function call() {
-        $req = $this->app->request();
-        $res = $this->app->response();
-        $ah = $req->headers('X-Authorization');
+        try { 
+            $req = $this->app->request();
+            $res = $this->app->response();
+            $ah = $req->headers('X-Authorization');
 
-        // FIXME: do curl validation at token endpoint with user,pass and bearer token
+            $b64TokenRegExp = '(?:[[:alpha:][:digit:]-._~+/]+=*)';
+            $result = preg_match('|^Bearer (?P<value>' . $b64TokenRegExp . ')$|', $ah, $matches);
+            if($result === FALSE || $result === 0) {
+                // FIXME: error handling!
+                throw new HttpBearerAuthException("the access token is malformed");
+            }
+            $accessToken = $matches['value'];
 
-        // FIXME: how to validate scope???
-        // probably add the scope to the environment and create another middleware thingy to check the scope
-        // to see if it is allowed? 
-        if ( $authUser && $authPass && $authUser === $this->username && $authPass === $this->password ) {
+            $ch = curl_init();
+            $post = array("token" => $accessToken, "grant_type" => "urn:pingidentity.com:oauth2:grant_type:validate_bearer");
+            curl_setopt($ch, CURLOPT_URL, $this->_verificationEndpoint);
+            curl_setopt($ch, CURLOPT_POST, TRUE);
+            curl_setopt($ch, CURLOPT_FAILONERROR, FALSE);
+            // curl_setopt($ch, CURLOPT_HTTPHEADER, array ("Authorization: Basic ABCDEF"));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post));
+
+            // grab URL and pass it to the browser
+            $data = curl_exec($ch);
+            if(FALSE === $data) {
+                // FIXME: error handling!
+                error_log(curl_error($c));
+                throw new HttpBearerAuthException("unable to verify the access token");
+            }
+
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if(200 !== $code) {
+                // FIXME: error handling!
+                error_log("error: " . $data);
+                throw new HttpBearerAuthException("the access token is invalid");
+            }
+            curl_close($ch);
+            $d = json_decode($data, TRUE);
+
+            // add access_token to the environment
+            $env = $this->app->environment();
+            $env['oauth.token'] = $d;
+
+            // Call next middleware
             $this->next->call();
-        } else {
+
+        } catch (HttpBearerAuthException $e) {
             $res->status(401);
-            $res->header('WWW-Authenticate', sprintf('Bearer realm="%s"', $this->realm));
+            $res->header('WWW-Authenticate', sprintf('Bearer realm="%s"', $this->_realm));
         }
     }
 }
