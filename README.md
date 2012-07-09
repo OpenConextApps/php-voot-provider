@@ -6,7 +6,7 @@ and sets the permissions for the directories to write to and fixes SELinux
 permissions.
 
     $ mkdir /var/www/html/storage
-    $ git clone git://github.com/fkooman/phpvoot.git /var/www/html/storage
+    $ git clone git://github.com/fkooman/php-voot.git /var/www/html/storage
     $ cd /var/www/html/storage
     $ git checkout remoteStorage
     $ docs/install.sh
