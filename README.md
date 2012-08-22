@@ -28,7 +28,6 @@ name!
     $ su -c 'chown fkooman.fkooman php-voot'
     $ git clone git://github.com/fkooman/php-voot.git
     $ cd php-voot
-    $ docs/install_dependencies.sh
 
 Now you can create the default configuration files, the paths will be 
 automatically set, permissions set and a sample Apache configuration file will 

@@ -1,16 +1,14 @@
 <?php
 
-require_once "lib/Voot/IVootStorage.php";
-require_once "lib/Config.php";
-require_once "lib/StorageException.php";
+namespace Tuxed\Voot;
 
+use \Tuxed\Config as Config;
+use \PDO as PDO;
 
 class PdoVootStorage implements IVootStorage {
 
     private $_c;
     private $_pdo;
-
-    public $requiredVersion = 2012060701;
 
     public function __construct(Config $c) {
         $this->_c = $c;
@@ -23,10 +21,10 @@ class PdoVootStorage implements IVootStorage {
         $this->_pdo = new PDO($this->_c->getSectionValue('PdoVootStorage', 'dsn'), $this->_c->getSectionValue('PdoVootStorage', 'username', FALSE), $this->_c->getSectionValue('PdoVootStorage', 'password', FALSE), $driverOptions);
 
         // enforce foreign keys
-    	$this->_pdo->exec("PRAGMA foreign_keys = ON");
+    	    $this->_pdo->exec("PRAGMA foreign_keys = ON");
     }
 
-    public function isMemberOf($resourceOwnerId, $startIndex = null, $count = null) {
+    public function isMemberOf($resourceOwnerId, $startIndex = 0, $count = NULL) {
         $stmt = $this->_pdo->prepare("SELECT COUNT(*) AS count FROM membership m, groups g, roles r WHERE m.id=:id AND m.groupid = g.id AND m.role = r.id");
         $stmt->bindValue(":id", $resourceOwnerId, PDO::PARAM_STR);
         $result = $stmt->execute();
@@ -60,7 +58,7 @@ class PdoVootStorage implements IVootStorage {
 	    return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => sizeof($data), 'entry' => $data);
     }
 
-    public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = null) {
+    public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = NULL) {
         // FIXME: check whether or not $resourceOwnerId is a member of the group, if not don't 
         // return anything (or error).
 
@@ -120,23 +118,6 @@ class PdoVootStorage implements IVootStorage {
     }
 
     public function initDatabase() {
-        // this is the initial database. Any modifications to the database 
-        // after this will be done in updateDatabase
-
-        $this->_pdo->exec("
-            CREATE TABLE IF NOT EXISTS `Version` (
-            `version` int(11) NOT NULL)
-        ");
-
-        $this->_pdo->exec("
-            DELETE FROM Version
-        ");
-
-        $this->_pdo->exec("
-            INSERT INTO Version
-            VALUES(2012060701)
-        ");
-
         $this->_pdo->exec("
             CREATE TABLE `groups` (
             `id` varchar(64) NOT NULL,
@@ -167,43 +148,4 @@ class PdoVootStorage implements IVootStorage {
         $this->_pdo->exec("INSERT INTO `roles` VALUES (50,'admin')");
     }
 
-    public function getDatabaseVersion() {
-        $stmt = $this->_pdo->prepare("SELECT * FROM Version");
-        $result = $stmt->execute();
-        if (FALSE === $result) {
-            throw new StorageException("unable to get database version");
-        }
-        $data = $stmt->fetch(PDO::FETCH_OBJ);
-        return $data->version;
-    }
-
-    public function setDatabaseVersion($version) {
-        $stmt = $this->_pdo->prepare("UPDATE Version SET version = :version");
-        $stmt->bindValue(":version", $version, PDO::PARAM_INT);
-        if(FALSE === $stmt->execute()) {
-            throw new StorageException("unable to update database version");
-        }
-        return 1 === $stmt->rowCount();
-    }
-
-    public function updateDatabase() {
-        $version = $this->getDatabaseVersion();
-        switch($version) {
-            case 2012060701:
-                // intial version, do nothing here...
-
-        /*
-            case 2012060702:
-                // perform updates to reach this version...
-                $this->setDatabaseVersion(2012060602);
-            case 2012070101:
-                // perform updates to reach this version...
-                $this->setDatabaseVersion(2012070701);
-        */
-        }
-    }
-
-
 }
-
-?>

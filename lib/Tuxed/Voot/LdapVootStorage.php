@@ -1,5 +1,9 @@
 <?php
 
+namespace Tuxed\Voot;
+
+use \Tuxed\Config as Config;
+
 class LdapVootStorage implements IVootStorage {
 
     private $_c;
@@ -93,5 +97,3 @@ class LdapVootStorage implements IVootStorage {
         return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => $totalResults, 'entry' => $userGroups);
     }
 }
-
-?>

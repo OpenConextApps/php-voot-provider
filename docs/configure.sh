@@ -1,10 +1,13 @@
 #!/bin/sh
+APP_NAME="php-voot"
+
 INSTALL_DIR=`pwd`
 
 # create directories
 mkdir -p data
 mkdir -p data/logs
 
+# create VOOT files
 touch data/voot.sqlite
 chmod o+w data/voot.sqlite
 
@@ -20,8 +23,7 @@ do
     INI_FILE=`basename ${DEFAULTS_FILE} .defaults`
     if [ ! -f ${INI_FILE} ]
     then
-        cp ${DEFAULTS_FILE} ${INI_FILE}
-        sed -i "s|/PATH/TO/APP|${INSTALL_DIR}|g" ${INI_FILE}
+        cat ${DEFAULTS_FILE} | sed "s|/PATH/TO/APP|${INSTALL_DIR}|g" > ${INI_FILE}
     fi
 done
 )
@@ -31,6 +33,5 @@ echo "***********************"
 echo "* HTTPD Configuration *"
 echo "***********************"
 echo "---- cut ----"
-cat docs/apache.conf | sed "s|/PATH/TO/APP|${INSTALL_DIR}|g"
+cat docs/apache.conf | sed "s|/PATH/TO/APP|${INSTALL_DIR}|g" | sed "s|APPNAME|${APP_NAME}|g"
 echo "---- cut ----"
-

@@ -3,17 +3,9 @@
 storageBackend = "PdoVootStorage"
 ;storageBackend = "LdapVootStorage"
 
-authBackend = "HttpBasicAuth"
-;authBackend = "HttpBearerAuth"
-
-[HttpBasicAuth]
-httpUsername = "foo"
-httpPassword = "bar"
-httpRealm = "VOOT Provider"
-
-[HttpBearerAuth]
-verificationEndpoint = "http://localhost/php-oauth/oauth/token"
-httpRealm = "VOOT Provider"
+basicUser  = "foo"
+basicPass  = "bar"
+basicRealm = "VOOT Group Provider"
 
 [PdoVootStorage]
 dsn = "sqlite:/PATH/TO/APP/data/voot.sqlite";

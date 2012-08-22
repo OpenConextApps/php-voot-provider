@@ -1,6 +1,11 @@
 <?php
-require_once "lib/Config.php";
-require_once "lib/Voot/PdoVootStorage.php";
+
+require_once "lib" . DIRECTORY_SEPARATOR . "SplClassLoader.php";
+$c =  new SplClassLoader("Tuxed", "lib");
+$c->register();
+
+use \Tuxed\Config as Config;
+use \Tuxed\Voot\PdoVootStorage as PdoVootStorage;
 
 $config = new Config(dirname(__DIR__) . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "voot.ini");
 

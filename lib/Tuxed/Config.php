@@ -1,5 +1,7 @@
 <?php
 
+namespace Tuxed;
+
 class Config {
 
     private $_configFile;
@@ -46,8 +48,3 @@ class Config {
     }
 
 }
-
-class ConfigException extends Exception {
-}
-
-?>

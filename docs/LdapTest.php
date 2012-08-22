@@ -5,11 +5,13 @@ if($argc < 2) {
 	exit(1);
 }
 
-require_once 'lib/Voot/Provider.php';
+require_once "lib" . DIRECTORY_SEPARATOR . "SplClassLoader.php";
+$c =  new SplClassLoader("Tuxed", "lib");
+$c->register();
+
 $config = parse_ini_file("config" . DIRECTORY_SEPARATOR . "voot.ini", TRUE);
 
-$vootStorageBackend = $config['voot']['storageBackend'];
-require_once "lib/Voot/$vootStorageBackend.php";
+$vootStorageBackend = "\\Tuxed\\Voot\\" . $config['voot']['storageBackend'];
 
 try { 
 	$vootStorage = new $vootStorageBackend($config[$vootStorageBackend]);
