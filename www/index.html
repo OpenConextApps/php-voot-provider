@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>VOOT Group Provider</title>
+</head>
+<body>
+
+<h1>VOOT Group Provider</h1>
+<p>
+Welcome to the <tt>php-voot</tt> VOOT Group Provider. The 
+code can be found at <a href="http://github.com/fkooman/php-voot">http://github.com/fkooman/php-voot</a>.
+</p>
+
+<h1>API Documentation</h1>
+<p>
+All requests to this service need to have the <tt>Authorization</tt> header
+provided (with <tt>Basic</tt> Authentication).
+</p>
+
+<h2>Request Groups</h2>
+
+<p>
+Only the <tt>GET</tt> request method is supported to the <tt>/groups/{user}</tt> URI.
+</p>
+
+<h3>Example</h3>
+
+<blockquote>
+<pre>
+$ curl -i --user foo:bar "http://localhost/php-voot/api.php/groups/nerdy.guy"
+HTTP/1.1 200 OK
+Date: Wed, 22 Aug 2012 18:56:13 GMT
+Server: Apache/2.2.22 (Unix) DAV/2 PHP/5.3.13 with Suhosin-Patch mod_ssl/2.2.22 OpenSSL/0.9.8r
+X-Powered-By: PHP/5.3.13
+Content-Length: 184
+Content-Type: application/json
+
+{"startIndex":0,"totalResults":"1","itemsPerPage":1,"entry":[{"id":"students","title":"Students","description":"This is a group containing Students.","voot_membership_role":"member"}]}
+</pre>
+</blockquote>
+
+<h2>Request People</h2>
+
+<p>
+Only the <tt>GET</tt> request method is supported to the <tt>/people/{user}/{group}</tt> URI. Here <tt>user</tt> is replaced with the actual user identifier, and group is replaced with the group identifier. The group identifier can be obtained through the previous "Request Groups" call.
+</p>
+
+<h3>Example</h3>
+
+<blockquote>
+<pre>
+$ curl -i --user foo:bar "http://localhost/php-voot/api.php/people/nerdy.guy/students"
+HTTP/1.1 200 OK
+Date: Wed, 22 Aug 2012 18:59:10 GMT
+Server: Apache/2.2.22 (Unix) DAV/2 PHP/5.3.13 with Suhosin-Patch mod_ssl/2.2.22 OpenSSL/0.9.8r
+X-Powered-By: PHP/5.3.13
+Content-Length: 161
+Content-Type: application/json
+
+{"startIndex":0,"totalResults":"2","itemsPerPage":2,"entry":[{"id":"nerdy.guy","voot_membership_role":"member"},{"id":"fkooman","voot_membership_role":"admin"}]}
+</pre>
+</blockquote>
+
+<h2>Errors</h2>
+<p>
+There are a number of errors that can be triggered, to list a few:</p>
+<ul>
+    <li>You can request a non existing user or group;</li>
+    <li>Your request can contain no or wrong username and password for the Basic authentication;</li>
+</ul>
+<p>For example requesting without a username password:</p>
+
+<blockquote>
+<pre>
+$ curl -i "http://localhost/php-voot/api.php/people/nerdy.guy/students"
+HTTP/1.1 401 Unauthorized
+Date: Wed, 22 Aug 2012 19:01:20 GMT
+Server: Apache/2.2.22 (Unix) DAV/2 PHP/5.3.13 with Suhosin-Patch mod_ssl/2.2.22 OpenSSL/0.9.8r
+X-Powered-By: PHP/5.3.13
+WWW-Authenticate: Basic realm="VOOT Group Provider"
+Content-Length: 0
+Content-Type: application/json
+</pre>
+</blockquote>
+
+Or requesting the groups for a non existing user:
+
+<blockquote>
+<pre>
+$ curl -i --user foo:bar "http://localhost/php-voot/api.php/groups/foo"
+HTTP/1.1 200 OK
+Date: Wed, 22 Aug 2012 19:02:17 GMT
+Server: Apache/2.2.22 (Unix) DAV/2 PHP/5.3.13 with Suhosin-Patch mod_ssl/2.2.22 OpenSSL/0.9.8r
+X-Powered-By: PHP/5.3.13
+Content-Length: 63
+Content-Type: application/json
+
+{"startIndex":0,"totalResults":"0","itemsPerPage":0,"entry":[]}
+</pre>
+</blockquote>
+
+This is not really an error, it just shows that there are no groups available for this user, even if the user does not exists at all.
+</body>
+</html>

@@ -9,6 +9,7 @@ class HttpRequest {
     protected $_headers;
     protected $_content;
     protected $_pathInfo;
+    protected $_restMatch;
 
     public function __construct($requestUri, $requestMethod = "GET") {
         $this->setRequestUri(new Uri($requestUri));
@@ -16,6 +17,7 @@ class HttpRequest {
         $this->_headers = array();
         $this->_content = NULL;
         $this->_pathInfo = NULL;
+        $this->_restMatch = FALSE;
     }
 
     public static function fromIncomingHttpRequest(IncomingHttpRequest $i) {
@@ -146,6 +148,7 @@ class HttpRequest {
         return $this->getHeader("PHP_AUTH_PW");
     }
 
+    /** DEPRECATED **/
     public function getCollection($asArray = FALSE) {
         if(!is_string($this->_pathInfo)) {
             return FALSE;
@@ -165,6 +168,7 @@ class HttpRequest {
         return $asArray ? array_values($e) : implode("/", $e);
     }
 
+    /** DEPRECATED **/
     public function getResource() {
         if(!is_string($this->_pathInfo)) {
             return FALSE;
@@ -182,6 +186,7 @@ class HttpRequest {
         return $e[sizeof($e)-1];
     }
 
+    /** DEPRECATED **/
     public function matchRest($requestMethod, $collectionName, $requireResource) {
         if($requestMethod !== $this->getRequestMethod()) {
             return FALSE;
@@ -200,6 +205,47 @@ class HttpRequest {
         } else {
             // we need a *specific* resource
             return $requireResource === $this->getResource();
+        }
+    }
+
+    /** RECOMMENDED **/
+    public function matchRestNice($requestMethod, $requestPattern, $callback) {
+        if($requestMethod !== $this->getRequestMethod()) {
+            return FALSE;
+        }
+        $pi = $this->getPathInfo();
+        if(!is_string($pi) || empty($pi) || FALSE === strpos($pi, "/")) {
+            return FALSE;
+        }
+        $f = explode("/", $pi);
+
+        if(!is_string($requestPattern) || empty($requestPattern) || FALSE === strpos($requestPattern, "/")) {
+            return FALSE;
+        }
+        $e = explode("/", $requestPattern);
+
+        if(count($e) !== count($f)) {
+            return FALSE;
+        }
+        $parameters = array();
+        for($i = 0; $i < count($e); $i++) {
+            $z = !empty($e[$i]) ? strpos($e[$i], ":") : FALSE;
+            if(FALSE === $z || 0 !== $z) {
+                if($f[$i] !== $e[$i]) {
+                    return FALSE;
+                }
+            } else {
+                array_push($parameters, $f[$i]);
+            }
+        }
+        $this->_restMatch = TRUE;
+        call_user_func_array($callback, $parameters);
+        return TRUE;
+    }
+
+    public function matchDefault($callback) {
+        if(!$this->_restMatch) {
+            $callback();
         }
     }
 

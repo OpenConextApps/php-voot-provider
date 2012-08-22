@@ -14,33 +14,37 @@ $response->setHeader("Content-Type", "application/json");
 
 try {
     $config = new Config(dirname(__DIR__) . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "voot.ini");
-
     $request = HttpRequest::fromIncomingHttpRequest(new IncomingHttpRequest());
 
-    // verify Basic Authentication username and password
+    // verify username and password
     if($request->getBasicAuthUser() !== $config->getValue('basicUser') || $request->getBasicAuthPass() !== $config->getValue('basicPass')) {
-        // FIXME: set WWW-Authenticate etc etc, HTTP 401
-        throw new Exception("invalid username or password");
-    }
+        $response->setStatusCode(401);
+        $response->setHeader("WWW-Authenticate", 'Basic realm="' . $config->getValue("basicRealm") . '"');
+    } else {
+        $vootStorageBackend = "\\Tuxed\\Voot\\" . $config->getValue('storageBackend');
+        $vootStorage = new $vootStorageBackend($config);
 
-    $vootStorageBackend = "\\Tuxed\\Voot\\" . $config->getValue('storageBackend');
-    $vootStorage = new $vootStorageBackend($config);
+        // GROUPS
+        $request->matchRestNice("GET", "/groups/:uid", function($uid) use ($request, $response, $vootStorage) {
+            $groups = $vootStorage->isMemberOf($uid, $request->getQueryParameter("startIndex"), $request->getQueryParameter("count"));
+            $response->setContent(json_encode($groups));
+        });
 
-    if($request->matchRest("GET", "groups", TRUE)) {
-        $uid = $request->getResource();
-        $groups = $vootStorage->isMemberOf($uid, $request->getQueryParameter("startIndex"), $request->getQueryParameter("count"));
-        $response->setContent(json_encode($groups));
-    } elseif($request->matchRest("GET", "people", TRUE)) {
-        $uid = $request->getResource();
-        $gid = "foo";   // FIXME: get this from the pattern matching
-        $users = $vootStorage->getGroupMembers($uid, $gid, $request->getQueryParameter("startIndex"), $request->getQueryParameter("count"));
-        $response->setContent(json_encode($users));
+        // PEOPLE
+        $request->matchRestNice("GET", "/people/:uid/:gid", function($uid, $gid) use ($request, $response, $vootStorage) {
+            $users = $vootStorage->getGroupMembers($uid, $gid, $request->getQueryParameter("startIndex"), $request->getQueryParameter("count"));
+            $response->setContent(json_encode($users));
+        });
+
+        $request->matchDefault(function() use ($response) {
+            $response->setStatusCode(404);
+            $response->setContent(json_encode(array("error" => "not_found", "error_description" => "resource not found")));
+        });
+
     }
 } catch (Exception $e) {
-    $response->setStatusCode(401);
-    $response->setContent($e->getMessage());
+    $response->setStatusCode(500);
+    $response->setContent(json_encode(array("error" => "internal_server_error", "error_description" => $e->getMessage())));
 }
 
 $response->sendResponse();
-
-?>
