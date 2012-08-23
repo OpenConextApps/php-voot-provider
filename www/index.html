@@ -63,6 +63,30 @@ Content-Type: application/json
 </pre>
 </blockquote>
 
+<h2>Limit Results</h2>
+<p>
+It is also possible to limit the number of results for "paging" purposes. It is for example possible to specify the
+start index and number of elements that should be returned with the <tt>startIndex</tt> and <tt>count</tt> parameters.
+</p>
+
+<h3>Example</h3>
+
+<blockquote>
+<pre>
+$ curl -i --user foo:bar "http://localhost/php-voot/api.php/people/fkooman/guests?startIndex=1&count=1"
+HTTP/1.1 200 OK
+Date: Thu, 23 Aug 2012 06:00:10 GMT
+Server: Apache/2.2.22 (Unix) DAV/2 PHP/5.3.13 with Suhosin-Patch mod_ssl/2.2.22 OpenSSL/0.9.8r
+X-Powered-By: PHP/5.3.13
+Content-Length: 114
+Content-Type: application/json
+
+{"startIndex":"1","totalResults":"4","itemsPerPage":1,"entry":[{"id":"john.doe","voot_membership_role":"member"}]}
+</pre>
+</blockquote>
+
+To total number of results is four in this case, but we only show the second entry, because <tt>startIndex</tt> starts at 0.
+
 <h2>Errors</h2>
 <p>
 There are a number of errors that can be triggered, to list a few:</p>
@@ -76,12 +100,14 @@ There are a number of errors that can be triggered, to list a few:</p>
 <pre>
 $ curl -i "http://localhost/php-voot/api.php/people/nerdy.guy/students"
 HTTP/1.1 401 Unauthorized
-Date: Wed, 22 Aug 2012 19:01:20 GMT
+Date: Thu, 23 Aug 2012 06:02:42 GMT
 Server: Apache/2.2.22 (Unix) DAV/2 PHP/5.3.13 with Suhosin-Patch mod_ssl/2.2.22 OpenSSL/0.9.8r
 X-Powered-By: PHP/5.3.13
 WWW-Authenticate: Basic realm="VOOT Group Provider"
-Content-Length: 0
+Content-Length: 79
 Content-Type: application/json
+
+{"error":"unauthorized","error_description":"authentication failed or missing"}
 </pre>
 </blockquote>
 
@@ -101,6 +127,9 @@ Content-Type: application/json
 </pre>
 </blockquote>
 
-This is not really an error, it just shows that there are no groups available for this user, even if the user does not exists at all.
+<p>
+<em>NOTE</em>: This is not really an error, it just shows that there are no groups available for this user, even if the user does not exists at all. This needs to be fixed sometime in the future if possible.
+</p>
+
 </body>
 </html>

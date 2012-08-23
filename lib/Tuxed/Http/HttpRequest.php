@@ -9,7 +9,8 @@ class HttpRequest {
     protected $_headers;
     protected $_content;
     protected $_pathInfo;
-    protected $_restMatch;
+    protected $_patternMatch;
+    protected $_methodMatch;
 
     public function __construct($requestUri, $requestMethod = "GET") {
         $this->setRequestUri(new Uri($requestUri));
@@ -17,7 +18,8 @@ class HttpRequest {
         $this->_headers = array();
         $this->_content = NULL;
         $this->_pathInfo = NULL;
-        $this->_restMatch = FALSE;
+        $this->_patternMatch = FALSE;
+        $this->_methodMatch = array();
     }
 
     public static function fromIncomingHttpRequest(IncomingHttpRequest $i) {
@@ -210,6 +212,10 @@ class HttpRequest {
 
     /** RECOMMENDED **/
     public function matchRestNice($requestMethod, $requestPattern, $callback) {
+        if(!in_array($requestMethod, $this->_methodMatch)) {
+            array_push($this->_methodMatch, $requestMethod);
+        }
+
         if($requestMethod !== $this->getRequestMethod()) {
             return FALSE;
         }
@@ -235,18 +241,21 @@ class HttpRequest {
                     return FALSE;
                 }
             } else {
-                array_push($parameters, $f[$i]);
+                if(empty($f[$i])) {
+                    return FALSE;
+                } else {
+                    array_push($parameters, $f[$i]);
+                }
             }
         }
-        $this->_restMatch = TRUE;
+
+        $this->_patternMatch = TRUE;
         call_user_func_array($callback, $parameters);
         return TRUE;
     }
 
     public function matchDefault($callback) {
-        if(!$this->_restMatch) {
-            $callback();
-        }
+        $callback($this->_methodMatch, $this->_patternMatch);
     }
 
 }

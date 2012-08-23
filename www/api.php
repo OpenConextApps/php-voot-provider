@@ -20,6 +20,7 @@ try {
     if($request->getBasicAuthUser() !== $config->getValue('basicUser') || $request->getBasicAuthPass() !== $config->getValue('basicPass')) {
         $response->setStatusCode(401);
         $response->setHeader("WWW-Authenticate", 'Basic realm="' . $config->getValue("basicRealm") . '"');
+        $response->setContent(json_encode(array("error" => "unauthorized", "error_description" => "authentication failed or missing")));
     } else {
         $vootStorageBackend = "\\Tuxed\\Voot\\" . $config->getValue('storageBackend');
         $vootStorage = new $vootStorageBackend($config);
@@ -36,11 +37,17 @@ try {
             $response->setContent(json_encode($users));
         });
 
-        $request->matchDefault(function() use ($response) {
-            $response->setStatusCode(404);
-            $response->setContent(json_encode(array("error" => "not_found", "error_description" => "resource not found")));
+        $request->matchDefault(function($methodMatch, $patternMatch) use ($request, $response) {
+            if(in_array($request->getRequestMethod(), $methodMatch)) {
+                if(!$patternMatch) {
+                    $response->setStatusCode(404);
+                    $response->setContent(json_encode(array("error" => "not_found", "error_description" => "resource not found")));
+                }
+            } else {
+                $response->setStatusCode(405);
+                $response->setContent(json_encode(array("error" => "method_not_allowed", "error_description" => "request method not allowed")));
+            }
         });
-
     }
 } catch (Exception $e) {
     $response->setStatusCode(500);
