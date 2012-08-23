@@ -34,10 +34,10 @@ class PdoVootStorage implements IVootStorage {
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
         $totalResults = $data['count'];
 
-        if(!is_numeric($startIndex)) {
+        if(!is_numeric($startIndex) || $startIndex < 0) {
             $startIndex = 0;
         }
-        if(!is_numeric($count)) {
+        if(!is_numeric($count) || $count < 0) {
             $count = $totalResults;
         }
 
@@ -71,10 +71,10 @@ class PdoVootStorage implements IVootStorage {
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
         $totalResults = $data['count'];
 
-        if(!is_numeric($startIndex)) {
+        if(!is_numeric($startIndex) || $startIndex < 0) {
             $startIndex = 0;
         }
-        if(!is_numeric($count)) {
+        if(!is_numeric($count) || $count < 0) {
             $count = $totalResults;
         }
 
