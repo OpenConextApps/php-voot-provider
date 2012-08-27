@@ -94,10 +94,10 @@ Now to fetch the groups for the user:
 This can all be configured in `config/voot.ini`.
 
 To test the configuration of your LDAP settings it is possible to use the 
-`LdapTest.php` script in the `docs/` directory. First configure LDAP in 
+`BackendTest.php` script in the `docs/` directory. First configure LDAP in 
 `config/voot.ini` and then run the script like this:
 
-    $ php docs/LdapTest.php fkooman
+    $ php docs/BackendTest.php fkooman
 
 This should return an `array` with the group information. If it does not work,
 make sure you match the configuration values with the `ldapsearch` commands 

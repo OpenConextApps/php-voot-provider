@@ -32,6 +32,12 @@ try {
         });
 
         // PEOPLE
+        $request->matchRestNice("GET", "/people/:uid", function($uid) use ($request, $response, $vootStorage) {
+            $userInfo = $vootStorage->getUserAttributes($uid);
+            $response->setContent(json_encode($userInfo));
+        });
+
+        // PEOPLE IN GROUP
         $request->matchRestNice("GET", "/people/:uid/:gid", function($uid, $gid) use ($request, $response, $vootStorage) {
             $users = $vootStorage->getGroupMembers($uid, $gid, $request->getQueryParameter("startIndex"), $request->getQueryParameter("count"));
             $response->setContent(json_encode($users));

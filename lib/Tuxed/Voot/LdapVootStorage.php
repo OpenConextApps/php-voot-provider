@@ -43,6 +43,28 @@ class LdapVootStorage implements IVootStorage {
         return $userDn;
     }
 
+    public function getUserAttributes($resourceOwnerId) {
+        $filter = '(' . $this->_c->getSectionValue('LdapVootStorage', 'userIdAttribute') . '=' . $resourceOwnerId . ')';
+        $query = ldap_search($this->_ldapConnection, $this->_c->getSectionValue('LdapVootStorage', 'peopleDn'), $filter);
+        if(FALSE === $query) {
+            throw new Exception("directory query for user failed");
+        }
+        /* we assume there is only one entry for the specified user, if not
+           we only look at the first result */
+        $entry = ldap_first_entry($this->_ldapConnection, $query);
+        if(FALSE === $entry) {
+            throw new Exception("user not found in directory");
+        }
+        $attributes = ldap_get_attributes($this->_ldapConnection, $entry);
+        if(FALSE === $attributes) {
+            throw new Exception("unable to get user attributes");
+        }
+        $filteredAttributes = $this->_filterAttributes($attributes);
+        $startIndex = 0;
+        $totalResults = 1;
+        return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => $totalResults, 'entry' => $filteredAttributes);
+    }
+
     public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = null) {
         $userDn = $this->_getUserDn($resourceOwnerId);
     
@@ -88,7 +110,6 @@ class LdapVootStorage implements IVootStorage {
                                            'description' => $description, 
                                            'voot_membership_role' => 'member'));            
             $entry = ldap_next_entry($this->_ldapConnection, $entry);
-
         }
 
         // FIXME: we need to implement paging for LDAP as well...
@@ -96,4 +117,16 @@ class LdapVootStorage implements IVootStorage {
         $totalResults = sizeof($userGroups);
         return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => $totalResults, 'entry' => $userGroups);
     }
+
+    private function _filterAttributes($attributes) {
+        $whiteList = $this->_c->getSectionValue('LdapVootStorage', 'attributeWhiteList');
+        $filteredAttributes = array();
+        foreach($whiteList as $k => $v) {
+            if(array_key_exists($v, $attributes)) {
+                $filteredAttributes[$k] = $attributes[$v][0];
+            }
+        }
+        return $filteredAttributes;
+    }
+
 }

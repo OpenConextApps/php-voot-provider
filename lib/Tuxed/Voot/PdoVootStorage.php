@@ -24,6 +24,12 @@ class PdoVootStorage implements IVootStorage {
     	    $this->_pdo->exec("PRAGMA foreign_keys = ON");
     }
 
+    public function getUserAttributes($resourceOwnerId) {
+        $startIndex = 0;
+        $totalResults = 1;
+        return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => $totalResults, 'entry' => array("user_id" => $resourceOwnerId, "name" => $resourceOwnerId));
+    }
+
     public function isMemberOf($resourceOwnerId, $startIndex = 0, $count = NULL) {
         $stmt = $this->_pdo->prepare("SELECT COUNT(*) AS count FROM membership m, groups g, roles r WHERE m.id=:id AND m.groupid = g.id AND m.role = r.id");
         $stmt->bindValue(":id", $resourceOwnerId, PDO::PARAM_STR);
