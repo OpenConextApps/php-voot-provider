@@ -21,7 +21,7 @@ class PdoVootStorage implements IVootStorage {
         $this->_pdo = new PDO($this->_c->getSectionValue('PdoVootStorage', 'dsn'), $this->_c->getSectionValue('PdoVootStorage', 'username', FALSE), $this->_c->getSectionValue('PdoVootStorage', 'password', FALSE), $driverOptions);
 
         // enforce foreign keys
-    	    $this->_pdo->exec("PRAGMA foreign_keys = ON");
+        $this->_pdo->exec("PRAGMA foreign_keys = ON");
     }
 
     public function getUserAttributes($resourceOwnerId) {
@@ -61,7 +61,7 @@ class PdoVootStorage implements IVootStorage {
         }
 
         // FIXME: should itemsPerPage return the count value or the actual number of results returned?
-	    return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => sizeof($data), 'entry' => $data);
+        return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => sizeof($data), 'entry' => $data);
     }
 
     public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = NULL) {
@@ -98,7 +98,7 @@ class PdoVootStorage implements IVootStorage {
         }
 
         // FIXME: should itemsPerPage return the count value or the actual number of results returned?
-	    return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => sizeof($data), 'entry' => $data);
+        return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => sizeof($data), 'entry' => $data);
     } 
 
     public function addGroup($id, $title, $description) {
@@ -147,6 +147,10 @@ class PdoVootStorage implements IVootStorage {
             FOREIGN KEY (`groupid`) REFERENCES `groups` (`id`),
             FOREIGN KEY (`role`) REFERENCES `roles` (`id`))
         ");
+
+#        `displayName` TEXT DEFAULT NULL.
+#        `cn` TEXT DEFAULT NULL,
+#        `mail` TEXT DEFAULT NULL,
 
         // add some default roles
         $this->_pdo->exec("INSERT INTO `roles` VALUES (10,'member')");

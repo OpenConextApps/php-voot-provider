@@ -3,6 +3,7 @@
 namespace Tuxed\Voot;
 
 use \Tuxed\Config as Config;
+use \Exception as Exception;
 
 class LdapVootStorage implements IVootStorage {
 

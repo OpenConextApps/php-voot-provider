@@ -26,24 +26,24 @@ try {
         $vootStorage = new $vootStorageBackend($config);
 
         // GROUPS
-        $request->matchRestNice("GET", "/groups/:uid", function($uid) use ($request, $response, $vootStorage) {
+        $request->matchRest("GET", "/groups/:uid", function($uid) use ($request, $response, $vootStorage) {
             $groups = $vootStorage->isMemberOf($uid, $request->getQueryParameter("startIndex"), $request->getQueryParameter("count"));
             $response->setContent(json_encode($groups));
         });
 
         // PEOPLE
-        $request->matchRestNice("GET", "/people/:uid", function($uid) use ($request, $response, $vootStorage) {
+        $request->matchRest("GET", "/people/:uid", function($uid) use ($request, $response, $vootStorage) {
             $userInfo = $vootStorage->getUserAttributes($uid);
             $response->setContent(json_encode($userInfo));
         });
 
         // PEOPLE IN GROUP
-        $request->matchRestNice("GET", "/people/:uid/:gid", function($uid, $gid) use ($request, $response, $vootStorage) {
+        $request->matchRest("GET", "/people/:uid/:gid", function($uid, $gid) use ($request, $response, $vootStorage) {
             $users = $vootStorage->getGroupMembers($uid, $gid, $request->getQueryParameter("startIndex"), $request->getQueryParameter("count"));
             $response->setContent(json_encode($users));
         });
 
-        $request->matchDefault(function($methodMatch, $patternMatch) use ($request, $response) {
+        $request->matchRestDefault(function($methodMatch, $patternMatch) use ($request, $response) {
             if(in_array($request->getRequestMethod(), $methodMatch)) {
                 if(!$patternMatch) {
                     $response->setStatusCode(404);

@@ -11,7 +11,7 @@ class Config {
         $this->_configFile = $configFile;
 
         if(!file_exists($configFile) || !is_file($configFile) || !is_readable($configFile)) {
-            throw new ConfigException("configuration file '$configFile' not found");
+            throw new ConfigException("configuration file not found");
         }
 
         $this->_configValues = parse_ini_file($configFile, TRUE);
@@ -22,7 +22,7 @@ class Config {
             return $this->_configValues[$key];
         } else {
             if($required) {
-                throw new ConfigException("configuration key '$key' not set in '$this->_configFile'");
+                throw new ConfigException("configuration key '$key' not set in configuration file'");
             }
             return NULL;
         }
@@ -33,7 +33,7 @@ class Config {
             return $this->_configValues[$section][$key];
         } else {
             if($required) {
-                throw new ConfigException("configuration key '$key' in section '$section' not set in '$this->_configFile'");
+                throw new ConfigException("configuration key '$key' in section '$section' not set in configuration file'");
             }
             return NULL;
         }

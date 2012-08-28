@@ -150,68 +150,7 @@ class HttpRequest {
         return $this->getHeader("PHP_AUTH_PW");
     }
 
-    /** DEPRECATED **/
-    public function getCollection($asArray = FALSE) {
-        if(!is_string($this->_pathInfo)) {
-            return FALSE;
-        }
-        if(strlen($this->_pathInfo) < 2) {
-            return FALSE;
-        }
-        $e = explode("/", $this->_pathInfo);
-        if(!empty($e[0])) {
-            return FALSE;
-        }
-        unset($e[sizeof($e)-1]);
-        unset($e[0]);
-        if(empty($e)) {
-            return FALSE;   // <-- FIXME: this can never be reached?
-        }
-        return $asArray ? array_values($e) : implode("/", $e);
-    }
-
-    /** DEPRECATED **/
-    public function getResource() {
-        if(!is_string($this->_pathInfo)) {
-            return FALSE;
-        }
-        if(strlen($this->_pathInfo) < 2) {
-            return FALSE;
-        }
-        $e = explode("/", $this->_pathInfo);
-        if(!empty($e[0])) {
-            return FALSE;
-        }
-        if(empty($e[sizeof($e)-1])) {
-            return FALSE;
-        }
-        return $e[sizeof($e)-1];
-    }
-
-    /** DEPRECATED **/
-    public function matchRest($requestMethod, $collectionName, $requireResource) {
-        if($requestMethod !== $this->getRequestMethod()) {
-            return FALSE;
-        }
-        if($collectionName !== $this->getCollection()) {
-            return FALSE;
-        }
-        if(is_bool($requireResource)) {
-            if($requireResource) {
-                // we need *a* resource
-                return FALSE !== $this->getResource();
-            } else {
-                // we do *not* want a resource
-                return FALSE === $this->getResource();
-            }
-        } else {
-            // we need a *specific* resource
-            return $requireResource === $this->getResource();
-        }
-    }
-
-    /** RECOMMENDED **/
-    public function matchRestNice($requestMethod, $requestPattern, $callback) {
+    public function matchRest($requestMethod, $requestPattern, $callback) {
         if(!in_array($requestMethod, $this->_methodMatch)) {
             array_push($this->_methodMatch, $requestMethod);
         }
@@ -254,8 +193,27 @@ class HttpRequest {
         return TRUE;
     }
 
-    public function matchDefault($callback) {
+    public function matchRestDefault($callback) {
         $callback($this->_methodMatch, $this->_patternMatch);
+    }
+
+    public function __toString() {
+        $s  = PHP_EOL;
+        $s .= "*HttpRequest*" . PHP_EOL;
+        $s .= "Headers:" . PHP_EOL;
+        foreach($this->getHeaders(TRUE) as $v) {
+            $s .= "\t" . $v . PHP_EOL;
+        }
+        $s .= "Content:" . PHP_EOL;
+        $s .= "\t" . $this->getContent();
+        return $s;
+
+#        // only log certain headers?
+#        $logHeaders = array("HTTPS", "HTTP_USER_AGENT", "REMOTE_ADDR", "REQUEST_METHOD", "REQUEST_URI", "HTTP_AUTHORIZATION");
+#        foreach($logHeaders as $v) {
+#            $s .= "\t" . $v . ": " . $this->getHeader($v) . PHP_EOL;
+#        }
+
     }
 
 }
