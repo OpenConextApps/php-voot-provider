@@ -107,7 +107,7 @@ class PdoVootStorage implements IVootStorage {
         $stmt->bindValue(":title", $title, PDO::PARAM_STR);
         $stmt->bindValue(":description", $description, PDO::PARAM_STR);
         if(FALSE === $stmt->execute()) {
-            throw new StorageException("unable to add group");
+            throw new VootStorageException("unable to add group");
         }
         return 1 === $stmt->rowCount();
     }
@@ -118,7 +118,7 @@ class PdoVootStorage implements IVootStorage {
         $stmt->bindValue(":groupid", $groupId, PDO::PARAM_STR);
         $stmt->bindValue(":role", $role, PDO::PARAM_INT);
         if(FALSE === $stmt->execute()) {
-            throw new StorageException("unable to add membership");
+            throw new VootStorageException("unable to add membership");
         }
         return 1 === $stmt->rowCount();
     }

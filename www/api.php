@@ -4,22 +4,37 @@ require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . "lib" . DIRECTORY_SEPARATO
 $c =  new SplClassLoader("Tuxed", dirname(__DIR__) . DIRECTORY_SEPARATOR . "lib");
 $c->register();
 
+function exception_error_handler($errno, $errstr, $errfile, $errline ) {
+    throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
+}
+set_error_handler("exception_error_handler");
+
 use \Tuxed\Config as Config;
 use \Tuxed\Http\HttpResponse as HttpResponse;
 use \Tuxed\Http\HttpRequest as HttpRequest;
 use \Tuxed\Http\IncomingHttpRequest as IncomingHttpRequest;
+use \Tuxed\Logger as Logger;
+use \Tuxed\Voot\VootStorageException as VootStorageException;
 
-$response = new HttpResponse();
-$response->setHeader("Content-Type", "application/json");
+$logger = NULL;
+$request = NULL;
+$response = NULL;
 
 try {
+
     $config = new Config(dirname(__DIR__) . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "voot.ini");
+    $logger = new Logger($config->getSectionValue('Log', 'logLevel'), $config->getValue('serviceName'), $config->getSectionValue('Log', 'logFile'), $config->getSectionValue('Log', 'logMail', FALSE));
+
     $request = HttpRequest::fromIncomingHttpRequest(new IncomingHttpRequest());
+    $logger->logDebug($request);
+
+    $response = new HttpResponse();
+    $response->setHeader("Content-Type", "application/json");
 
     // verify username and password
     if($request->getBasicAuthUser() !== $config->getValue('basicUser') || $request->getBasicAuthPass() !== $config->getValue('basicPass')) {
         $response->setStatusCode(401);
-        $response->setHeader("WWW-Authenticate", 'Basic realm="' . $config->getValue("basicRealm") . '"');
+        $response->setHeader("WWW-Authenticate", 'Basic realm="' . $config->getValue("serviceName") . '"');
         $response->setContent(json_encode(array("error" => "unauthorized", "error_description" => "authentication failed or missing")));
     } else {
         $vootStorageBackend = "\\Tuxed\\Voot\\" . $config->getValue('storageBackend');
@@ -55,9 +70,27 @@ try {
             }
         });
     }
+
+} catch (VootStorageException $e) {
+    $response = new HttpResponse();
+    $response->setStatusCode($e->getResponseCode());
+    $response->setContent(json_encode(array("error" => $e->getMessage(), "error_description" => $e->getDescription())));
+    if(NULL !== $logger) {
+        $logger->logFatal($e->getLogMessage(TRUE) . PHP_EOL . $request . PHP_EOL . $response);
+    }
 } catch (Exception $e) {
+    // any other error thrown by any of the modules, assume internal server error
+    $response = new HttpResponse();
     $response->setStatusCode(500);
     $response->setContent(json_encode(array("error" => "internal_server_error", "error_description" => $e->getMessage())));
+    if(NULL !== $logger) {
+        $logger->logFatal($e->getMessage() . PHP_EOL . $request . PHP_EOL . $response);
+    }
 }
 
-$response->sendResponse();
+if(NULL !== $logger) {
+    $logger->logDebug($response);
+}
+if(NULL !== $response) {
+    $response->sendResponse();
+}
