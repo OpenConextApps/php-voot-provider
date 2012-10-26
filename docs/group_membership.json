@@ -1,0 +1,79 @@
+[
+    {
+        "description": "Group containing members of this institute.", 
+        "id": "member", 
+        "members": [
+            {
+                "id": "admin", 
+                "role": "member"
+            }, 
+            {
+                "id": "teacher", 
+                "role": "member"
+            }, 
+            {
+                "id": "jstroud", 
+                "role": "member"
+            }, 
+            {
+                "id": "mwisdom", 
+                "role": "member"
+            }, 
+            {
+                "id": "bmcatee", 
+                "role": "member"
+            }, 
+            {
+                "id": "jmatson", 
+                "role": "member"
+            }, 
+            {
+                "id": "mcram", 
+                "role": "member"
+            }
+        ], 
+        "name": "Members"
+    }, 
+    {
+        "description": "Group containing employees of this institute.", 
+        "id": "employee", 
+        "members": [
+            {
+                "id": "admin", 
+                "role": "admin"
+            }, 
+            {
+                "id": "teacher", 
+                "role": "manager"
+            }
+        ], 
+        "name": "Employees"
+    }, 
+    {
+        "description": "Group containing the students of this institute.", 
+        "id": "student", 
+        "members": [
+            {
+                "id": "jstroud", 
+                "role": "member"
+            }, 
+            {
+                "id": "mwisdom", 
+                "role": "member"
+            }, 
+            {
+                "id": "bmcatee", 
+                "role": "member"
+            }, 
+            {
+                "id": "jmatson", 
+                "role": "member"
+            }, 
+            {
+                "id": "mcram", 
+                "role": "member"
+            }
+        ], 
+        "name": "Students"
+    }
+]

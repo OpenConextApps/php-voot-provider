@@ -11,20 +11,28 @@ $config = new Config(dirname(__DIR__) . DIRECTORY_SEPARATOR . "config" . DIRECTO
 
 $storage = new PdoVootStorage($config);
 $storage->initDatabase();
-$storage->updateDatabase();
 
-$storage->addGroup("guests", "Guests", "This is a group containing Guests.");
-$storage->addGroup("employees","Employees","This is a group containing Employees.");
-$storage->addGroup("students","Students","This is a group containing Students.");
+$data = file_get_contents("docs/group_membership.json");
+$d = json_decode($data, TRUE);
 
-$storage->addMembership("fkooman", "guests", 10);
-$storage->addMembership("fkooman", "employees", 20);
-$storage->addMembership("fkooman", "students", 50);
-$storage->addMembership("john.doe", "guests", 10);
-$storage->addMembership("jane.doe", "guests", 10);
-$storage->addMembership("weird.guy", "guests", 10);
-$storage->addMembership("the.boss", "employees", 50);
-$storage->addMembership("the.house.cat", "employees", 10);
-$storage->addMembership("nerdy.guy", "students", 10);
+foreach($d as $v) {
+	$storage->addGroup($v['id'], $v['name'], $v['description']);
+	foreach($v['members'] as $m) {
+		$storage->addMembership($m['id'], $v['id'], roleToInt($m['role']));
+	}
+}
+
+function roleToInt($role) {
+        switch($role) {
+        case "member":
+                return 10;
+        case "admin":
+                return 50;
+        case "manager":
+                return 20;
+        default:
+                die("invalid role");
+        }
+}
 
 ?>
