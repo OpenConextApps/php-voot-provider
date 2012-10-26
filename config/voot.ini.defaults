@@ -3,6 +3,8 @@
 storageBackend = "PdoVootStorage"
 ;storageBackend = "LdapVootStorage"
 
+serviceName = "VOOT Group Provider"
+
 basicUser  = "foo"
 basicPass  = "bar"
 basicRealm = "VOOT Group Provider"
