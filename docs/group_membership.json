@@ -1,6 +1,6 @@
 [
     {
-        "description": "Group containing members of this institute.", 
+        "description": "Group containing everyone at this institute.", 
         "id": "member", 
         "members": [
             {
@@ -35,7 +35,7 @@
         "name": "Members"
     }, 
     {
-        "description": "Group containing employees of this institute.", 
+        "description": "Group containing employees.", 
         "id": "employee", 
         "members": [
             {
@@ -50,7 +50,7 @@
         "name": "Employees"
     }, 
     {
-        "description": "Group containing the students of this institute.", 
+        "description": "Group containing the students.", 
         "id": "student", 
         "members": [
             {
@@ -75,5 +75,46 @@
             }
         ], 
         "name": "Students"
+    }, 
+    {
+        "description": "Group containing the student assistents.", 
+        "id": "assistents", 
+        "members": [
+            {
+                "id": "bmcatee", 
+                "role": "member"
+            }, 
+            {
+                "id": "jmatson", 
+                "role": "member"
+            }, 
+            {
+                "id": "mcram", 
+                "role": "member"
+            }
+        ], 
+        "name": "Student Assistents"
+    }, 
+    {
+        "description": "Group containing the teaching staff.", 
+        "id": "teachers", 
+        "members": [
+            {
+                "id": "teacher", 
+                "role": "member"
+            }
+        ], 
+        "name": "Teaching Staff"
+    }, 
+    {
+        "description": "Group containing the network administrators.", 
+        "id": "networkadmin", 
+        "members": [
+            {
+                "id": "admin", 
+                "role": "admin"
+            }
+        ], 
+        "name": "Network Administrators"
     }
 ]
