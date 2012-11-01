@@ -24,10 +24,10 @@ permissions. *NOTE*: in the `chown` line you need to use your own user account
 name!
 
     $ cd /var/www/html
-    $ su -c 'mkdir php-voot'
-    $ su -c 'chown fkooman.fkooman php-voot'
-    $ git clone git://github.com/fkooman/php-voot.git
-    $ cd php-voot
+    $ su -c 'mkdir php-voot-provider'
+    $ su -c 'chown fkooman.fkooman php-voot-provider'
+    $ git clone git://github.com/fkooman/php-voot-provider.git
+    $ cd php-voot-provider
 
 Now you can create the default configuration files, the paths will be 
 automatically set, permissions set and a sample Apache configuration file will 
@@ -41,8 +41,9 @@ you want to use the default SQlite, then you can initialize immediately:
 
     $ php docs/initVootDatabase.php
 
-On Ubuntu (Debian) you would typically install in `/var/www/php-voot` and not in
-`/var/www/html/php-voot` and you use `sudo` instead of `su -c`.
+On Ubuntu (Debian) you would typically install in `/var/www/php-voot-provider` 
+and not in `/var/www/html/php-voot-provider` and you use `sudo` instead of 
+`su -c`.
 
 # SELinux
 The install script already takes care of setting the file permissions of the
@@ -59,9 +60,9 @@ Fedora.
 There is an example configuration file in `docs/apache.conf`. 
 
 On Red Hat based distributions the file can be placed in 
-`/etc/httpd/conf.d/php-voot.conf`. On Debian based distributions the file can
-be placed in `/etc/apache2/conf.d/php-voot`. Be sure to modify it to suit your 
-environment and do not forget to restart Apache. 
+`/etc/httpd/conf.d/php-voot-provider.conf`. On Debian based distributions the 
+file can be placed in `/etc/apache2/conf.d/php-voot-provider`. Be sure to 
+modify it to suit your environment and do not forget to restart Apache. 
 
 The install script from the previous section outputs a config for your system
 which replaces the `/PATH/TO/APP` with the actual directory.

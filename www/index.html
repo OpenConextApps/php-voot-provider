@@ -9,8 +9,8 @@
 
 <h1>VOOT Group Provider</h1>
 <p>
-Welcome to the <tt>php-voot</tt> VOOT Group Provider. The 
-code can be found at <a href="http://github.com/fkooman/php-voot">http://github.com/fkooman/php-voot</a>.
+Welcome to the <tt>php-voot-provider</tt> VOOT Group Provider. The 
+code can be found at <a href="http://github.com/fkooman/php-voot-provider">http://github.com/fkooman/php-voot-provider</a>.
 </p>
 
 <h1>API Documentation</h1>
@@ -29,7 +29,7 @@ Only the <tt>GET</tt> request method is supported to the <tt>/groups/{user}</tt>
 
 <blockquote>
 <pre>
-$ curl -i --user foo:bar "http://localhost/php-voot/api.php/groups/nerdy.guy"
+$ curl -i --user foo:bar "http://localhost/php-voot-provider/voot.php/groups/bcatee"
 HTTP/1.1 200 OK
 Date: Wed, 22 Aug 2012 18:56:13 GMT
 Server: Apache/2.2.22 (Unix) DAV/2 PHP/5.3.13 with Suhosin-Patch mod_ssl/2.2.22 OpenSSL/0.9.8r
@@ -51,7 +51,7 @@ Only the <tt>GET</tt> request method is supported to the <tt>/people/{user}/{gro
 
 <blockquote>
 <pre>
-$ curl -i --user foo:bar "http://localhost/php-voot/api.php/people/nerdy.guy/students"
+$ curl -i --user foo:bar "http://localhost/php-voot-provider/voot.php/people/bcatee/students"
 HTTP/1.1 200 OK
 Date: Wed, 22 Aug 2012 18:59:10 GMT
 Server: Apache/2.2.22 (Unix) DAV/2 PHP/5.3.13 with Suhosin-Patch mod_ssl/2.2.22 OpenSSL/0.9.8r
@@ -73,7 +73,7 @@ start index and number of elements that should be returned with the <tt>startInd
 
 <blockquote>
 <pre>
-$ curl -i --user foo:bar "http://localhost/php-voot/api.php/people/fkooman/guests?startIndex=1&count=1"
+$ curl -i --user foo:bar "http://localhost/php-voot-provider/voot.php/people/bcatee/students?startIndex=1&count=1"
 HTTP/1.1 200 OK
 Date: Thu, 23 Aug 2012 06:00:10 GMT
 Server: Apache/2.2.22 (Unix) DAV/2 PHP/5.3.13 with Suhosin-Patch mod_ssl/2.2.22 OpenSSL/0.9.8r
@@ -98,7 +98,7 @@ There are a number of errors that can be triggered, to list a few:</p>
 
 <blockquote>
 <pre>
-$ curl -i "http://localhost/php-voot/api.php/people/nerdy.guy/students"
+$ curl -i "http://localhost/php-voot-provider/voot.php/people/bcatee/students"
 HTTP/1.1 401 Unauthorized
 Date: Thu, 23 Aug 2012 06:02:42 GMT
 Server: Apache/2.2.22 (Unix) DAV/2 PHP/5.3.13 with Suhosin-Patch mod_ssl/2.2.22 OpenSSL/0.9.8r
@@ -115,7 +115,7 @@ Or requesting the groups for a non existing user:
 
 <blockquote>
 <pre>
-$ curl -i --user foo:bar "http://localhost/php-voot/api.php/groups/foo"
+$ curl -i --user foo:bar "http://localhost/php-voot-provider/voot.php/groups/foo"
 HTTP/1.1 200 OK
 Date: Wed, 22 Aug 2012 19:02:17 GMT
 Server: Apache/2.2.22 (Unix) DAV/2 PHP/5.3.13 with Suhosin-Patch mod_ssl/2.2.22 OpenSSL/0.9.8r

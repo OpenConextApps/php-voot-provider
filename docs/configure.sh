@@ -1,5 +1,5 @@
 #!/bin/sh
-APP_NAME="php-voot"
+APP_NAME="php-voot-provider"
 
 INSTALL_DIR=`pwd`
 
