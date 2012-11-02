@@ -34,6 +34,7 @@ automatically set, permissions set and a sample Apache configuration file will
 be generated and shown on the screen (see later for Apache configuration).
 
     $ docs/configure.sh
+    $ docs/install_dependencies.sh
 
 If you want to use VOOT with an SQL database you can also initialize this
 database. Make sure you configure it correctly in `config/voot.ini`. If 

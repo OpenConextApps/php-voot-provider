@@ -1,20 +1,19 @@
 <?php
 
-require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . "lib" . DIRECTORY_SEPARATOR . "SplClassLoader.php";
-$c =  new SplClassLoader("Tuxed", dirname(__DIR__) . DIRECTORY_SEPARATOR . "lib");
-$c->register();
+require_once "../lib/SplClassLoader.php";
 
-function exception_error_handler($errno, $errstr, $errfile, $errline ) {
-    throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
-}
-set_error_handler("exception_error_handler");
+$c1 = new SplClassLoader("RestService", "../extlib/php-rest-service/lib");
+$c1->register();
 
-use \Tuxed\Config as Config;
-use \Tuxed\Http\HttpResponse as HttpResponse;
-use \Tuxed\Http\HttpRequest as HttpRequest;
-use \Tuxed\Http\IncomingHttpRequest as IncomingHttpRequest;
-use \Tuxed\Logger as Logger;
-use \Tuxed\Voot\VootStorageException as VootStorageException;
+$c2 =  new SplClassLoader("VootProvider", "../lib");
+$c2->register();
+
+use \RestService\Utils\Config as Config;
+use \RestService\Http\HttpResponse as HttpResponse;
+use \RestService\Http\HttpRequest as HttpRequest;
+use \RestService\Http\IncomingHttpRequest as IncomingHttpRequest;
+use \RestService\Utils\Logger as Logger;
+use \VootProvider\VootStorageException as VootStorageException;
 
 $logger = NULL;
 $request = NULL;
