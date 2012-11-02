@@ -36,7 +36,7 @@ try {
         $response->setHeader("WWW-Authenticate", 'Basic realm="' . $config->getValue("serviceName") . '"');
         $response->setContent(json_encode(array("error" => "unauthorized", "error_description" => "authentication failed or missing")));
     } else {
-        $vootStorageBackend = "\\Tuxed\\Voot\\" . $config->getValue('storageBackend');
+        $vootStorageBackend = "\\VootProvider\\" . $config->getValue('storageBackend');
         $vootStorage = new $vootStorageBackend($config);
 
         // GROUPS
