@@ -30,7 +30,7 @@ class PdoVootStorage implements IVootStorage
         $startIndex = 0;
         $totalResults = 1;
 
-        return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => $totalResults, 'entry' => array("user_id" => $resourceOwnerId, "name" => $resourceOwnerId));
+        return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => $totalResults, 'entry' => array("id" => $resourceOwnerId, "displayName" => $resourceOwnerId, "name" => array ( "formatted" => $resourceOwnerId)));
     }
 
     public function isMemberOf($resourceOwnerId, $startIndex = 0, $count = NULL)
