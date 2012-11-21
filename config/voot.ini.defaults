@@ -56,28 +56,3 @@ memberAttribute = "uniqueMember"
 ;groupDn = "cn=Users,dc=example,dc=org"
 ;userIdAttribute = "samAccountName"
 ;memberAttribute = "member"
-
-; Whitelist and mapping for attributes from LDAP (SOURCE) to VOOT (TARGET), 
-; these are from OpenID Connect UserInfo Spec, and not from OpenSocial... Maybe 
-; we should also look into SCIM to see what they say there... :)
-;
-; attributeWhiteList["TARGET"] = 'SOURCE'
-attributeWhiteList["user_id"] = 'uid'
-attributeWhiteList["name"] =  'cn'
-attributeWhiteList["given_name"] = 'givenName'
-attributeWhiteList["family_name"] = 'sn'
-attributeWhiteList["middle_name"] = 'XXX_REPLACE_ME'
-attributeWhiteList["nickname"] = 'XXX_REPLACE_ME'
-attributeWhiteList["preferred_username"] = 'uid'
-attributeWhiteList["profile"] = 'XXX_REPLACE_ME'
-attributeWhiteList["picture"] = 'XXX_REPLACE_ME'
-attributeWhiteList["website"] = 'XXX_REPLACE_ME'
-attributeWhiteList["email"] = 'mail'
-attributeWhiteList["email_verified"] = 'XXX_REPLACE_ME'
-attributeWhiteList["gender"] = 'XXX_REPLACE_ME'
-attributeWhiteList["birthday"] = 'XXX_REPLACE_ME'
-attributeWhiteList["zoneinfo"] = 'XXX_REPLACE_ME'
-attributeWhiteList["locale"] = 'XXX_REPLACE_ME'
-attributeWhiteList["phone_number"] = 'telephoneNumber'
-attributeWhiteList["address"] = 'XXX_REPLACE_ME'
-attributeWhiteList["updated_time"] = 'XXX_REPLACE_ME'
