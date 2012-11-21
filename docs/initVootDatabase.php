@@ -16,6 +16,13 @@ $config = new Config(dirname(__DIR__) . DIRECTORY_SEPARATOR . "config" . DIRECTO
 $storage = new PdoVootStorage($config);
 $storage->initDatabase();
 
+$data = file_get_contents("docs/user_attributes.json");
+$d = json_decode($data, TRUE);
+
+foreach($d as $v) {
+    $storage->addUser($v['id'], $v['displayName'], $v['mail']);
+}
+
 $data = file_get_contents("docs/group_membership.json");
 $d = json_decode($data, TRUE);
 

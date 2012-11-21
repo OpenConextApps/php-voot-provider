@@ -1,0 +1,37 @@
+[
+    {
+        "displayName": "Carlos Catalano", 
+        "id": "admin", 
+        "mail": "admin@example.edu"
+    }, 
+    {
+        "displayName": "Margie Korn", 
+        "id": "teacher", 
+        "mail": "teacher@example.edu"
+    }, 
+    {
+        "displayName": "Jerry Stroud", 
+        "id": "jstroud", 
+        "mail": "jstroud@students.example.edu"
+    }, 
+    {
+        "displayName": "Myra Wisdom", 
+        "id": "mwisdom", 
+        "mail": "mwisdom@students.example.edu"
+    }, 
+    {
+        "displayName": "Bobby Mcatee", 
+        "id": "bmcatee", 
+        "mail": "bmcatee@students.example.edu"
+    }, 
+    {
+        "displayName": "Janie Matson", 
+        "id": "jmatson", 
+        "mail": "jmatson@students.example.edu"
+    }, 
+    {
+        "displayName": "Margaret Cram", 
+        "id": "mcram", 
+        "mail": "mcram@students.example.edu"
+    }
+]
