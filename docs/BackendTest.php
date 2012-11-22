@@ -23,6 +23,11 @@ try {
     var_dump($userAttributes);
     $groupMembership = $vootStorage->isMemberOf($argv[1]);
     var_dump($groupMembership);
+    if(2 < count($argv)) {
+        // second parameter is group identifier we want to query users for
+        $groupMembers = $vootStorage->getGroupMembers($argv[1], $argv[2]);
+        var_dump($groupMembers);
+    }
 } catch (Exception $e) { 
     echo $e->getMessage() . PHP_EOL;
 }
