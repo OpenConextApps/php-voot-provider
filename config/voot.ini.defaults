@@ -56,3 +56,8 @@ memberAttribute = "uniqueMember"
 ;groupDn = "cn=Users,dc=example,dc=org"
 ;userIdAttribute = "samAccountName"
 ;memberAttribute = "member"
+
+; only obtain the following attributes for the "people" call
+attributeWhiteList[] = "uid"
+attributeWhiteList[] = "mail"
+attributeWhiteList[] = "displayName"

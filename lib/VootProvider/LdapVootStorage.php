@@ -105,16 +105,26 @@ class LdapVootStorage implements IVootStorage
             if (FALSE === $attributes) {
                 throw new VootStorageException("ldap_error", "unable to get group attributes");
             }
-            $commonName = array_key_exists("cn", $attributes) ? $attributes["cn"][0] : "";
-            $description = array_key_exists("description", $attributes) ? $attributes["description"][0] : "";
+            $commonName = array_key_exists("cn", $attributes) ? $attributes["cn"][0] : NULL;
+            $displayName = array_key_exists("displayName", $attributes) ? $attributes["displayName"][0] : NULL;
+            $description = array_key_exists("description", $attributes) ? $attributes["description"][0] : NULL;
             $distinguishedName = @ldap_get_dn($this->_ldapConnection, $entry);
             if (FALSE === $distinguishedName) {
                 throw new VootStorageException("ldap_error", "unable to get distinguishedName");
             }
-            array_push($userGroups, array ('id' => urlencode($distinguishedName),
-                                           'title' => $commonName,
-                                           'description' => $description,
-                                           'voot_membership_role' => 'member'));
+            if(NULL === $commonName) {
+                throw new VootStorageException("ldap_error", "no cn for group");
+            }
+            $a = array();
+            $a['id'] = $commonName;
+            if(NULL !== $displayName) {
+                $a['title'] = $displayName;
+            }
+            if(NULL !== $description) {
+                $a['description'] = $description;
+            }
+            $a['voot_membership_role'] = 'member';
+            array_push($userGroups, $a);
             $entry = @ldap_next_entry($this->_ldapConnection, $entry);
         }
 
