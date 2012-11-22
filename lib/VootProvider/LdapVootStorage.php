@@ -46,6 +46,27 @@ class LdapVootStorage implements IVootStorage
         return $userDn;
     }
 
+    private function _getUserAttributesByDn($userDn)
+    {
+        $query = @ldap_read($this->_ldapConnection, $userDn, "(objectClass=*)", $this->_c->getSectionValue('LdapVootStorage', 'attributeWhiteList'));
+
+//        $query = @ldap_search($this->_ldapConnection, $userDn, "");
+        if (FALSE === $query) {
+            throw new VootStorageException("ldap_error", "directory query for user failed");
+        }
+        $entry = @ldap_first_entry($this->_ldapConnection, $query);
+        if (FALSE === $entry) {
+            throw new VootStorageException("not_found", "user not found");
+        }
+        $attributes = @ldap_get_attributes($this->_ldapConnection, $entry);
+        if (FALSE === $attributes) {
+            throw new VootStorageException("ldap_error", "unable to get user attributes");
+        }
+        $filteredAttributes = $this->_filterAttributes($attributes);
+        $filteredAttributes['voot_membership_role'] = 'member';
+        return $filteredAttributes;
+    }
+
     public function getUserAttributes($resourceOwnerId)
     {
         $filter = '(' . $this->_c->getSectionValue('LdapVootStorage', 'userIdAttribute') . '=' . $resourceOwnerId . ')';
@@ -72,7 +93,8 @@ class LdapVootStorage implements IVootStorage
 
     public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = null)
     {
-        $userDn = $this->_getUserDn($resourceOwnerId);
+        // get the members of a group by its cn
+        // ldapsearch -x -H ldap://localhost -b 'ou=Groups,dc=wind,dc=surfnet,dc=nl' '(cn=SCRUM-team)' uniqueMember
 
         // get all members from the group specified by $groupId
         // get the uid from all members in the group
@@ -84,7 +106,43 @@ class LdapVootStorage implements IVootStorage
 
         // convert user DN to uid
         //ldapsearch -x -H ldap://directory -b '<USER DN>' uid cn
-        return FALSE;
+
+        $memberAttribute = $this->_c->getSectionValue('LdapVootStorage', 'memberAttribute');
+
+        $userDn = $this->_getUserDn($resourceOwnerId);
+
+        // FIXME: make sure the user is member of the group being requested
+
+        $filter = '(cn=' . $groupId . ')';
+        $query = @ldap_search($this->_ldapConnection, $this->_c->getSectionValue('LdapVootStorage', 'groupDn'), $filter, array($memberAttribute));
+        if (FALSE === $query) {
+            throw new VootStorageException("ldap_error", "directory query for group failed");
+        }
+
+        $entry = @ldap_first_entry($this->_ldapConnection, $query);
+        if (FALSE === $entry) {
+            throw new VootStorageException("not_found", "group not found");
+        }
+        $attributes = @ldap_get_attributes($this->_ldapConnection, $entry);
+        if (FALSE === $attributes) {
+            throw new VootStorageException("ldap_error", "unable to get group attributes");
+        }
+
+        $members = array();
+
+        if(array_key_exists($memberAttribute, $attributes)) {
+            // we have some members
+            for($i = 0; $i < $attributes[$memberAttribute]["count"]; $i++) {
+                // member DN
+                // fetch attributes for this particular user
+                array_push($members, $this->_getUserAttributesByDn($attributes[$memberAttribute][$i]));
+            }
+        }
+
+        $startIndex = 0;
+        $totalResults = sizeof($members);
+
+        return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => $totalResults, 'entry' => $members);
     }
 
     public function isMemberOf($resourceOwnerId, $startIndex = null, $count = null)
@@ -117,9 +175,7 @@ class LdapVootStorage implements IVootStorage
             }
             $a = array();
             $a['id'] = $commonName;
-            if(NULL !== $displayName) {
-                $a['title'] = $displayName;
-            }
+            $a['title'] = NULL !== $displayName ? $displayName : $commonName;
             if(NULL !== $description) {
                 $a['description'] = $description;
             }
@@ -139,9 +195,13 @@ class LdapVootStorage implements IVootStorage
     {
         $whiteList = $this->_c->getSectionValue('LdapVootStorage', 'attributeWhiteList');
         $filteredAttributes = array();
-        foreach ($whiteList as $k => $v) {
+        foreach ($whiteList as $v) {
             if (array_key_exists($v, $attributes)) {
-                $filteredAttributes[$k] = $attributes[$v][0];
+                if("uid" === $v) {
+                    $filteredAttributes["id"] = $attributes[$v][0];
+                } else { 
+                    $filteredAttributes[$v] = $attributes[$v][0];
+                }
             }
         }
 
