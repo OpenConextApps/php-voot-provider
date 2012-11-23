@@ -48,9 +48,7 @@ class LdapVootStorage implements IVootStorage
 
     private function _getUserAttributesByDn($userDn)
     {
-        $query = @ldap_read($this->_ldapConnection, $userDn, "(objectClass=*)", $this->_c->getSectionValue('LdapVootStorage', 'attributeWhiteList'));
-
-//        $query = @ldap_search($this->_ldapConnection, $userDn, "");
+        $query = @ldap_read($this->_ldapConnection, $userDn, "(objectClass=*)", array_values($this->_c->getSectionValue('LdapVootStorage', 'attributeMapping')));
         if (FALSE === $query) {
             throw new VootStorageException("ldap_error", "directory query for user failed");
         }
@@ -63,7 +61,6 @@ class LdapVootStorage implements IVootStorage
             throw new VootStorageException("ldap_error", "unable to get user attributes");
         }
         $filteredAttributes = $this->_filterAttributes($attributes);
-        $filteredAttributes['voot_membership_role'] = 'member';
         return $filteredAttributes;
     }
 
@@ -135,7 +132,7 @@ class LdapVootStorage implements IVootStorage
             for($i = 0; $i < $attributes[$memberAttribute]["count"]; $i++) {
                 // member DN
                 // fetch attributes for this particular user
-                array_push($members, $this->_getUserAttributesByDn($attributes[$memberAttribute][$i]));
+                array_push($members, $this->_getUserAttributesByDn($attributes[$memberAttribute][$i]) + array('voot_membership_role' => "member"));
             }
         }
 
@@ -193,18 +190,16 @@ class LdapVootStorage implements IVootStorage
 
     private function _filterAttributes($attributes)
     {
-        $whiteList = $this->_c->getSectionValue('LdapVootStorage', 'attributeWhiteList');
+        $attributeMapping = $this->_c->getSectionValue('LdapVootStorage', 'attributeMapping');
         $filteredAttributes = array();
-        foreach ($whiteList as $v) {
+        foreach ($attributeMapping as $k => $v) {
             if (array_key_exists($v, $attributes)) {
-                if("uid" === $v) {
-                    $filteredAttributes["id"] = $attributes[$v][0];
-                } else { 
-                    $filteredAttributes[$v] = $attributes[$v][0];
-                }
+                $filteredAttributes[$k] = $attributes[$v][0];
             }
         }
-
+        if(!array_key_exists("id", $filteredAttributes)) {
+            throw new VootStorageException("ldap_error", "mapping for 'id' attribute not set in LDAP response");
+        }
         return $filteredAttributes;
     }
 

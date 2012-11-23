@@ -45,8 +45,13 @@ persistentConnection = FALSE
 uri = "ldap://localhost"
 peopleDn = "ou=People,dc=example,dc=org"
 groupDn = "ou=Groups,dc=example,dc=org"
-userIdAttribute = "uid"
+
+userIdAttribute = "uid";
 memberAttribute = "uniqueMember"
+
+attributeMapping["id"]          = "uid"
+attributeMapping["displayName"] = "cn"
+attributeMapping["mail"]        = "mail"
 
 ; Microsoft Active Directory
 ;uri = "ldap://ad.example.org"
@@ -54,10 +59,10 @@ memberAttribute = "uniqueMember"
 ;bindPass = "s3cr3t"
 ;peopleDn = "cn=Users,dc=example,dc=org"
 ;groupDn = "cn=Users,dc=example,dc=org"
+
 ;userIdAttribute = "samAccountName"
 ;memberAttribute = "member"
 
-; only obtain the following attributes for the "people" call
-attributeWhiteList[] = "uid"
-attributeWhiteList[] = "mail"
-attributeWhiteList[] = "displayName"
+;attributeMapping["id"]          = "samAccountName"
+;attributeMapping["displayName"] = "cn"
+;attributeMapping["mail"]        = "mail"

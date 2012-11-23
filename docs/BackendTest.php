@@ -13,11 +13,13 @@ $c1->register();
 $c2 =  new SplClassLoader("VootProvider", "lib");
 $c2->register();
 
+use \VootProvider\VootStorageException as VootStorageException;
+
 $config = new \RestService\Utils\Config("config" . DIRECTORY_SEPARATOR . "voot.ini");
 
 $vootStorageBackend = "\\VootProvider\\" . $config->getValue('storageBackend');
 
-try { 
+try {
     $vootStorage = new $vootStorageBackend($config);
     $userAttributes = $vootStorage->getUserAttributes($argv[1]);
     var_dump($userAttributes);
@@ -28,7 +30,10 @@ try {
         $groupMembers = $vootStorage->getGroupMembers($argv[1], $argv[2]);
         var_dump($groupMembers);
     }
-} catch (Exception $e) { 
-    echo $e->getMessage() . PHP_EOL;
+} catch (VootStorageException $e) { 
+    echo $e->getLogMessage();
+} catch (Exception $e) {
+    echo $e->getMessage();
 }
+
 ?>
