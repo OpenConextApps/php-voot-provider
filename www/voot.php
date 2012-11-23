@@ -1,10 +1,9 @@
 <?php
 
-require_once "../lib/SplClassLoader.php";
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . "lib" . DIRECTORY_SEPARATOR . "SplClassLoader.php";
 
 $c1 = new SplClassLoader("RestService", "../extlib/php-rest-service/lib");
 $c1->register();
-
 $c2 =  new SplClassLoader("VootProvider", "../lib");
 $c2->register();
 
@@ -25,7 +24,6 @@ try {
     $logger = new Logger($config->getSectionValue('Log', 'logLevel'), $config->getValue('serviceName'), $config->getSectionValue('Log', 'logFile'), $config->getSectionValue('Log', 'logMail', FALSE));
 
     $request = HttpRequest::fromIncomingHttpRequest(new IncomingHttpRequest());
-    $logger->logDebug($request);
 
     $response = new HttpResponse();
     $response->setHeader("Content-Type", "application/json");
@@ -87,9 +85,12 @@ try {
     }
 }
 
-if(NULL !== $logger) {
+if (NULL !== $logger) {
+    $logger->logDebug($request);
+}
+if (NULL !== $logger) {
     $logger->logDebug($response);
 }
-if(NULL !== $response) {
+if (NULL !== $response) {
     $response->sendResponse();
 }
