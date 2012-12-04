@@ -29,7 +29,7 @@ try {
     $response->setHeader("Content-Type", "application/json");
 
     // verify username and password
-    if($request->getBasicAuthUser() !== $config->getValue('basicUser') || $request->getBasicAuthPass() !== $config->getValue('basicPass')) {
+    if ($request->getBasicAuthUser() !== $config->getValue('basicUser') || $request->getBasicAuthPass() !== $config->getValue('basicPass')) {
         $response->setStatusCode(401);
         $response->setHeader("WWW-Authenticate", 'Basic realm="' . $config->getValue("serviceName") . '"');
         $response->setContent(json_encode(array("error" => "unauthorized", "error_description" => "authentication failed or missing")));
@@ -56,8 +56,8 @@ try {
         });
 
         $request->matchRestDefault(function($methodMatch, $patternMatch) use ($request, $response) {
-            if(in_array($request->getRequestMethod(), $methodMatch)) {
-                if(!$patternMatch) {
+            if (in_array($request->getRequestMethod(), $methodMatch)) {
+                if (!$patternMatch) {
                     $response->setStatusCode(404);
                     $response->setContent(json_encode(array("error" => "not_found", "error_description" => "resource not found")));
                 }
@@ -72,7 +72,7 @@ try {
     $response = new HttpResponse();
     $response->setStatusCode($e->getResponseCode());
     $response->setContent(json_encode(array("error" => $e->getMessage(), "error_description" => $e->getDescription())));
-    if(NULL !== $logger) {
+    if (NULL !== $logger) {
         $logger->logFatal($e->getLogMessage(TRUE) . PHP_EOL . $request . PHP_EOL . $response);
     }
 } catch (Exception $e) {
@@ -80,7 +80,7 @@ try {
     $response = new HttpResponse();
     $response->setStatusCode(500);
     $response->setContent(json_encode(array("error" => "internal_server_error", "error_description" => $e->getMessage())));
-    if(NULL !== $logger) {
+    if (NULL !== $logger) {
         $logger->logFatal($e->getMessage() . PHP_EOL . $request . PHP_EOL . $response);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-require_once "lib/SplClassLoader.php";
+require_once 'lib/SplClassLoader.php';
 
 $c1 = new SplClassLoader("RestService", "extlib/php-rest-service/lib");
 $c1->register();
@@ -19,22 +19,23 @@ $storage->initDatabase();
 $data = file_get_contents("docs/user_attributes.json");
 $d = json_decode($data, TRUE);
 
-foreach($d as $v) {
+foreach ($d as $v) {
     $storage->addUser($v['id'], $v['displayName'], $v['mail']);
 }
 
 $data = file_get_contents("docs/group_membership.json");
 $d = json_decode($data, TRUE);
 
-foreach($d as $v) {
-	$storage->addGroup($v['id'], $v['name'], $v['description']);
-	foreach($v['members'] as $m) {
-		$storage->addMembership($m['id'], $v['id'], roleToInt($m['role']));
-	}
+foreach ($d as $v) {
+    $storage->addGroup($v['id'], $v['name'], $v['description']);
+    foreach ($v['members'] as $m) {
+        $storage->addMembership($m['id'], $v['id'], roleToInt($m['role']));
+    }
 }
 
-function roleToInt($role) {
-        switch($role) {
+function roleToInt($role)
+{
+        switch ($role) {
         case "member":
                 return 10;
         case "admin":
@@ -45,5 +46,3 @@ function roleToInt($role) {
                 die("invalid role");
         }
 }
-
-?>

@@ -21,7 +21,7 @@ class PdoVootStorage implements IVootStorage
 
         $this->_pdo = new PDO($this->_c->getSectionValue('PdoVootStorage', 'dsn'), $this->_c->getSectionValue('PdoVootStorage', 'username', FALSE), $this->_c->getSectionValue('PdoVootStorage', 'password', FALSE), $driverOptions);
 
-        if(0 === strpos($this->_c->getSectionValue('PdoVootStorage', 'dsn'), "sqlite:")) {
+        if (0 === strpos($this->_c->getSectionValue('PdoVootStorage', 'dsn'), "sqlite:")) {
             // only for SQlite
             $this->_pdo->exec("PRAGMA foreign_keys = ON");
         }

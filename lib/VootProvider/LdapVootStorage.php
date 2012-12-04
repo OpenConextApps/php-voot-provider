@@ -61,6 +61,7 @@ class LdapVootStorage implements IVootStorage
             throw new VootStorageException("ldap_error", "unable to get user attributes");
         }
         $filteredAttributes = $this->_filterAttributes($attributes);
+
         return $filteredAttributes;
     }
 
@@ -127,9 +128,9 @@ class LdapVootStorage implements IVootStorage
 
         $members = array();
 
-        if(array_key_exists($memberAttribute, $attributes)) {
+        if (array_key_exists($memberAttribute, $attributes)) {
             // we have some members
-            for($i = 0; $i < $attributes[$memberAttribute]["count"]; $i++) {
+            for ($i = 0; $i < $attributes[$memberAttribute]["count"]; $i++) {
                 // member DN
                 // fetch attributes for this particular user
                 array_push($members, $this->_getUserAttributesByDn($attributes[$memberAttribute][$i]) + array('voot_membership_role' => "member"));
@@ -167,13 +168,13 @@ class LdapVootStorage implements IVootStorage
             if (FALSE === $distinguishedName) {
                 throw new VootStorageException("ldap_error", "unable to get distinguishedName");
             }
-            if(NULL === $commonName) {
+            if (NULL === $commonName) {
                 throw new VootStorageException("ldap_error", "no cn for group");
             }
             $a = array();
             $a['id'] = $commonName;
             $a['title'] = NULL !== $displayName ? $displayName : $commonName;
-            if(NULL !== $description) {
+            if (NULL !== $description) {
                 $a['description'] = $description;
             }
             $a['voot_membership_role'] = 'member';
@@ -197,9 +198,10 @@ class LdapVootStorage implements IVootStorage
                 $filteredAttributes[$k] = $attributes[$v][0];
             }
         }
-        if(!array_key_exists("id", $filteredAttributes)) {
+        if (!array_key_exists("id", $filteredAttributes)) {
             throw new VootStorageException("ldap_error", "mapping for 'id' attribute not set in LDAP response");
         }
+
         return $filteredAttributes;
     }
 

@@ -14,7 +14,7 @@ echo "PRAGMA foreign_keys = ON;" . PHP_EOL;
 $query = "
 SELECT DISTINCT gg.name, gg.display_name, gg.display_extension, gg.description, gs.name AS stem_name, gs.display_name AS stem_display_name, gs.description AS stem_description
 FROM grouper_groups gg, grouper_stems gs, grouper_members gm, grouper_memberships gms, grouper_fields gf, grouper_group_set ggs
-WHERE gg.parent_stem = gs.id 
+WHERE gg.parent_stem = gs.id
 AND gms.member_id = gm.id
 AND gms.owner_group_id = gg.id
 AND gs.name != 'etc'
@@ -32,7 +32,7 @@ if (FALSE === $result) {
     var_dump($p->errorInfo());
 }
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-foreach($results as $r) {
+foreach ($results as $r) {
     echo 'INSERT INTO groups VALUES("' . $r['name'] . '","' . $r['display_extension'] . '","' . $r['description'] .'");' . PHP_EOL;
 }
 
@@ -47,7 +47,7 @@ if (FALSE === $result) {
     var_dump($p->errorInfo());
 }
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-foreach($results as $r) {
+foreach ($results as $r) {
     $level = 10;
     echo 'INSERT INTO membership VALUES("' . $r['subject_id'] . '","' . $r['groupname'] . '",' . $level .');' . PHP_EOL;
 }
@@ -61,7 +61,7 @@ if (FALSE === $result) {
     var_dump($p->errorInfo());
 }
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-foreach($results as $r) {
+foreach ($results as $r) {
     $level = 20;
     echo 'UPDATE membership SET role=' . $level . ' WHERE id="' . $r['subject_id'] . '" AND groupid="' . $r['groupname'] . '";' . PHP_EOL;
 }
@@ -75,9 +75,7 @@ if (FALSE === $result) {
     var_dump($p->errorInfo());
 }
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-foreach($results as $r) {
+foreach ($results as $r) {
     $level = 50;
     echo 'UPDATE membership SET role=' . $level . ' WHERE id="' . $r['subject_id'] . '" AND groupid="' . $r['groupname'] . '";' . PHP_EOL;
 }
-
-?>
