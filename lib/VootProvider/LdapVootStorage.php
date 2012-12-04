@@ -82,7 +82,7 @@ class LdapVootStorage implements IVootStorage
         if (FALSE === $attributes) {
             throw new VootStorageException("ldap_error", "unable to get user attributes");
         }
-        $data = $this->_filterAttributes($attributes);
+        $data = array($this->_filterAttributes($attributes));
 
         // backwards compatible "emails" element with array
         for ($i = 0; $i < count($data) ; $i++) {
