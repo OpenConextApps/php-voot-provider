@@ -82,11 +82,14 @@ class LdapVootStorage implements IVootStorage
         if (FALSE === $attributes) {
             throw new VootStorageException("ldap_error", "unable to get user attributes");
         }
-        $filteredAttributes = $this->_filterAttributes($attributes);
-        $startIndex = 0;
-        $totalResults = 1;
+        $data = $this->_filterAttributes($attributes);
 
-        return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => $totalResults, 'entry' => $filteredAttributes);
+        // backwards compatible "emails" element with array
+        for ($i = 0; $i < count($data) ; $i++) {
+            $data[$i]["emails"] = array($data[$i]['mail']);
+        }
+
+        return array ( 'startIndex' => 0, 'totalResults' => count($data), 'itemsPerPage' => count($data), 'entry' => $data);
     }
 
     public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = null)
@@ -126,21 +129,22 @@ class LdapVootStorage implements IVootStorage
             throw new VootStorageException("ldap_error", "unable to get group attributes");
         }
 
-        $members = array();
-
+        $data = array();
         if (array_key_exists($memberAttribute, $attributes)) {
             // we have some members
             for ($i = 0; $i < $attributes[$memberAttribute]["count"]; $i++) {
                 // member DN
                 // fetch attributes for this particular user
-                array_push($members, $this->_getUserAttributesByDn($attributes[$memberAttribute][$i]) + array('voot_membership_role' => "member"));
+                array_push($data, $this->_getUserAttributesByDn($attributes[$memberAttribute][$i]) + array('voot_membership_role' => "member"));
             }
         }
 
-        $startIndex = 0;
-        $totalResults = sizeof($members);
+        // backwards compatible "emails" element with array
+        for ($i = 0; $i < count($data) ; $i++) {
+            $data[$i]["emails"] = array($data[$i]['mail']);
+        }
 
-        return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => $totalResults, 'entry' => $members);
+        return array ( 'startIndex' => 0, 'totalResults' => count($data), 'itemsPerPage' => count($data), 'entry' => $data);
     }
 
     public function isMemberOf($resourceOwnerId, $startIndex = null, $count = null)
