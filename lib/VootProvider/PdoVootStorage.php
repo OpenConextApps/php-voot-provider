@@ -38,7 +38,11 @@ class PdoVootStorage implements IVootStorage
             throw new VootStorageException("internal_server_error", "unable to retrieve user attributes");
         }
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $totalResults = count($data);
+
+        // backwards compatible "emails" element with array
+        for ($i = 0; $i < count($data) ; $i++) {
+            $data[$i]["emails"] = array($data[$i]['mail']);
+        }
 
         return array ( 'startIndex' => $startIndex, 'totalResults' => count($data), 'itemsPerPage' => count($data), 'entry' => $data);
     }
@@ -71,7 +75,7 @@ class PdoVootStorage implements IVootStorage
         }
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => sizeof($data), 'entry' => $data);
+        return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => count($data), 'entry' => $data);
     }
 
     public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = NULL)
@@ -105,7 +109,12 @@ class PdoVootStorage implements IVootStorage
         }
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => sizeof($data), 'entry' => $data);
+        // backwards compatible "emails" element with array
+        for ($i = 0; $i < count($data) ; $i++) {
+            $data[$i]["emails"] = array($data[$i]['mail']);
+        }
+
+        return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => count($data), 'entry' => $data);
     }
 
     public function addUser($id, $displayName, $mail)
