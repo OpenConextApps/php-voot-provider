@@ -17,7 +17,7 @@ use \VootProvider\VootStorageException as VootStorageException;
 
 $config = new \RestService\Utils\Config("config" . DIRECTORY_SEPARATOR . "voot.ini");
 
-$vootStorageBackend = "\\VootProvider\\" . $config->getValue('storageBackend');
+$vootStorageBackend = "VootProvider\\" . $config->getValue('storageBackend');
 
 try {
     $vootStorage = new $vootStorageBackend($config);
