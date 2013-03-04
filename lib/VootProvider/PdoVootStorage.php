@@ -39,9 +39,10 @@ class PdoVootStorage implements IVootStorage
         }
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // backwards compatible "emails" element with array
+        // fill emails element according to OpenSocial "Plural-Field"
         for ($i = 0; $i < count($data) ; $i++) {
-            $data[$i]["emails"] = array($data[$i]['mail']);
+            $data[$i]["emails"] = array( array("type" => "work", "value" => $data[$i]['mail']));
+            unset($data[$i]["mail"]);
         }
 
         return array ( 'startIndex' => $startIndex, 'totalResults' => count($data), 'itemsPerPage' => count($data), 'entry' => $data);
@@ -109,9 +110,10 @@ class PdoVootStorage implements IVootStorage
         }
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // backwards compatible "emails" element with array
+        // fill emails element according to OpenSocial "Plural-Field"
         for ($i = 0; $i < count($data) ; $i++) {
-            $data[$i]["emails"] = array($data[$i]['mail']);
+            $data[$i]["emails"] = array( array("type" => "work", "value" => $data[$i]['mail']));
+            unset($data[$i]["mail"]);
         }
 
         return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => count($data), 'entry' => $data);
