@@ -50,7 +50,12 @@ class PdoVootStorage implements VootStorageInterface
             unset($data[$i]["mail"]);
         }
 
-        return array ( 'startIndex' => $startIndex, 'totalResults' => count($data), 'itemsPerPage' => count($data), 'entry' => $data);
+        return array(
+            'startIndex' => $startIndex,
+            'totalResults' => count($data),
+            'itemsPerPage' => count($data),
+            'entry' => $data
+        );
     }
 
     public function isMemberOf($resourceOwnerId, $startIndex = 0, $count = null)
@@ -81,7 +86,12 @@ class PdoVootStorage implements VootStorageInterface
         }
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => count($data), 'entry' => $data);
+        return array(
+            'startIndex' => $startIndex,
+            'totalResults' => $totalResults,
+            'itemsPerPage' => count($data),
+            'entry' => $data
+        );
     }
 
     public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = null)
@@ -121,7 +131,12 @@ class PdoVootStorage implements VootStorageInterface
             unset($data[$i]["mail"]);
         }
 
-        return array ( 'startIndex' => $startIndex, 'totalResults' => $totalResults, 'itemsPerPage' => count($data), 'entry' => $data);
+        return array(
+            'startIndex' => $startIndex,
+            'totalResults' => $totalResults,
+            'itemsPerPage' => count($data),
+            'entry' => $data
+        );
     }
 
     public function addUser($id, $displayName, $mail)
