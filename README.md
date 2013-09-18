@@ -71,7 +71,7 @@ database. SQlite and MySQL were tested.
 
 You can add some additional users for testing using:
 
-    # php docs/addUsers.php
+    # php bin/addUsers.php
 
 This will add some users and groups and membership information to the database.
 Make sure your web server can read this file. It is assumed that your database
@@ -104,10 +104,10 @@ more information.
 
 # Testing User/Group Backend
 To test the configuration of your LDAP/Database settings it is possible to use 
-the `BackendTest.php` script in the `docs/` directory. First configure LDAP or
+the `BackendTest.php` script in the `bin/` directory. First configure LDAP or
 the database in `config/voot.ini` and then run the script like this:
 
-    $ php docs/BackendTest.php fkooman
+    $ php bin/BackendTest.php fkooman
 
 This should return an `array` with the group information. If it does not work,
 make sure you match the configuration values with the `ldapsearch` commands 

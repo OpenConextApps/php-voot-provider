@@ -43,7 +43,8 @@ FROM
     roles r
 WHERE
     ugr.user_id = :user_id AND ugr.group_id = g.id AND ugr.role_id = r.id
-EOQ
+EOQ;
+
         $stmt = $this->storage->prepare($query);
         $stmt->bindValue(":user_id", $resourceOwnerId, PDO::PARAM_STR);
         $result = $stmt->execute();
@@ -73,7 +74,8 @@ FROM
 WHERE
     ugr.user_id = :user_id AND ugr.group_id = g.id AND ugr.role_id = r.id
 LIMIT :start_index, :count;
-EOQ
+EOQ;
+
         $stmt = $this->storage->prepare($query);
         $stmt->bindValue(":user_id", $resourceOwnerId, PDO::PARAM_STR);
         $stmt->bindValue(":start_index", $startIndex, PDO::PARAM_INT);
@@ -106,7 +108,7 @@ FROM
     roles r
 WHERE
     u.id = ugr.user_id AND g.id = ugr.group_id AND r.id = ugr.role_id AND g.id = :group_id
-EOQ
+EOQ;
 
         $stmt = $this->storage->prepare($query);
         $stmt->bindValue(":group_id", $groupId, PDO::PARAM_STR);
@@ -139,7 +141,8 @@ WHERE
     u.id = ugr.user_id AND g.id = ugr.group_id AND r.id = ugr.role_id AND g.id = :group_id
 ORDER BY r.id
 LIMIT :start_index, :count
-EOQ
+EOQ;
+
         $stmt = $this->storage->prepare($query);
         $stmt->bindValue(":group_id", $groupId, PDO::PARAM_STR);
         $stmt->bindValue(":start_index", $startIndex, PDO::PARAM_INT);

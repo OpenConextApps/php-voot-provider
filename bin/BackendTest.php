@@ -8,7 +8,7 @@ if ($argc < 2) {
 
 use fkooman\Config\Config;
 
-$config = Config::fromIniFile("config" . DIRECTORY_SEPARATOR . "voot.ini");
+$config = Config::fromIniFile(dirname(__DIR__) . '/config/voot.ini');
 
 $vootStorageBackend = "fkooman\\VootProvider\\" . $config->getValue('storageBackend');
 
