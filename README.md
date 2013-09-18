@@ -1,5 +1,4 @@
 # PHP VOOT group provider
-
 This project is a stand-alone VOOT group provider. The 
 [VOOT specification](https://github.com/fkooman/voot-specification/blob/master/VOOT.md) 
 is implemented.
@@ -12,11 +11,11 @@ is implemented.
 # Requirements
 The installation requirements on Fedora/CentOS can be installed like this:
 
-    $ su -c 'yum install git php-pdo php php-ldap httpd wget unzip'
+    $ su -c 'yum install php-pdo php php-ldap httpd wget unzip'
 
 On Debian/Ubuntu:
 
-    $ sudo apt-get install git sqlite3 php5 php5-sqlite wget unzip php5-ldap
+    $ sudo apt-get install sqlite3 php5 php5-sqlite wget unzip php5-ldap
 
 # Installation
 The project includes install scripts that downloads the required dependencies
@@ -30,12 +29,15 @@ name!
     $ git clone git://github.com/fkooman/php-voot-provider.git
     $ cd php-voot-provider
 
+You have to run [Composer](http://getcomposer.org) to install the dependencies:
+
+    $ php /path/to/composer.phar install
+
 Now you can create the default configuration files, the paths will be 
 automatically set, permissions set and a sample Apache configuration file will 
 be generated and shown on the screen (see later for Apache configuration).
 
     $ docs/configure.sh
-    $ docs/install_dependencies.sh
 
 If you want to use VOOT with an SQL database you can also initialize this
 database. Make sure you configure it correctly in `config/voot.ini`. If 
