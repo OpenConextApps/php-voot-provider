@@ -2,12 +2,12 @@
 
 require_once dirname(__DIR__) . "/vendor/autoload.php";
 
-use fkooman\Config\Config
+use fkooman\Config\Config;
 use fkooman\Http\Response;
 use fkooman\Http\Request;
 use fkooman\Http\IncomingHttpRequest;
 
-use fkooman\VootProvider\VootStorageException
+use fkooman\VootProvider\VootStorageException;
 
 $request = NULL;
 $response = NULL;

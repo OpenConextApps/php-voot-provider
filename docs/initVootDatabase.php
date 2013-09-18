@@ -1,17 +1,11 @@
 <?php
 
-require_once 'lib/SplClassLoader.php';
+require_once dirname(__DIR__) . '/vendor/autoload.php';
 
-$c1 = new SplClassLoader("RestService", "extlib/php-rest-service/lib");
-$c1->register();
+use fkooman\Config\Config;
+use fkooman\VootProvider\PdoVootStorage;
 
-$c2 =  new SplClassLoader("VootProvider", "lib");
-$c2->register();
-
-use \RestService\Utils\Config as Config;
-use \VootProvider\PdoVootStorage as PdoVootStorage;
-
-$config = new Config(dirname(__DIR__) . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "voot.ini");
+$config = Config::fromIniFile(dirname(__DIR__) . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "voot.ini");
 
 $storage = new PdoVootStorage($config);
 $storage->initDatabase();
@@ -35,14 +29,14 @@ foreach ($d as $v) {
 
 function roleToInt($role)
 {
-        switch ($role) {
+    switch ($role) {
         case "member":
-                return 10;
+            return 10;
         case "admin":
-                return 50;
+            return 50;
         case "manager":
-                return 20;
+            return 20;
         default:
-                die("invalid role");
-        }
+            die("invalid role");
+    }
 }
