@@ -57,16 +57,6 @@ try {
             }
         );
 
-        // PEOPLE
-        $request->matchRest(
-            "GET",
-            "/people/:uid",
-            function ($uid) use ($request, $response, $vootStorage) {
-                $userInfo = $vootStorage->getUserAttributes($uid);
-                $response->setContent(json_encode($userInfo));
-            }
-        );
-
         // PEOPLE IN GROUP
         $request->matchRest(
             "GET",

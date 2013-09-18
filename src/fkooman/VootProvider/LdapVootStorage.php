@@ -77,49 +77,6 @@ class LdapVootStorage implements VootStorageInterface
         return $filteredAttributes;
     }
 
-    public function getUserAttributes($resourceOwnerId)
-    {
-        $filter = sprintf(
-            '(%s=%s)',
-            $this->config->s('LdapVootStorage')->l('userIdAttribute'),
-            $resourceOwnerId
-        );
-        $query = @ldap_search(
-            $this->ldapConnection,
-            $this->config->s('LdapVootStorage')->l('peopleDn'),
-            $filter
-        );
-        if (false === $query) {
-            throw new VootStorageException(
-                "ldap_error",
-                "directory query for user failed"
-            );
-        }
-        /* we assume there is only one entry for the specified user, if not
-           we only look at the first result */
-        $entry = @ldap_first_entry($this->ldapConnection, $query);
-        if (false === $entry) {
-            throw new VootStorageException("not_found", "user not found");
-        }
-        $attributes = @ldap_get_attributes($this->ldapConnection, $entry);
-        if (false === $attributes) {
-            throw new VootStorageException("ldap_error", "unable to get user attributes");
-        }
-        $data = array($this->filterAttributes($attributes));
-
-        // backwards compatible "emails" element with array
-        for ($i = 0; $i < count($data); $i++) {
-            $data[$i]["emails"] = array($data[$i]['mail']);
-        }
-
-        return array(
-            'startIndex' => 0,
-            'totalResults' => count($data),
-            'itemsPerPage' => count($data),
-            'entry' => $data
-        );
-    }
-
     public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = null)
     {
         // get the members of a group by its cn

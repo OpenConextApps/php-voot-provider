@@ -32,32 +32,6 @@ class PdoVootStorage implements VootStorageInterface
         }
     }
 
-    public function getUserAttributes($resourceOwnerId)
-    {
-        $startIndex = 0;
-
-        $stmt = $this->storage->prepare("SELECT id, display_name as displayName, mail FROM users WHERE id = :id");
-        $stmt->bindValue(":id", $resourceOwnerId, PDO::PARAM_STR);
-        $result = $stmt->execute();
-        if (false === $result) {
-            throw new VootStorageException("internal_server_error", "unable to retrieve user attributes");
-        }
-        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // fill emails element according to OpenSocial "Plural-Field"
-        for ($i = 0; $i < count($data); $i++) {
-            $data[$i]["emails"] = array( array("type" => "work", "value" => $data[$i]['mail']));
-            unset($data[$i]["mail"]);
-        }
-
-        return array(
-            'startIndex' => $startIndex,
-            'totalResults' => count($data),
-            'itemsPerPage' => count($data),
-            'entry' => $data
-        );
-    }
-
     public function isMemberOf($resourceOwnerId, $startIndex = 0, $count = null)
     {
         $query = <<< EOQ
