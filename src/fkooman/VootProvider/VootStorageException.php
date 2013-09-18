@@ -8,7 +8,7 @@ class VootStorageException extends \Exception
 
     public function __construct($message, $description, $code = 0, Exception $previous = null)
     {
-        $this->_description = $description;
+        $this->description = $description;
         parent::__construct($message, $code, $previous);
     }
 

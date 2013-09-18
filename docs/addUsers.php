@@ -8,7 +8,6 @@ use fkooman\VootProvider\PdoVootStorage;
 $config = Config::fromIniFile(dirname(__DIR__) . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "voot.ini");
 
 $storage = new PdoVootStorage($config);
-$storage->initDatabase();
 
 $data = file_get_contents("docs/user_attributes.json");
 $d = json_decode($data, TRUE);

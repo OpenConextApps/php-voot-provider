@@ -58,7 +58,7 @@ class LdapVootStorage implements VootStorageInterface
             $userDn,
             "(objectClass=*)",
             array_values(
-                $this->config->s('LdapVootStorage')->l('attributeMapping')
+                $this->config->s('LdapVootStorage')->s('attributeMapping')->toArray()
             )
         );
         if (false === $query) {
@@ -242,7 +242,7 @@ class LdapVootStorage implements VootStorageInterface
 
     private function filterAttributes($attributes)
     {
-        $attributeMapping = $this->config->s('LdapVootStorage')->l('attributeMapping');
+        $attributeMapping = $this->config->s('LdapVootStorage')->s('attributeMapping')->toArray();
         $filteredAttributes = array();
         foreach ($attributeMapping as $k => $v) {
             if (array_key_exists($v, $attributes)) {

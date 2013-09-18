@@ -6,7 +6,6 @@ if ($argc < 2) {
     exit(1);
 }
 
-use fkooman\VootProvider\VootStorageException;
 use fkooman\Config\Config;
 
 $config = Config::fromIniFile("config" . DIRECTORY_SEPARATOR . "voot.ini");
@@ -24,8 +23,6 @@ try {
         $groupMembers = $vootStorage->getGroupMembers($argv[1], $argv[2]);
         var_dump($groupMembers);
     }
-} catch (VootStorageException $e) {
-    echo $e->getLogMessage();
 } catch (Exception $e) {
-    echo $e->getMessage();
+    echo $e->getMessage() . PHP_EOL;
 }
