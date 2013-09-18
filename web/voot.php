@@ -5,7 +5,7 @@ require_once dirname(__DIR__) . "/vendor/autoload.php";
 use fkooman\Config\Config;
 use fkooman\Http\Response;
 use fkooman\Http\Request;
-use fkooman\Http\IncomingHttpRequest;
+use fkooman\Http\IncomingRequest;
 
 use fkooman\VootProvider\VootStorageException;
 
@@ -14,19 +14,18 @@ $response = NULL;
 
 try {
 
-    $config = new Config(dirname(__DIR__) . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "voot.ini");
-    $request = HttpRequest::fromIncomingHttpRequest(new IncomingHttpRequest());
+    $config = Config::fromIniFile(dirname(__DIR__) . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "voot.ini");
+    $request = Request::fromIncomingRequest(new IncomingRequest());
 
-    $response = new HttpResponse();
-    $response->setHeader("Content-Type", "application/json");
+    $response = new Response(200, "application/json");
 
     // verify username and password
     if ($request->getBasicAuthUser() !== $config->getValue('basicUser') || $request->getBasicAuthPass() !== $config->getValue('basicPass')) {
         $response->setStatusCode(401);
-        $response->setHeader("WWW-Authenticate", 'Basic realm="' . $config->getValue("serviceName") . '"');
+        $response->setHeader("WWW-Authenticate", sprintf('Basic realm="%s"', $config->getValue("serviceName")));
         $response->setContent(json_encode(array("error" => "unauthorized", "error_description" => "authentication failed or missing")));
     } else {
-        $vootStorageBackend = "VootProvider\\" . $config->getValue('storageBackend');
+        $vootStorageBackend = "fkooman\\VootProvider\\" . $config->getValue('storageBackend');
         $vootStorage = new $vootStorageBackend($config);
 
         // GROUPS
@@ -61,13 +60,11 @@ try {
     }
 
 } catch (VootStorageException $e) {
-    $response = new HttpResponse();
-    $response->setStatusCode($e->getResponseCode());
+    $response = new Response($e->getResponseCode(), "application/json");
     $response->setContent(json_encode(array("error" => $e->getMessage(), "error_description" => $e->getDescription())));
 } catch (Exception $e) {
     // any other error thrown by any of the modules, assume internal server error
-    $response = new HttpResponse();
-    $response->setStatusCode(500);
+    $response = new Response(500, "application/json");
     $response->setContent(json_encode(array("error" => "internal_server_error", "error_description" => $e->getMessage())));
 }
 
