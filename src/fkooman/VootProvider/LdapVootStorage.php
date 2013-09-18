@@ -1,10 +1,10 @@
 <?php
 
-namespace VootProvider;
+namespace fkooman\VootProvider;
 
-use \RestService\Utils\Config as Config;
+use fkooman\Config\Config;
 
-class LdapVootStorage implements IVootStorage
+class LdapVootStorage implements VootStorageInterface
 {
     private $_c;
     private $_ldapConnection;

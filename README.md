@@ -1,7 +1,8 @@
 # PHP VOOT group provider
 
 This project is a stand-alone VOOT group provider. The 
-[VOOT specification](http://www.openvoot.org/) is implemented.
+[VOOT specification](https://github.com/fkooman/voot-specification/blob/master/VOOT.md) 
+is implemented.
 
 # Features
 * HTTP Basic Authentication

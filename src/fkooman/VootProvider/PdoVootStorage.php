@@ -1,11 +1,11 @@
 <?php
 
-namespace VootProvider;
+namespace fkooman\VootProvider;
 
-use \RestService\Utils\Config as Config;
-use \PDO as PDO;
+use fkooman\Config\Config;
+use PDO;
 
-class PdoVootStorage implements IVootStorage
+class PdoVootStorage implements VootStorageInterface
 {
     private $_c;
     private $_pdo;

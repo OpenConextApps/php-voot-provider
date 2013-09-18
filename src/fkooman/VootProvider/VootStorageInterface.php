@@ -1,11 +1,10 @@
 <?php
 
-namespace VootProvider;
+namespace fkooman\VootProvider;
 
-interface IVootStorage
+interface VootStorageInterface
 {
     public function getUserAttributes($resourceOwnerId);
     public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = null);
     public function isMemberOf($resourceOwnerId, $startIndex = null, $count = null);
-
 }

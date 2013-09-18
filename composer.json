@@ -1,0 +1,21 @@
+{
+    "authors": [
+        {
+            "email": "fkooman@tuxed.net",
+            "name": "Fran\u00e7ois Kooman",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "fkooman\\VootProvider\\": "src/"
+        }
+    },
+    "description": "VOOT Provider",
+    "name": "fkooman/php-voot-provider",
+    "require": {
+        "fkooman/php-lib-config": "0.2.*",
+        "fkooman/php-lib-rest": "0.1.*",
+        "php": ">=5.3.3"
+    }
+}
