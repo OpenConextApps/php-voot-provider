@@ -122,3 +122,8 @@ This should return some JSON data with the group membership information. For
 querying group members you can use the following call:
 
     $ curl http://localhost/php-voot-provider/people/fkooman/members
+
+# License
+Licensed under the Apache License, Version 2.0;
+
+   http://www.apache.org/licenses/LICENSE-2.0
