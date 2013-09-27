@@ -38,9 +38,17 @@ try {
 
     $response = new Response(200, "application/json");
 
-    // verify username and password
-    if ($request->getBasicAuthUser() !== $config->getValue('basicUser') ||
-        $request->getBasicAuthPass() !== $config->getValue('basicPass')
+    $requestBasicUser = $request->getBasicAuthUser();
+    $requestBasicPass = $request->getBasicAuthPass();
+
+    $configBasicUser = $config->getValue('basicUser');
+    $configBasicPass = $config->getValue('basicPass');
+
+    // verify username and password if set in configuration
+    if (null !== $configBasicUser && (
+            $requestBasicUser !== $configBasicUser ||
+            $requestBasicPass !== $configBasicPass
+        )
     ) {
         $response->setStatusCode(401);
         $response->setHeader(
