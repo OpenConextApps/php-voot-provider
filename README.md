@@ -13,7 +13,7 @@ If you want to have LDAP support you need to have the PHP LDAP extension
 installed, `yum install php-ldap` (Fedora) or `apt-get install php5-ldap` 
 (Debian). If you want to have database support you need to have the PDO 
 extension and the relevant platform drivers installed, `yum install php-pdo` 
-(Fedora) or `apt-get install php5-pdo php5-sqlite` (Debian).
+(Fedora) or `apt-get install php5-sqlite` (Debian).
 
 # Installation
 We assume you want to install in `/var/www/html/php-voot-provider` and that 
@@ -52,7 +52,7 @@ You need to install a little Apache configuration snippet to point to the `web`
 directory inside `php-voot-provider` as that is where the script that provides
 the REST service is located.
 
-    Alias /php-voot-provider /var/www/html/php-voot-provider/web
+    Alias /php-voot-provider /var/www/html/php-voot-provider/web/voot.php
 
     <Directory "/var/www/html/php-voot-provider/web">
         AllowOverride None
@@ -67,7 +67,7 @@ You can configure both a database or a LDAP as a backend.
 
 ## Database
 The database schema can be found in `schema/db.sql`. Import this into your
-database. SQlite and MySQL were tested. 
+database. SQlite3 and MySQL were tested. 
 
 You can add some additional users for testing using:
 
