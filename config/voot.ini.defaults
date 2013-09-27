@@ -5,9 +5,10 @@ storageBackend = "PdoVootStorage"
 
 serviceName = "VOOT Group Provider"
 
+; credentials that protect the API with HTTP Basic Auth
+; comment out to disable, e.g. when Apache already secures the endpoint
 basicUser  = "foo"
 basicPass  = "bar"
-basicRealm = "VOOT Group Provider"
 
 [PdoVootStorage]
 dsn = "sqlite:/PATH/TO/APP/data/voot.sqlite"
