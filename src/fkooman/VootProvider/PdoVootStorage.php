@@ -103,8 +103,8 @@ EOQ;
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return array(
-            'startIndex' => $startIndex,
-            'totalResults' => $totalResults,
+            'startIndex' => intval($startIndex),
+            'totalResults' => intval($totalResults),
             'itemsPerPage' => count($data),
             'entry' => $data
         );
@@ -176,8 +176,8 @@ EOQ;
         }
 
         return array(
-            'startIndex' => $startIndex,
-            'totalResults' => $totalResults,
+            'startIndex' => intval($startIndex),
+            'totalResults' => intval($totalResults),
             'itemsPerPage' => count($data),
             'entry' => $data
         );
