@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "167b5b51346614ca1d467e42cb1eb21e",
+    "hash": "9a0ab0995e3f4c50b8caedd269635656",
     "packages": [
         {
             "name": "fkooman/php-lib-config",
@@ -83,20 +83,24 @@
         },
         {
             "name": "fkooman/php-lib-rest",
-            "version": "0.1.0",
+            "version": "0.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fkooman/php-lib-rest.git",
-                "reference": "c88b521cf55876b1ee0d983631debe27ffdd3939"
+                "reference": "72196b3fffaf9cc06371485ec4a6163cfcbd7949"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fkooman/php-lib-rest/zipball/c88b521cf55876b1ee0d983631debe27ffdd3939",
-                "reference": "c88b521cf55876b1ee0d983631debe27ffdd3939",
+                "url": "https://api.github.com/repos/fkooman/php-lib-rest/zipball/72196b3fffaf9cc06371485ec4a6163cfcbd7949",
+                "reference": "72196b3fffaf9cc06371485ec4a6163cfcbd7949",
                 "shasum": ""
             },
             "require": {
+                "fkooman/php-lib-json": "0.1.*",
                 "php": ">=5.3.3"
+            },
+            "require-dev": {
+                "sami/sami": "v1.1"
             },
             "type": "library",
             "autoload": {
@@ -115,22 +119,22 @@
                     "role": "Developer"
                 }
             ],
-            "description": "Simple PHP library for writing REST applications.",
-            "time": "2013-09-15 15:08:18"
+            "description": "Simple PHP library for writing REST services.",
+            "time": "2013-09-28 10:32:42"
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.3.4",
+            "version": "v2.3.5",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "5a279f1b5f5e1045a6c432354d9ea727ff3a9847"
+                "reference": "6bb881b948368482e1abf1a75c08bcf88a1c5fc3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/5a279f1b5f5e1045a6c432354d9ea727ff3a9847",
-                "reference": "5a279f1b5f5e1045a6c432354d9ea727ff3a9847",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/6bb881b948368482e1abf1a75c08bcf88a1c5fc3",
+                "reference": "6bb881b948368482e1abf1a75c08bcf88a1c5fc3",
                 "shasum": ""
             },
             "require": {
@@ -163,7 +167,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "http://symfony.com",
-            "time": "2013-08-24 15:26:22"
+            "time": "2013-09-22 18:04:39"
         }
     ],
     "packages-dev": [

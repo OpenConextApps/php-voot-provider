@@ -19,135 +19,88 @@
 require_once dirname(__DIR__) . "/vendor/autoload.php";
 
 use fkooman\Config\Config;
-use fkooman\Http\Response;
+use fkooman\Http\Service;
+use fkooman\Http\JsonResponse;
 use fkooman\Http\Request;
 use fkooman\Http\IncomingRequest;
-
 use fkooman\VootProvider\VootStorageException;
-
-$request = null;
-$response = null;
 
 try {
     $config = Config::fromIniFile(
         dirname(__DIR__) . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "voot.ini"
     );
+
+    $vootStorageBackend = "fkooman\\VootProvider\\" . $config->getValue('storageBackend');
+    $vootStorage = new $vootStorageBackend($config);
+
     $request = Request::fromIncomingRequest(
         new IncomingRequest()
     );
 
-    $response = new Response(200, "application/json");
+    $service = new Service($request);
 
-    $requestBasicUser = $request->getBasicAuthUser();
-    $requestBasicPass = $request->getBasicAuthPass();
-
-    $configBasicUser = $config->getValue('basicUser');
-    $configBasicPass = $config->getValue('basicPass');
-
-    // verify username and password if set in configuration
-    if (null !== $configBasicUser && (
-            $requestBasicUser !== $configBasicUser ||
-            $requestBasicPass !== $configBasicPass
-        )
-    ) {
-        $response->setStatusCode(401);
-        $response->setHeader(
-            "WWW-Authenticate",
-            sprintf('Basic realm="%s"', $config->getValue("serviceName"))
-        );
-        $response->setContent(
-            json_encode(
-                array(
-                    "error" => "unauthorized",
-                    "error_description" => "authentication failed or missing"
-                )
-            )
-        );
-    } else {
-        $vootStorageBackend = "fkooman\\VootProvider\\" . $config->getValue('storageBackend');
-        $vootStorage = new $vootStorageBackend($config);
-
-        // GROUPS
-        $request->matchRest(
-            "GET",
-            "/groups/:uid",
-            function ($uid) use ($request, $response, $vootStorage) {
-                $groups = $vootStorage->isMemberOf(
-                    $uid,
-                    $request->getQueryParameter("startIndex"),
-                    $request->getQueryParameter("count")
-                );
-                $response->setContent(json_encode($groups));
-            }
-        );
-
-        // PEOPLE IN GROUP
-        $request->matchRest(
-            "GET",
-            "/people/:uid/:gid",
-            function ($uid, $gid) use ($request, $response, $vootStorage) {
-                $users = $vootStorage->getGroupMembers(
-                    $uid,
-                    $gid,
-                    $request->getQueryParameter("startIndex"),
-                    $request->getQueryParameter("count")
-                );
-                $response->setContent(json_encode($users));
-            }
-        );
-
-        $request->matchRestDefault(
-            function ($methodMatch, $patternMatch) use ($request, $response) {
-                if (in_array($request->getRequestMethod(), $methodMatch)) {
-                    if (!$patternMatch) {
-                        $response->setStatusCode(404);
-                        $response->setContent(
-                            json_encode(
-                                array(
-                                    "error" => "not_found",
-                                    "error_description" => "resource not found"
-                                )
-                            )
-                        );
-                    }
-                } else {
-                    $response->setStatusCode(405);
-                    $response->setContent(
-                        json_encode(
-                            array(
-                                "error" => "method_not_allowed",
-                                "error_description" => "request method not allowed"
-                            )
-                        )
-                    );
-                }
-            }
-        );
+    // require authorization?
+    if (null !== $config->getValue('basicUser')) {
+        $configBasicAuthUser = $config->getValue('basicUser');
+        $configBasicAuthPass = $config->getValue('basicPass');
+        $configBasicAuthRealm = $config->getValue('serviceName');
+        $service->requireBasicAuth($configBasicAuthUser, $configBasicAuthPass, $configBasicAuthRealm);
     }
 
+    // GROUPS
+    $service->match(
+        "GET",
+        "/groups/:uid",
+        function ($uid) use ($request, $vootStorage) {
+            $groups = $vootStorage->isMemberOf(
+                $uid,
+                $request->getQueryParameter("startIndex"),
+                $request->getQueryParameter("count")
+            );
+            $response = new JsonResponse(200);
+            $response->setContent($groups);
+
+            return $response;
+        }
+    );
+
+    // PEOPLE IN GROUP
+    $service->match(
+        "GET",
+        "/people/:uid/:gid",
+        function ($uid, $gid) use ($request, $vootStorage) {
+            $users = $vootStorage->getGroupMembers(
+                $uid,
+                $gid,
+                $request->getQueryParameter("startIndex"),
+                $request->getQueryParameter("count")
+            );
+            $response = new JsonResponse(200);
+            $response->setContent($users);
+
+            return $response;
+        }
+    );
+
+    $service->run()->sendResponse();
+
 } catch (VootStorageException $e) {
-    $response = new Response($e->getResponseCode(), "application/json");
+    $response = new JsonResponse($e->getResponseCode());
     $response->setContent(
-        json_encode(
-            array(
-                "error" => $e->getMessage(),
-                "error_description" => $e->getDescription()
-            )
+        array(
+            "error" => $e->getMessage(),
+            "error_description" => $e->getDescription()
         )
     );
+    $response->sendResponse();
 } catch (Exception $e) {
     // any other error thrown by any of the modules, assume internal server error
-    $response = new Response(500, "application/json");
+    $response = new JsonResponse(500);
     $response->setContent(
-        json_encode(
-            array(
-                "error" => "internal_server_error",
-                "error_description" => $e->getMessage()
-            )
+        array(
+            "error" => "internal_server_error",
+            "error_description" => $e->getMessage()
         )
     );
-}
-
-if (null !== $response) {
     $response->sendResponse();
 }
