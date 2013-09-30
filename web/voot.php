@@ -19,10 +19,14 @@
 require_once dirname(__DIR__) . "/vendor/autoload.php";
 
 use fkooman\Config\Config;
-use fkooman\Http\Service;
+
 use fkooman\Http\JsonResponse;
 use fkooman\Http\Request;
 use fkooman\Http\IncomingRequest;
+
+use fkooman\Rest\Service;
+use fkooman\Rest\Plugin\BasicAuthentication;
+
 use fkooman\VootProvider\VootStorageException;
 
 try {
@@ -30,7 +34,7 @@ try {
         dirname(__DIR__) . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "voot.ini"
     );
 
-    $vootStorageBackend = "fkooman\\VootProvider\\" . $config->getValue('storageBackend');
+    $vootStorageBackend = sprintf('fkooman\VootProvider\%s', $config->getValue('storageBackend'));
     $vootStorage = new $vootStorageBackend($config);
 
     $request = Request::fromIncomingRequest(
@@ -39,12 +43,14 @@ try {
 
     $service = new Service($request);
 
-    // require authorization?
+    // require authentication?
     if (null !== $config->getValue('basicUser')) {
-        $configBasicAuthUser = $config->getValue('basicUser');
-        $configBasicAuthPass = $config->getValue('basicPass');
-        $configBasicAuthRealm = $config->getValue('serviceName');
-        $service->requireBasicAuth($configBasicAuthUser, $configBasicAuthPass, $configBasicAuthRealm);
+        $basicAuthPlugin = new BasicAuthentication(
+            $config->getValue('basicUser'),
+            $config->getValue('basicPass'),
+            $config->getValue('serviceName')
+        );
+        $service->registerBeforeMatchingPlugin($basicAuthPlugin);
     }
 
     // GROUPS
