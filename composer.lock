@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "11ef4b2c9b6a71386707b525f971c052",
+    "hash": "1785566704b4c55332fe7d1ac5efa2b5",
     "packages": [
         {
             "name": "fkooman/php-lib-config",
@@ -83,16 +83,16 @@
         },
         {
             "name": "fkooman/php-lib-rest",
-            "version": "dev-develop",
+            "version": "0.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fkooman/php-lib-rest.git",
-                "reference": "be8a67beaaa0e60e788209e7d2acefc4afec0ef5"
+                "reference": "21e54e002811cec66be17dbbb2b14d27baa6759f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fkooman/php-lib-rest/zipball/be8a67beaaa0e60e788209e7d2acefc4afec0ef5",
-                "reference": "be8a67beaaa0e60e788209e7d2acefc4afec0ef5",
+                "url": "https://api.github.com/repos/fkooman/php-lib-rest/zipball/21e54e002811cec66be17dbbb2b14d27baa6759f",
+                "reference": "21e54e002811cec66be17dbbb2b14d27baa6759f",
                 "shasum": ""
             },
             "require": {
@@ -121,7 +121,7 @@
                 }
             ],
             "description": "Simple PHP library for writing REST services.",
-            "time": "2013-09-30 09:15:21"
+            "time": "2013-09-30 10:32:42"
         },
         {
             "name": "symfony/yaml",
@@ -178,9 +178,9 @@
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "fkooman/php-lib-rest": 20
-    },
+    "stability-flags": [
+
+    ],
     "platform": {
         "ext-ldap": "*",
         "php": ">=5.3.3"
