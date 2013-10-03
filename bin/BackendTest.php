@@ -31,8 +31,6 @@ $vootStorageBackend = "fkooman\\VootProvider\\" . $config->getValue('storageBack
 
 try {
     $vootStorage = new $vootStorageBackend($config);
-    $userAttributes = $vootStorage->getUserAttributes($argv[1]);
-    var_dump($userAttributes);
     $groupMembership = $vootStorage->isMemberOf($argv[1]);
     var_dump($groupMembership);
     if (2 < count($argv)) {
