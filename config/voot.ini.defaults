@@ -21,7 +21,14 @@ dsn = "sqlite:/PATH/TO/APP/data/voot.sqlite"
 persistentConnection = FALSE
 
 [LdapVootStorage]
-; OpenLDAP / Fedora Directory Server
+; OpenLDAP - Which groupsprovider solution are you using.
+; Options: posixgroup, groupsofnames(default)
+; Uncomment the following line when using posixgroups
+; groupsProvider = "posixgroup"
+
+; Uncomment the appropriate OpenLDAP solution
+
+; OpenLDAP - GROUPOFNAMES / Fedora Directory Server
 uri = "ldap://localhost"
 peopleDn = "ou=People,dc=example,dc=org"
 groupDn = "ou=Groups,dc=example,dc=org"
@@ -32,6 +39,18 @@ memberAttribute = "uniqueMember"
 attributeMapping["id"]          = "uid"
 attributeMapping["displayName"] = "cn"
 attributeMapping["mail"]        = "mail"
+
+; OpenLDAP - POSIXGROUP
+;uri = "ldap://"
+;peopleDn = "ou=Users,dc=,dc=,dc="
+;groupDn = "ou=Groups,dc=,dc=,dc="
+
+;userIdAttribute = "uid";
+;memberAttribute = "memberUid"
+
+;attributeMapping["id"]          = "cn"
+;attributeMapping["displayName"] = "cn"
+;attributeMapping["mail"]        = "mail"
 
 ; Microsoft Active Directory
 ;uri = "ldap://ad.example.org"
