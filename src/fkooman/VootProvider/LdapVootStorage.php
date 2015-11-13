@@ -112,7 +112,9 @@ class LdapVootStorage implements VootStorageInterface
         $memberAttribute = $this->config->s('LdapVootStorage')->l('memberAttribute');
 
         $userDn = $this->getUserDn($resourceOwnerId);
-
+	
+        $groupsProvider = $this->config->s('LdapVootStorage')->l('groupsProvider');
+    
         // FIXME: make sure the user is member of the group being requested
 
         $filter = '(cn=' . $groupId . ')';
@@ -127,6 +129,17 @@ class LdapVootStorage implements VootStorageInterface
         if (false === $query) {
             throw new VootStorageException("ldap_error", "directory query for group failed");
         }
+	
+        $all = ldap_get_entries($this->ldapConnection, $query); 
+        
+        switch ($groupsProvider) {
+          case "posixgroup":
+              // we are only interested in group memberuid array
+              $attributes = $all[0];
+              break;
+          default:
+              break;
+	}
 
         $entry = @ldap_first_entry($this->ldapConnection, $query);
         if (false === $entry) {
@@ -143,7 +156,16 @@ class LdapVootStorage implements VootStorageInterface
             for ($i = 0; $i < $attributes[$memberAttribute]["count"]; $i++) {
                 // member DN
                 // fetch attributes for this particular user
-                $userAttributes = $this->getUserAttributesByDn($attributes[$memberAttribute][$i]);
+                switch ($groupsProvider) {
+                  case "posixgroup": 
+                      $user_dn = 'uid=' . $attributes[$memberAttribute][$i] . ',' . $this->config->s('LdapVootStorage')->l('peopleDn');
+                      $userAttributes = $this->getUserAttributesByDn($user_dn);
+                      break;
+                  default: 
+                      $userAttributes = $this->getUserAttributesByDn($attributes[$memberAttribute][$i]);
+                      break;
+		}
+
                 $userAttributes['voot_membership_role'] = "member";
                 array_push($data, $userAttributes);
             }
@@ -167,8 +189,19 @@ class LdapVootStorage implements VootStorageInterface
         $userDn = $this->getUserDn($resourceOwnerId);
 
         $userGroups = array();
+        
+        $groupsProvider = $this->config->s('LdapVootStorage')->l('groupsProvider');
+    
         /* get the groups the user is a member of */
-        $filter = '(' . $this->config->s('LdapVootStorage')->l('memberAttribute') . '=' . $userDn . ')';
+        switch ($groupsProvider) {
+          case "posixgroup":
+              $filter = '(' . $this->config->s('LdapVootStorage')->l('memberAttribute') . '=' . $resourceOwnerId . ')';
+              break;
+          default:
+              $filter = '(' . $this->config->s('LdapVootStorage')->l('memberAttribute') . '=' . $userDn . ')';
+              break;
+	}
+
         $query = @ldap_search($this->ldapConnection, $this->config->s('LdapVootStorage')->l('groupDn'), $filter);
         if (false === $query) {
             throw new VootStorageException("ldap_error", "directory query for groups failed");
