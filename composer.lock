@@ -1,28 +1,30 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
     ],
-    "hash": "1785566704b4c55332fe7d1ac5efa2b5",
+    "hash": "5e7e3723e445dbabb7a69be99426ac2e",
+    "content-hash": "f9ab638dca98b0e49e440012c3e9f793",
     "packages": [
         {
-            "name": "fkooman/php-lib-config",
-            "version": "0.2.0",
+            "name": "fkooman/config",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fkooman/php-lib-config.git",
-                "reference": "6ca3ad575728302621c9bd67ba75eb2048a3c5ca"
+                "reference": "961f2cb63bab8916c921a7b29a7eb3e22b5bcda1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fkooman/php-lib-config/zipball/6ca3ad575728302621c9bd67ba75eb2048a3c5ca",
-                "reference": "6ca3ad575728302621c9bd67ba75eb2048a3c5ca",
+                "url": "https://api.github.com/repos/fkooman/php-lib-config/zipball/961f2cb63bab8916c921a7b29a7eb3e22b5bcda1",
+                "reference": "961f2cb63bab8916c921a7b29a7eb3e22b5bcda1",
                 "shasum": ""
             },
             "require": {
-                "fkooman/php-lib-json": "0.1.0",
+                "ext-spl": "*",
                 "php": ">=5.3.3",
-                "symfony/yaml": "2.3.*"
+                "symfony/yaml": "^2.7"
             },
             "type": "library",
             "autoload": {
@@ -41,25 +43,71 @@
                     "role": "Developer"
                 }
             ],
-            "description": "PHP library to handle YAML, INI and JSON configuration files",
-            "time": "2013-08-09 14:13:52"
+            "description": "Read and write configuration files",
+            "time": "2015-11-09 18:12:16"
         },
         {
-            "name": "fkooman/php-lib-json",
-            "version": "0.1.0",
+            "name": "fkooman/http",
+            "version": "1.5.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/fkooman/php-lib-json.git",
-                "reference": "6aa1c9e6bc411eac8dfc38912e316114d12e8ff6"
+                "url": "https://github.com/fkooman/php-lib-http.git",
+                "reference": "f43078dadb881468c182b436917077f2a9e51b0b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fkooman/php-lib-json/zipball/6aa1c9e6bc411eac8dfc38912e316114d12e8ff6",
-                "reference": "6aa1c9e6bc411eac8dfc38912e316114d12e8ff6",
+                "url": "https://api.github.com/repos/fkooman/php-lib-http/zipball/f43078dadb881468c182b436917077f2a9e51b0b",
+                "reference": "f43078dadb881468c182b436917077f2a9e51b0b",
                 "shasum": ""
             },
             "require": {
+                "ext-mbstring": "*",
+                "ext-session": "*",
+                "ext-spl": "*",
+                "fkooman/json": "^1.0.0",
                 "php": ">=5.3.0"
+            },
+            "suggest": {
+                "fkooman/rest": "Simple PHP library for writing REST services."
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "fkooman\\Http\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "François Kooman",
+                    "email": "fkooman@tuxed.net",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Simple PHP library for dealing with HTTP requests and responses.",
+            "time": "2015-12-22 12:27:38"
+        },
+        {
+            "name": "fkooman/json",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/fkooman/php-lib-json.git",
+                "reference": "f24b7ee1890b29358402defcd9581a4e969e40d7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/fkooman/php-lib-json/zipball/f24b7ee1890b29358402defcd9581a4e969e40d7",
+                "reference": "f24b7ee1890b29358402defcd9581a4e969e40d7",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "ext-spl": "*",
+                "php": ">=5.3.3"
             },
             "type": "library",
             "autoload": {
@@ -79,33 +127,34 @@
                 }
             ],
             "description": "PHP library to encode and decode JSON",
-            "time": "2013-05-30 12:04:47"
+            "time": "2015-07-13 11:58:01"
         },
         {
-            "name": "fkooman/php-lib-rest",
-            "version": "0.3.0",
+            "name": "fkooman/rest",
+            "version": "1.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fkooman/php-lib-rest.git",
-                "reference": "21e54e002811cec66be17dbbb2b14d27baa6759f"
+                "reference": "17930fcdd581743528448d37d3f9c70c0fb0e63f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fkooman/php-lib-rest/zipball/21e54e002811cec66be17dbbb2b14d27baa6759f",
-                "reference": "21e54e002811cec66be17dbbb2b14d27baa6759f",
+                "url": "https://api.github.com/repos/fkooman/php-lib-rest/zipball/17930fcdd581743528448d37d3f9c70c0fb0e63f",
+                "reference": "17930fcdd581743528448d37d3f9c70c0fb0e63f",
                 "shasum": ""
             },
             "require": {
-                "fkooman/php-lib-json": "0.1.*",
-                "php": ">=5.3.3"
+                "ext-pcre": "*",
+                "ext-spl": "*",
+                "fkooman/http": "^1.1.0",
+                "php": ">=5.3.0"
             },
-            "require-dev": {
-                "sami/sami": "v1.1"
+            "suggest": {
+                "fkooman/rest-plugin-authentication": "Authentication plugin"
             },
             "type": "library",
             "autoload": {
                 "psr-0": {
-                    "fkooman\\Http\\": "src/",
                     "fkooman\\Rest\\": "src/"
                 }
             },
@@ -121,36 +170,38 @@
                 }
             ],
             "description": "Simple PHP library for writing REST services.",
-            "time": "2013-09-30 10:32:42"
+            "time": "2015-12-24 23:27:13"
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.3.5",
-            "target-dir": "Symfony/Component/Yaml",
+            "version": "v2.8.2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/Yaml.git",
-                "reference": "6bb881b948368482e1abf1a75c08bcf88a1c5fc3"
+                "url": "https://github.com/symfony/yaml.git",
+                "reference": "34c8a4b51e751e7ea869b8262f883d008a2b81b8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/6bb881b948368482e1abf1a75c08bcf88a1c5fc3",
-                "reference": "6bb881b948368482e1abf1a75c08bcf88a1c5fc3",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/34c8a4b51e751e7ea869b8262f883d008a2b81b8",
+                "reference": "34c8a4b51e751e7ea869b8262f883d008a2b81b8",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.3"
+                "php": ">=5.3.9"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.3-dev"
+                    "dev-master": "2.8-dev"
                 }
             },
             "autoload": {
-                "psr-0": {
+                "psr-4": {
                     "Symfony\\Component\\Yaml\\": ""
-                }
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -163,29 +214,23 @@
                 },
                 {
                     "name": "Symfony Community",
-                    "homepage": "http://symfony.com/contributors"
+                    "homepage": "https://symfony.com/contributors"
                 }
             ],
             "description": "Symfony Yaml Component",
-            "homepage": "http://symfony.com",
-            "time": "2013-09-22 18:04:39"
+            "homepage": "https://symfony.com",
+            "time": "2016-01-13 10:28:07"
         }
     ],
-    "packages-dev": [
-
-    ],
-    "aliases": [
-
-    ],
+    "packages-dev": [],
+    "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [
-
-    ],
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": {
         "ext-ldap": "*",
         "php": ">=5.3.3"
     },
-    "platform-dev": [
-
-    ]
+    "platform-dev": []
 }
