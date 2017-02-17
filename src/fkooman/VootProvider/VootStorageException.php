@@ -18,7 +18,9 @@
 
 namespace fkooman\VootProvider;
 
-class VootStorageException extends \Exception
+use Exception;
+
+class VootStorageException extends Exception
 {
     private $description;
 

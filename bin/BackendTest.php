@@ -23,7 +23,7 @@ if ($argc < 2) {
     exit(1);
 }
 
-use fkooman\Config\Config;
+use fkooman\VootProvider\Config\Config;
 
 $config = Config::fromIniFile(dirname(__DIR__) . '/config/voot.ini');
 

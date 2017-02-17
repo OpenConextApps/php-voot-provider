@@ -16,7 +16,6 @@
     "name": "fkooman/php-voot-provider",
     "require": {
         "ext-ldap": "*",
-        "fkooman/php-lib-config": "0.2.*",
         "fkooman/php-lib-rest": "0.3.*",
         "php": ">=5.3.3"
     }

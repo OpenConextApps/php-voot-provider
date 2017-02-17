@@ -18,7 +18,7 @@
 
 namespace fkooman\VootProvider;
 
-use fkooman\Config\Config;
+use fkooman\VootProvider\Config\Config;
 use PDO;
 
 class PdoVootStorage implements VootStorageInterface

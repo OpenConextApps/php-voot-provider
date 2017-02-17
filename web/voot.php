@@ -18,7 +18,7 @@
 
 require_once dirname(__DIR__) . "/vendor/autoload.php";
 
-use fkooman\Config\Config;
+use fkooman\VootProvider\Config\Config;
 
 use fkooman\Http\JsonResponse;
 use fkooman\Http\Request;

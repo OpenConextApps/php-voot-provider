@@ -18,7 +18,7 @@
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
-use fkooman\Config\Config;
+use fkooman\VootProvider\Config\Config;
 use fkooman\VootProvider\PdoVootStorage;
 
 $config = Config::fromIniFile(dirname(__DIR__) . '/config/voot.ini');
