@@ -1,20 +1,20 @@
 <?php
 
 /**
-* Copyright 2013 François Kooman <fkooman@tuxed.net>
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2013 François Kooman <fkooman@tuxed.net>.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 namespace fkooman\VootProvider;
 
@@ -30,9 +30,9 @@ class PdoVootStorage implements VootStorageInterface
     {
         $this->config = $c;
 
-        $driverOptions = array();
+        $driverOptions = [];
         if ($this->config->s('PdoVootStorage')->l('persistentConnection')) {
-            $driverOptions = array(PDO::ATTR_PERSISTENT => true);
+            $driverOptions = [PDO::ATTR_PERSISTENT => true];
         }
 
         $this->storage = new PDO(
@@ -42,15 +42,15 @@ class PdoVootStorage implements VootStorageInterface
             $driverOptions
         );
 
-        if (0 === strpos($this->config->s('PdoVootStorage')->l('dsn'), "sqlite:")) {
+        if (0 === strpos($this->config->s('PdoVootStorage')->l('dsn'), 'sqlite:')) {
             // only for SQlite
-            $this->storage->exec("PRAGMA foreign_keys = ON");
+            $this->storage->exec('PRAGMA foreign_keys = ON');
         }
     }
 
     public function isMemberOf($resourceOwnerId, $startIndex = 0, $count = null)
     {
-        $query = <<< EOQ
+        $query = <<< 'EOQ'
 SELECT
     COUNT(*) AS count
 FROM
@@ -62,12 +62,12 @@ WHERE
 EOQ;
 
         $stmt = $this->storage->prepare($query);
-        $stmt->bindValue(":user_id", $resourceOwnerId, PDO::PARAM_STR);
+        $stmt->bindValue(':user_id', $resourceOwnerId, PDO::PARAM_STR);
         $result = $stmt->execute();
         if (false === $result) {
             throw new VootStorageException(
-                "internal_server_error",
-                "unable to retrieve membership"
+                'internal_server_error',
+                'unable to retrieve membership'
             );
         }
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -80,7 +80,7 @@ EOQ;
             $count = $totalResults;
         }
 
-        $query = <<< EOQ
+        $query = <<< 'EOQ'
 SELECT
     g.id, g.title, g.description, r.voot_membership_role
 FROM
@@ -93,28 +93,28 @@ LIMIT :start_index, :count;
 EOQ;
 
         $stmt = $this->storage->prepare($query);
-        $stmt->bindValue(":user_id", $resourceOwnerId, PDO::PARAM_STR);
-        $stmt->bindValue(":start_index", $startIndex, PDO::PARAM_INT);
-        $stmt->bindValue(":count", $count, PDO::PARAM_INT);
+        $stmt->bindValue(':user_id', $resourceOwnerId, PDO::PARAM_STR);
+        $stmt->bindValue(':start_index', $startIndex, PDO::PARAM_INT);
+        $stmt->bindValue(':count', $count, PDO::PARAM_INT);
         $result = $stmt->execute();
         if (false === $result) {
-            throw new VootStorageException("internal_server_error", "unable to retrieve membership");
+            throw new VootStorageException('internal_server_error', 'unable to retrieve membership');
         }
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return array(
+        return [
             'startIndex' => intval($startIndex),
             'totalResults' => intval($totalResults),
             'itemsPerPage' => count($data),
-            'entry' => $data
-        );
+            'entry' => $data,
+        ];
     }
 
     public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = null)
     {
         // FIXME: check whether or not $resourceOwnerId is a member of the group, if not don't
         // return anything (or error).
-        $query = <<< EOQ
+        $query = <<< 'EOQ'
 SELECT
     COUNT(*) AS count
 FROM
@@ -127,10 +127,10 @@ WHERE
 EOQ;
 
         $stmt = $this->storage->prepare($query);
-        $stmt->bindValue(":group_id", $groupId, PDO::PARAM_STR);
+        $stmt->bindValue(':group_id', $groupId, PDO::PARAM_STR);
         $result = $stmt->execute();
         if (false === $result) {
-            throw new VootStorageException("internal_server_error", "unable to retrieve members");
+            throw new VootStorageException('internal_server_error', 'unable to retrieve members');
         }
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
         $totalResults = $data['count'];
@@ -142,7 +142,7 @@ EOQ;
             $count = $totalResults;
         }
 
-        $query = <<< EOQ
+        $query = <<< 'EOQ'
 SELECT
     u.id,
     u.display_name as displayName,
@@ -160,37 +160,37 @@ LIMIT :start_index, :count
 EOQ;
 
         $stmt = $this->storage->prepare($query);
-        $stmt->bindValue(":group_id", $groupId, PDO::PARAM_STR);
-        $stmt->bindValue(":start_index", $startIndex, PDO::PARAM_INT);
-        $stmt->bindValue(":count", $count, PDO::PARAM_INT);
+        $stmt->bindValue(':group_id', $groupId, PDO::PARAM_STR);
+        $stmt->bindValue(':start_index', $startIndex, PDO::PARAM_INT);
+        $stmt->bindValue(':count', $count, PDO::PARAM_INT);
         $result = $stmt->execute();
         if (false === $result) {
-            throw new VootStorageException("internal_server_error", "unable to retrieve members");
+            throw new VootStorageException('internal_server_error', 'unable to retrieve members');
         }
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // fill emails element according to OpenSocial "Plural-Field"
-        for ($i = 0; $i < count($data); $i++) {
-            $data[$i]["emails"] = array( array("type" => "work", "value" => $data[$i]['mail']));
-            unset($data[$i]["mail"]);
+        for ($i = 0; $i < count($data); ++$i) {
+            $data[$i]['emails'] = [['type' => 'work', 'value' => $data[$i]['mail']]];
+            unset($data[$i]['mail']);
         }
 
-        return array(
+        return [
             'startIndex' => intval($startIndex),
             'totalResults' => intval($totalResults),
             'itemsPerPage' => count($data),
-            'entry' => $data
-        );
+            'entry' => $data,
+        ];
     }
 
     public function addUser($id, $displayName, $mail)
     {
-        $stmt = $this->storage->prepare("INSERT INTO users (id, display_name, mail) VALUES(:id, :display_name, :mail)");
-        $stmt->bindValue(":id", $id, PDO::PARAM_STR);
-        $stmt->bindValue(":display_name", $displayName, PDO::PARAM_STR);
-        $stmt->bindValue(":mail", $mail, PDO::PARAM_STR);
+        $stmt = $this->storage->prepare('INSERT INTO users (id, display_name, mail) VALUES(:id, :display_name, :mail)');
+        $stmt->bindValue(':id', $id, PDO::PARAM_STR);
+        $stmt->bindValue(':display_name', $displayName, PDO::PARAM_STR);
+        $stmt->bindValue(':mail', $mail, PDO::PARAM_STR);
         if (false === $stmt->execute()) {
-            throw new VootStorageException("internal_server_error", "unable to add user");
+            throw new VootStorageException('internal_server_error', 'unable to add user');
         }
 
         return 1 === $stmt->rowCount();
@@ -199,13 +199,13 @@ EOQ;
     public function addGroup($id, $title, $description)
     {
         $stmt = $this->storage->prepare(
-            "INSERT INTO groups (id, title, description) VALUES(:id, :title, :description)"
+            'INSERT INTO groups (id, title, description) VALUES(:id, :title, :description)'
         );
-        $stmt->bindValue(":id", $id, PDO::PARAM_STR);
-        $stmt->bindValue(":title", $title, PDO::PARAM_STR);
-        $stmt->bindValue(":description", $description, PDO::PARAM_STR);
+        $stmt->bindValue(':id', $id, PDO::PARAM_STR);
+        $stmt->bindValue(':title', $title, PDO::PARAM_STR);
+        $stmt->bindValue(':description', $description, PDO::PARAM_STR);
         if (false === $stmt->execute()) {
-            throw new VootStorageException("internal_server_error", "unable to add group");
+            throw new VootStorageException('internal_server_error', 'unable to add group');
         }
 
         return 1 === $stmt->rowCount();
@@ -214,13 +214,13 @@ EOQ;
     public function addMembership($userId, $groupId, $roleId)
     {
         $stmt = $this->storage->prepare(
-            "INSERT INTO users_groups_roles (user_id, group_id, role_id) VALUES(:user_id, :group_id, :role_id)"
+            'INSERT INTO users_groups_roles (user_id, group_id, role_id) VALUES(:user_id, :group_id, :role_id)'
         );
-        $stmt->bindValue(":user_id", $userId, PDO::PARAM_STR);
-        $stmt->bindValue(":group_id", $groupId, PDO::PARAM_STR);
-        $stmt->bindValue(":role_id", $roleId, PDO::PARAM_INT);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_STR);
+        $stmt->bindValue(':group_id', $groupId, PDO::PARAM_STR);
+        $stmt->bindValue(':role_id', $roleId, PDO::PARAM_INT);
         if (false === $stmt->execute()) {
-            throw new VootStorageException("internal_server_error", "unable to add membership");
+            throw new VootStorageException('internal_server_error', 'unable to add membership');
         }
 
         return 1 === $stmt->rowCount();

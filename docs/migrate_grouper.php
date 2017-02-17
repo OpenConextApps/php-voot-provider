@@ -1,20 +1,20 @@
 <?php
 
 /**
-* Copyright 2013 François Kooman <fkooman@tuxed.net>
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2013 François Kooman <fkooman@tuxed.net>.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 /*** Grouper MySQL database ***/
 $dsn = 'mysql:dbname=teams;host=127.0.0.1';
@@ -24,7 +24,7 @@ $password = '';
 $p = new PDO($dsn, $user, $password);
 
 /*** ENABLE FOREIGN KEY CONSTRAINT ***/
-echo "PRAGMA foreign_keys = ON;" . PHP_EOL;
+echo 'PRAGMA foreign_keys = ON;'.PHP_EOL;
 
 /*** GROUPS ***/
 $query = "
@@ -44,12 +44,12 @@ ORDER BY gg.name";
 
 $stmt = $p->prepare($query);
 $result = $stmt->execute();
-if (FALSE === $result) {
+if (false === $result) {
     var_dump($p->errorInfo());
 }
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 foreach ($results as $r) {
-    echo 'INSERT INTO groups VALUES("' . $r['name'] . '","' . $r['display_extension'] . '","' . $r['description'] .'");' . PHP_EOL;
+    echo 'INSERT INTO groups VALUES("'.$r['name'].'","'.$r['display_extension'].'","'.$r['description'].'");'.PHP_EOL;
 }
 
 /*** MEMBERSHIPS ***/
@@ -59,13 +59,13 @@ SELECT gm.subject_id, gf.name AS fieldname, gg.name AS groupname  FROM grouper_m
 
 $stmt = $p->prepare($query);
 $result = $stmt->execute();
-if (FALSE === $result) {
+if (false === $result) {
     var_dump($p->errorInfo());
 }
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 foreach ($results as $r) {
     $level = 10;
-    echo 'INSERT INTO membership VALUES("' . $r['subject_id'] . '","' . $r['groupname'] . '",' . $level .');' . PHP_EOL;
+    echo 'INSERT INTO membership VALUES("'.$r['subject_id'].'","'.$r['groupname'].'",'.$level.');'.PHP_EOL;
 }
 
 $query = "
@@ -73,13 +73,13 @@ SELECT gm.subject_id, gf.name AS fieldname, gg.name AS groupname  FROM grouper_m
 
 $stmt = $p->prepare($query);
 $result = $stmt->execute();
-if (FALSE === $result) {
+if (false === $result) {
     var_dump($p->errorInfo());
 }
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 foreach ($results as $r) {
     $level = 20;
-    echo 'UPDATE membership SET role=' . $level . ' WHERE id="' . $r['subject_id'] . '" AND groupid="' . $r['groupname'] . '";' . PHP_EOL;
+    echo 'UPDATE membership SET role='.$level.' WHERE id="'.$r['subject_id'].'" AND groupid="'.$r['groupname'].'";'.PHP_EOL;
 }
 
 $query = "
@@ -87,11 +87,11 @@ SELECT gm.subject_id, gf.name AS fieldname, gg.name AS groupname  FROM grouper_m
 
 $stmt = $p->prepare($query);
 $result = $stmt->execute();
-if (FALSE === $result) {
+if (false === $result) {
     var_dump($p->errorInfo());
 }
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 foreach ($results as $r) {
     $level = 50;
-    echo 'UPDATE membership SET role=' . $level . ' WHERE id="' . $r['subject_id'] . '" AND groupid="' . $r['groupname'] . '";' . PHP_EOL;
+    echo 'UPDATE membership SET role='.$level.' WHERE id="'.$r['subject_id'].'" AND groupid="'.$r['groupname'].'";'.PHP_EOL;
 }

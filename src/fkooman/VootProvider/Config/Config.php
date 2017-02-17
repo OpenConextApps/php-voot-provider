@@ -1,20 +1,20 @@
 <?php
 
 /**
-* Copyright 2013 François Kooman <fkooman@tuxed.net>
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2013 François Kooman <fkooman@tuxed.net>.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 namespace fkooman\VootProvider\Config;
 
@@ -41,7 +41,7 @@ class Config
         return new static($configData);
     }
 
-    public function getSubtree($section, $required = false, array $default = array())
+    public function getSubtree($section, $required = false, array $default = [])
     {
         if (!array_key_exists($section, $this->config)) {
             if ($required) {
@@ -57,12 +57,12 @@ class Config
         return new static($this->config[$section]);
     }
 
-    public function s($section, $required = false, array $default = array())
+    public function s($section, $required = false, array $default = [])
     {
         return $this->getSubtree($section, $required, $default);
     }
 
-    public function getSection($section, $required = false, array $default = array())
+    public function getSection($section, $required = false, array $default = [])
     {
         return $this->getSubtree($section, $required, $default);
     }
@@ -97,5 +97,4 @@ class Config
     {
         return $this->config;
     }
-
 }
