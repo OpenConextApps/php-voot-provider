@@ -17,12 +17,12 @@
  */
 require_once dirname(__DIR__).'/vendor/autoload.php';
 
-use fkooman\Http\IncomingRequest;
-use fkooman\Http\JsonResponse;
-use fkooman\Http\Request;
-use fkooman\Rest\Plugin\BasicAuthentication;
-use fkooman\Rest\Service;
 use fkooman\VootProvider\Config\Config;
+use fkooman\VootProvider\Http\IncomingRequest;
+use fkooman\VootProvider\Http\JsonResponse;
+use fkooman\VootProvider\Http\Request;
+use fkooman\VootProvider\Rest\Plugin\BasicAuthentication;
+use fkooman\VootProvider\Rest\Service;
 use fkooman\VootProvider\VootStorageException;
 
 try {
