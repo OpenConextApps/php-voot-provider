@@ -1,24 +1,24 @@
 <?php
 
 /**
-* Copyright 2013 François Kooman <fkooman@tuxed.net>
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2013 François Kooman <fkooman@tuxed.net>.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 namespace fkooman\VootProvider;
 
-use fkooman\Config\Config;
+use fkooman\VootProvider\Config\Config;
 
 class LdapVootStorage implements VootStorageInterface
 {
@@ -30,7 +30,7 @@ class LdapVootStorage implements VootStorageInterface
         $this->config = $c;
         $this->ldapConnection = @ldap_connect($this->config->s('LdapVootStorage')->l('uri'));
         if (false === $this->ldapConnection) {
-            throw new VootStorageException("ldap_error", "unable to connect to ldap server");
+            throw new VootStorageException('ldap_error', 'unable to connect to ldap server');
         }
 
         $bindDn = $this->config->s('LdapVootStorage')->l('bindDn', false);
@@ -38,59 +38,11 @@ class LdapVootStorage implements VootStorageInterface
         if (null !== $bindDn) {
             if (false === @ldap_bind($this->ldapConnection, $bindDn, $bindPass)) {
                 throw new VootStorageException(
-                    "ldap_error",
-                    "unable to bind to ldap server, possibly invalid credentials"
+                    'ldap_error',
+                    'unable to bind to ldap server, possibly invalid credentials'
                 );
             }
         }
-    }
-
-    private function getUserDn($resourceOwnerId)
-    {
-        /* get the user distinguishedName */
-        $filter = '(' . $this->config->s('LdapVootStorage')->l('userIdAttribute') . '=' . $resourceOwnerId . ')';
-        $query = @ldap_search($this->ldapConnection, $this->config->s('LdapVootStorage')->l('peopleDn'), $filter);
-        if (false === $query) {
-            throw new VootStorageException("ldap_error", "directory query for user failed");
-        }
-        /* we assume there is only one entry for the specified user, if not
-           we only look at the first result */
-        $entry = @ldap_first_entry($this->ldapConnection, $query);
-        if (false === $entry) {
-            throw new VootStorageException("not_found", "user not found");
-        }
-        $userDn = @ldap_get_dn($this->ldapConnection, $entry);
-        if (false === $userDn) {
-            throw new VootStorageException("ldap_error", "unable to get user distinguishedName");
-        }
-
-        return $userDn;
-    }
-
-    private function getUserAttributesByDn($userDn)
-    {
-        $query = @ldap_read(
-            $this->ldapConnection,
-            $userDn,
-            "(objectClass=*)",
-            array_values(
-                $this->config->s('LdapVootStorage')->s('attributeMapping')->toArray()
-            )
-        );
-        if (false === $query) {
-            throw new VootStorageException("ldap_error", "directory query for user failed");
-        }
-        $entry = @ldap_first_entry($this->ldapConnection, $query);
-        if (false === $entry) {
-            throw new VootStorageException("not_found", "user not found");
-        }
-        $attributes = @ldap_get_attributes($this->ldapConnection, $entry);
-        if (false === $attributes) {
-            throw new VootStorageException("ldap_error", "unable to get user attributes");
-        }
-        $filteredAttributes = $this->filterAttributes($attributes);
-
-        return $filteredAttributes;
     }
 
     public function getGroupMembers($resourceOwnerId, $groupId, $startIndex = 0, $count = null)
@@ -112,118 +64,118 @@ class LdapVootStorage implements VootStorageInterface
         $memberAttribute = $this->config->s('LdapVootStorage')->l('memberAttribute');
 
         $userDn = $this->getUserDn($resourceOwnerId);
-	
+
         $groupsProvider = $this->config->s('LdapVootStorage')->l('groupsProvider');
-    
+
         // FIXME: make sure the user is member of the group being requested
 
-        $filter = '(cn=' . $groupId . ')';
+        $filter = '(cn='.$groupId.')';
         $query = @ldap_search(
             $this->ldapConnection,
             $this->config->s('LdapVootStorage')->l('groupDn'),
             $filter,
-            array(
-                $memberAttribute
-            )
+            [
+                $memberAttribute,
+            ]
         );
         if (false === $query) {
-            throw new VootStorageException("ldap_error", "directory query for group failed");
+            throw new VootStorageException('ldap_error', 'directory query for group failed');
         }
-	
-        $all = ldap_get_entries($this->ldapConnection, $query); 
-        
+
+        $all = ldap_get_entries($this->ldapConnection, $query);
+
         switch ($groupsProvider) {
-          case "posixgroup":
+          case 'posixgroup':
               // we are only interested in group memberuid array
               $attributes = $all[0];
               break;
           default:
               break;
-	}
+    }
 
         $entry = @ldap_first_entry($this->ldapConnection, $query);
         if (false === $entry) {
-            throw new VootStorageException("not_found", "group not found");
+            throw new VootStorageException('not_found', 'group not found');
         }
         $attributes = @ldap_get_attributes($this->ldapConnection, $entry);
         if (false === $attributes) {
-            throw new VootStorageException("ldap_error", "unable to get group attributes");
+            throw new VootStorageException('ldap_error', 'unable to get group attributes');
         }
 
-        $data = array();
+        $data = [];
         if (array_key_exists($memberAttribute, $attributes)) {
             // we have some members
-            for ($i = 0; $i < $attributes[$memberAttribute]["count"]; $i++) {
+            for ($i = 0; $i < $attributes[$memberAttribute]['count']; ++$i) {
                 // member DN
                 // fetch attributes for this particular user
                 switch ($groupsProvider) {
-                  case "posixgroup": 
-                      $user_dn = 'uid=' . $attributes[$memberAttribute][$i] . ',' . $this->config->s('LdapVootStorage')->l('peopleDn');
+                  case 'posixgroup':
+                      $user_dn = 'uid='.$attributes[$memberAttribute][$i].','.$this->config->s('LdapVootStorage')->l('peopleDn');
                       $userAttributes = $this->getUserAttributesByDn($user_dn);
                       break;
-                  default: 
+                  default:
                       $userAttributes = $this->getUserAttributesByDn($attributes[$memberAttribute][$i]);
                       break;
-		}
+        }
 
-                $userAttributes['voot_membership_role'] = "member";
+                $userAttributes['voot_membership_role'] = 'member';
                 array_push($data, $userAttributes);
             }
         }
 
         // backwards compatible "emails" element with array
-        for ($i = 0; $i < count($data); $i++) {
-            $data[$i]["emails"] = array($data[$i]['mail']);
+        for ($i = 0; $i < count($data); ++$i) {
+            $data[$i]['emails'] = [$data[$i]['mail']];
         }
 
-        return array(
+        return [
             'startIndex' => 0,
             'totalResults' => count($data),
             'itemsPerPage' => count($data),
-            'entry' => $data
-        );
+            'entry' => $data,
+        ];
     }
 
     public function isMemberOf($resourceOwnerId, $startIndex = null, $count = null)
     {
         $userDn = $this->getUserDn($resourceOwnerId);
 
-        $userGroups = array();
-        
+        $userGroups = [];
+
         $groupsProvider = $this->config->s('LdapVootStorage')->l('groupsProvider');
-    
+
         /* get the groups the user is a member of */
         switch ($groupsProvider) {
-          case "posixgroup":
-              $filter = '(' . $this->config->s('LdapVootStorage')->l('memberAttribute') . '=' . $resourceOwnerId . ')';
+          case 'posixgroup':
+              $filter = '('.$this->config->s('LdapVootStorage')->l('memberAttribute').'='.$resourceOwnerId.')';
               break;
           default:
-              $filter = '(' . $this->config->s('LdapVootStorage')->l('memberAttribute') . '=' . $userDn . ')';
+              $filter = '('.$this->config->s('LdapVootStorage')->l('memberAttribute').'='.$userDn.')';
               break;
-	}
+    }
 
         $query = @ldap_search($this->ldapConnection, $this->config->s('LdapVootStorage')->l('groupDn'), $filter);
         if (false === $query) {
-            throw new VootStorageException("ldap_error", "directory query for groups failed");
+            throw new VootStorageException('ldap_error', 'directory query for groups failed');
         }
 
         $entry = @ldap_first_entry($this->ldapConnection, $query);
         while (false !== $entry) {
             $attributes = @ldap_get_attributes($this->ldapConnection, $entry);
             if (false === $attributes) {
-                throw new VootStorageException("ldap_error", "unable to get group attributes");
+                throw new VootStorageException('ldap_error', 'unable to get group attributes');
             }
-            $commonName = array_key_exists("cn", $attributes) ? $attributes["cn"][0] : null;
-            $displayName = array_key_exists("displayName", $attributes) ? $attributes["displayName"][0] : null;
-            $description = array_key_exists("description", $attributes) ? $attributes["description"][0] : null;
+            $commonName = array_key_exists('cn', $attributes) ? $attributes['cn'][0] : null;
+            $displayName = array_key_exists('displayName', $attributes) ? $attributes['displayName'][0] : null;
+            $description = array_key_exists('description', $attributes) ? $attributes['description'][0] : null;
             $distinguishedName = @ldap_get_dn($this->ldapConnection, $entry);
             if (false === $distinguishedName) {
-                throw new VootStorageException("ldap_error", "unable to get distinguishedName");
+                throw new VootStorageException('ldap_error', 'unable to get distinguishedName');
             }
             if (null === $commonName) {
-                throw new VootStorageException("ldap_error", "no cn for group");
+                throw new VootStorageException('ldap_error', 'no cn for group');
             }
-            $a = array();
+            $a = [];
             $a['id'] = $commonName;
             $a['title'] = null !== $displayName ? $displayName : $commonName;
             if (null !== $description) {
@@ -236,28 +188,76 @@ class LdapVootStorage implements VootStorageInterface
 
         // FIXME: we need to implement paging for LDAP as well...
         $startIndex = 0;
-        $totalResults = sizeof($userGroups);
+        $totalResults = count($userGroups);
 
-        return array(
+        return [
             'startIndex' => $startIndex,
             'totalResults' => $totalResults,
             'itemsPerPage' => $totalResults,
-            'entry' => $userGroups
+            'entry' => $userGroups,
+        ];
+    }
+
+    private function getUserDn($resourceOwnerId)
+    {
+        /* get the user distinguishedName */
+        $filter = '('.$this->config->s('LdapVootStorage')->l('userIdAttribute').'='.$resourceOwnerId.')';
+        $query = @ldap_search($this->ldapConnection, $this->config->s('LdapVootStorage')->l('peopleDn'), $filter);
+        if (false === $query) {
+            throw new VootStorageException('ldap_error', 'directory query for user failed');
+        }
+        /* we assume there is only one entry for the specified user, if not
+           we only look at the first result */
+        $entry = @ldap_first_entry($this->ldapConnection, $query);
+        if (false === $entry) {
+            throw new VootStorageException('not_found', 'user not found');
+        }
+        $userDn = @ldap_get_dn($this->ldapConnection, $entry);
+        if (false === $userDn) {
+            throw new VootStorageException('ldap_error', 'unable to get user distinguishedName');
+        }
+
+        return $userDn;
+    }
+
+    private function getUserAttributesByDn($userDn)
+    {
+        $query = @ldap_read(
+            $this->ldapConnection,
+            $userDn,
+            '(objectClass=*)',
+            array_values(
+                $this->config->s('LdapVootStorage')->s('attributeMapping')->toArray()
+            )
         );
+        if (false === $query) {
+            throw new VootStorageException('ldap_error', 'directory query for user failed');
+        }
+        $entry = @ldap_first_entry($this->ldapConnection, $query);
+        if (false === $entry) {
+            throw new VootStorageException('not_found', 'user not found');
+        }
+        $attributes = @ldap_get_attributes($this->ldapConnection, $entry);
+        if (false === $attributes) {
+            throw new VootStorageException('ldap_error', 'unable to get user attributes');
+        }
+        $filteredAttributes = $this->filterAttributes($attributes);
+
+        return $filteredAttributes;
     }
 
     private function filterAttributes($attributes)
     {
         $attributeMapping = $this->config->s('LdapVootStorage')->s('attributeMapping')->toArray();
-        $filteredAttributes = array();
+        $filteredAttributes = [];
         foreach ($attributeMapping as $k => $v) {
             if (array_key_exists($v, $attributes)) {
                 $filteredAttributes[$k] = $attributes[$v][0];
             }
         }
-        if (!array_key_exists("id", $filteredAttributes)) {
+        if (!array_key_exists('id', $filteredAttributes)) {
             throw new VootStorageException(
-                "ldap_error",
+                'ldap_error',
                 "mapping for 'id' attribute not set in LDAP response"
             );
         }

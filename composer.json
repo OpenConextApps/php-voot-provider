@@ -7,7 +7,7 @@
         }
     ],
     "autoload": {
-        "psr-0": {
+        "psr-4": {
             "fkooman\\VootProvider\\": "src/"
         }
     },
@@ -15,9 +15,13 @@
     "license": "Apache-2.0",
     "name": "fkooman/php-voot-provider",
     "require": {
+        "ext-filter": "*",
+        "ext-json": "*",
         "ext-ldap": "*",
-        "fkooman/php-lib-config": "0.2.*",
-        "fkooman/php-lib-rest": "0.3.*",
-        "php": ">=5.3.3"
+        "ext-pcre": "*",
+        "ext-pdo": "*",
+        "ext-spl": "*",
+        "php": ">=5.4",
+        "symfony/polyfill-php56": "^1.3"
     }
 }
