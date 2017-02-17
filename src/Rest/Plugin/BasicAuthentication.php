@@ -48,7 +48,7 @@ class BasicAuthentication implements ServicePluginInterface
         $requestBasicAuthUser = $request->getBasicAuthUser();
         $requestBasicAuthPass = $request->getBasicAuthPass();
 
-        if ($this->basicAuthUser !== $requestBasicAuthUser || $this->basicAuthPass !== $requestBasicAuthPass) {
+        if ($this->basicAuthUser !== $requestBasicAuthUser || !$this->checkPassword($this->basicAuthPass, $requestBasicAuthPass)) {
             $response = new JsonResponse(401);
             $response->setHeader(
                 'WWW-Authenticate',
@@ -65,5 +65,17 @@ class BasicAuthentication implements ServicePluginInterface
         }
 
         return true;
+    }
+
+    /**
+     * @param string $knownString the expected password
+     * @param string $userString  the (user) provided password
+     *
+     * @return bool
+     */
+    private function checkPassword($knownString, $userString)
+    {
+        // constant time string compare
+        return hash_equals($knownString, $userString);
     }
 }
