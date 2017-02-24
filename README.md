@@ -1,7 +1,13 @@
 # PHP VOOT group provider
 This project is a stand-alone VOOT group provider. The 
-[VOOT specification](https://github.com/fkooman/voot-specification/blob/master/VOOT.md) 
+[VOOT specification](http://openvoot.org/) 
 is implemented.
+
+# Community supported
+
+Please note that this software is provided by SURFnet to the community as-is.
+Questions, bug reports and PR's are welcome, but will be attended to on a best-effort
+basis.
 
 # Features
 * HTTP Basic Authentication
