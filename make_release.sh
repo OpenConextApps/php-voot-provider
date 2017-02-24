@@ -1,7 +1,9 @@
 #!/bin/bash
 
+set -e
+
 RELEASE_DIR=${HOME}/Releases
-GITHUB_USER=fkooman
+GITHUB_USER=OpenConextApps
 PROJECT_NAME=php-voot-provider
 
 if [ -z "$1" ]
@@ -33,7 +35,7 @@ rm -rf ${RELEASE_DIR}/${PROJECT_NAME}-${TAG}
 # get Composer
 (
 cd ${RELEASE_DIR}
-curl -O http://getcomposer.org/composer.phar
+curl -O https://getcomposer.org/composer.phar
 )
 
 # clone the tag
