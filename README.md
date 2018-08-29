@@ -16,10 +16,10 @@ basis.
 
 # Requirements
 If you want to have LDAP support you need to have the PHP LDAP extension 
-installed, `yum install php-ldap` (Fedora) or `apt-get install php5-ldap` 
+installed, `yum install php-ldap` (Fedora) or `apt install php-ldap` 
 (Debian). If you want to have database support you need to have the PDO 
 extension and the relevant platform drivers installed, `yum install php-pdo` 
-(Fedora) or `apt-get install php5-sqlite` (Debian).
+(Fedora) or `apt install php-sqlite3` (Debian).
 
 # Installation
 We assume you want to install in `/var/www/html/php-voot-provider` and that 
@@ -30,12 +30,17 @@ Below are instructions to install a release or from Git. They assume you have
 `root` permissions, but of course you can also create a directory under your
 web server directory root with user writable permissions and run the commands
 as a normal user.
+## From Release
+If you [download a release](https://github.com/OpenConextApps/php-voot-provider/releases)
+you do not need to run Composer yourself as all the dependencies are already
+included. You can just extract the release in `/var/www/html/php-voot-provider`
+and continue.
 
 ## From Git
 You need [Composer](http://getcomposer.org) to install the dependencies.
 
     # cd /var/www/html
-    # git clone https://github.com/fkooman/php-voot-provider.git
+    # git clone https://github.com/OpenConextApps/php-voot-provider.git
     # cd php-voot-provider
     # php /path/to/composer.phar install
     
@@ -47,11 +52,6 @@ with SELinux you may need to give it permission to connect to LDAP servers:
 
     # setsebool -P httpd_can_connect_ldap=on
 
-## From Release
-If you download a release you do not need to run 
-[Composer](http://getcomposer.org) yourself as all the dependencies are already
-included. You can just extract the release in `/var/www/html/php-voot-provider`
-and continue.
 
 ## Apache
 You need to install a little Apache configuration snippet to point to the `web`
@@ -66,7 +66,8 @@ the REST service is located.
     </Directory>
 
 You can place this in `/etc/httpd/conf.d/php-voot-provider.conf` on Fedora, or
-`/etc/apache2/conf.d/php-voot-provider.conf` on Debian.
+on Debian in `/etc/apache2/conf-available/php-voot-provider.conf` and run
+`a2enconf php-voot-provider`.
 
 # Configuration
 You can configure both a database or a LDAP as a backend.
