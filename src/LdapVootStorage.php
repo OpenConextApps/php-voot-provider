@@ -204,7 +204,7 @@ class LdapVootStorage implements VootStorageInterface
         $filter = '('.$this->config->s('LdapVootStorage')->l('userIdAttribute').'='.$resourceOwnerId.')';
         $query = @ldap_search($this->ldapConnection, $this->config->s('LdapVootStorage')->l('peopleDn'), $filter);
         if (false === $query) {
-            throw new VootStorageException('ldap_error', 'directory query for user failed');
+            throw new VootStorageException('ldap_error', 'directory query for user dn failed');
         }
         /* we assume there is only one entry for the specified user, if not
            we only look at the first result */
@@ -231,7 +231,7 @@ class LdapVootStorage implements VootStorageInterface
             )
         );
         if (false === $query) {
-            throw new VootStorageException('ldap_error', 'directory query for user failed');
+            throw new VootStorageException('ldap_error', 'directory query for user attributes failed');
         }
         $entry = @ldap_first_entry($this->ldapConnection, $query);
         if (false === $entry) {

@@ -67,7 +67,7 @@ EOQ;
         if (false === $result) {
             throw new VootStorageException(
                 'internal_server_error',
-                'unable to retrieve membership'
+                'unable to retrieve membership counts'
             );
         }
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -130,7 +130,7 @@ EOQ;
         $stmt->bindValue(':group_id', $groupId, PDO::PARAM_STR);
         $result = $stmt->execute();
         if (false === $result) {
-            throw new VootStorageException('internal_server_error', 'unable to retrieve members');
+            throw new VootStorageException('internal_server_error', 'unable to retrieve members counts');
         }
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
         $totalResults = $data['count'];
