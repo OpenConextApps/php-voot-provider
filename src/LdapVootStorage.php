@@ -32,6 +32,7 @@ class LdapVootStorage implements VootStorageInterface
         if (false === $this->ldapConnection) {
             throw new VootStorageException('ldap_error', 'unable to connect to ldap server');
         }
+        ldap_set_option($this->ldapConnection, LDAP_OPT_PROTOCOL_VERSION, 3);
 
         $bindDn = $this->config->s('LdapVootStorage')->l('bindDn', false);
         $bindPass = $this->config->s('LdapVootStorage')->l('bindPass', false);
